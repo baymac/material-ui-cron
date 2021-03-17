@@ -15,7 +15,9 @@ Be sure that you have these dependencies on your project:
 
 - react (>=16.8.0)
 - @material-ui/core (>=4.11.3)
+- @material-ui/lab (>=4.0.0-alpha.56)
 - recoil (>=0.1.3)
+- construe (>=1.110.0)
 
 ```bash
 # Yarn
