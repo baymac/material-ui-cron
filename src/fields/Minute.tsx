@@ -127,7 +127,7 @@ export default function Minute() {
       />
       <CustomSelect
         options={minuteOptions}
-        label={'Minutes(s)'}
+        label={'Minute(s)'}
         value={minute}
         setValue={setMinute}
         disableClearable={minuteAtEvery.value === 'every' || minute.length < 2}
