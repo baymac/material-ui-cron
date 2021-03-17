@@ -1,0 +1,50 @@
+import { makeStyles, createStyles } from '@material-ui/core'
+import Box from '@material-ui/core/Box'
+import Typography from '@material-ui/core/Typography'
+import cronstrue from 'cronstrue'
+import React from 'react'
+import { useRecoilValue } from 'recoil'
+import { cronExpState } from '../selector'
+import { cronValidationErrorMessageState } from '../store'
+
+const useStyles = makeStyles(() =>
+  createStyles({
+    error: {
+      color: 'red',
+    },
+  })
+)
+
+export default function CronReader() {
+  const classes = useStyles()
+  const cronExp = useRecoilValue(cronExpState)
+
+  const [cronHr, setCronHr] = React.useState('')
+
+  const cronValidationErrorMessage = useRecoilValue(
+    cronValidationErrorMessageState
+  )
+
+  React.useEffect(() => {
+    try {
+      setCronHr(cronstrue.toString(cronExp))
+    } catch (e) {
+      setCronHr('Incorrect cron selection')
+    }
+  }, [cronExp])
+
+  return (
+    <Box display='flex' p={1} m={1}>
+      {cronValidationErrorMessage.length === 0 && (
+        <Typography variant='h6' style={{ color: '#382B5F' }}>
+          {cronHr}
+        </Typography>
+      )}
+      {cronValidationErrorMessage.length > 0 && (
+        <Typography className={classes.error}>
+          {cronValidationErrorMessage}
+        </Typography>
+      )}
+    </Box>
+  )
+}
