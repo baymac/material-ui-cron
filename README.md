@@ -8,7 +8,7 @@
 Live **demo** and **usage** at
 [https://baymac.github.io/material-ui-cron/](https://baymac.github.io/material-ui-cron/?path=/story/material-ui-cron--scheduler-demo)
 
-![material-ui-cron demo](/docs/material-ui-cron.png)
+![material-ui-cron demo](/docs/material-ui-cron-demo.png)
 
 ## Inspired by
 
