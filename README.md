@@ -38,14 +38,12 @@ function SchedulerDemo() {
   const [isAdmin, setIsAdmin] = React.useState(true) // set admin or non-admin to enable or disable high frequency scheduling (more than once a day)
 
   return (
-    <RecoilRoot>
-      <Scheduler
-        cron={cronExp}
-        setCron={setCronExp}
-        setCronError={setCronError}
-        isAdmin={isAdmin}
-      />
-    </RecoilRoot>
+    <Scheduler
+      cron={cronExp}
+      setCron={setCronExp}
+      setCronError={setCronError}
+      isAdmin={isAdmin}
+    />
   )
 }
 ```
