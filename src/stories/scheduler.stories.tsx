@@ -1,6 +1,5 @@
 import React from 'react'
-import { RecoilRoot } from 'recoil'
-import Scheduler from '../Scheduler'
+import Scheduler from '../index'
 
 export default {
   title: 'Material UI Cron',
@@ -13,15 +12,11 @@ export function SchedulerDemo() {
   const [isAdmin, setIsAdmin] = React.useState(true)
 
   return (
-    <>
-      <RecoilRoot>
-        <Scheduler
-          cron={cronExp}
-          setCron={setCronExp}
-          setCronError={setCronError}
-          isAdmin={isAdmin}
-        />
-      </RecoilRoot>
-    </>
+    <Scheduler
+      cron={cronExp}
+      setCron={setCronExp}
+      setCronError={setCronError}
+      isAdmin={isAdmin}
+    />
   )
 }

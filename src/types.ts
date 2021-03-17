@@ -42,3 +42,10 @@ export interface CronValidation {
   isValid: boolean
   message: string
 }
+
+export interface SchedulerProps {
+  cron: string
+  setCron: React.Dispatch<React.SetStateAction<string>>
+  setCronError: React.Dispatch<React.SetStateAction<string>>
+  isAdmin?: boolean
+}

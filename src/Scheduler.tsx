@@ -28,6 +28,7 @@ import {
   periodState,
   weekState,
 } from './store'
+import { SchedulerProps } from './types'
 import { getPeriodIndex } from './utils'
 
 const useStyles = makeStyles({
@@ -38,13 +39,6 @@ const useStyles = makeStyles({
     minHeight: 'min-content',
   },
 })
-
-export interface SchedulerProps {
-  cron: string
-  setCron: React.Dispatch<React.SetStateAction<string>>
-  setCronError: React.Dispatch<React.SetStateAction<string>>
-  isAdmin?: boolean
-}
 
 export default function Scheduler(props: SchedulerProps) {
   const { cron, setCron, setCronError, isAdmin } = props

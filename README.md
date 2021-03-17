@@ -5,6 +5,11 @@
 [![npm package](https://img.shields.io/npm/v/material-ui-cron/latest.svg)](https://www.npmjs.com/package/material-ui-cron)
 [![MIT License Badge](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/baymac/material-ui-cron/blob/master/LICENSE.md)
 
+Live **demo** and **usage** at
+[https://baymac.github.io/material-ui-cron/](https://baymac.github.io/material-ui-cron/?path=/story/material-ui-cron--scheduler-demo)
+
+![material-ui-cron demo](/docs/material-ui-cron.png)
+
 ## Inspired by
 
 - [react-cron-js](https://github.com/xrutayisire/react-js-cron)
@@ -15,9 +20,6 @@ Be sure that you have these dependencies on your project:
 
 - react (>=16.8.0)
 - @material-ui/core (>=4.11.3)
-- @material-ui/lab (>=4.0.0-alpha.56)
-- recoil (>=0.1.3)
-- construe (>=1.110.0)
 
 ```bash
 # Yarn
