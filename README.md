@@ -1,9 +1,9 @@
 ## Material UI Cron
 
-> A React cron editor built with [material ui](https://material-ui.com/)
-
 [![npm package](https://img.shields.io/npm/v/material-ui-cron/latest.svg)](https://www.npmjs.com/package/material-ui-cron)
 [![MIT License Badge](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/baymac/material-ui-cron/blob/master/LICENSE.md)
+
+A React cron editor built with [material ui](https://material-ui.com/)
 
 Live **demo** and **usage** at
 [https://baymac.github.io/material-ui-cron/](https://baymac.github.io/material-ui-cron/?path=/story/material-ui-cron--scheduler-demo)
@@ -50,7 +50,13 @@ function SchedulerDemo() {
 
 ## TypeScript
 
-material-ui-cron is written in TypeScript with complete definitions
+`material-ui-cron` is written in TypeScript with complete definitions.
+
+## Acknowledgement
+
+This library was developed as a part of [Udaan](https://udaan.com/)'s Data
+Platform for scheduling queries. Big thanks to
+[Amod Malviya](https://github.com/amodm) for supporting this project.
 
 ## License
 
