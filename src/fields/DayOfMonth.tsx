@@ -128,6 +128,7 @@ export default function DayOfMonth() {
   return (
     <Box display='flex' p={1} m={1}>
       <CustomSelect
+        single
         options={onEveryOptions}
         label={'On/Every'}
         value={dayOfMonthAtEvery}
@@ -163,6 +164,7 @@ export default function DayOfMonth() {
         <>
           <Typography classes={{ root: classes.between }}>between</Typography>
           <CustomSelect
+            single
             options={possibleStartDays}
             label={''}
             value={startMonth}
@@ -177,6 +179,7 @@ export default function DayOfMonth() {
           />
           <Typography classes={{ root: classes.between }}>and</Typography>
           <CustomSelect
+            single
             options={possibleEndDays}
             label={''}
             value={endMonth}

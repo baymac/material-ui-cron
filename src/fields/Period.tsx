@@ -29,6 +29,7 @@ export default function Period() {
     <Box display='flex' p={1} m={1}>
       <Typography classes={{ root: classes.every }}>Every</Typography>
       <CustomSelect
+        single
         disableClearable
         options={isAdmin ? periodOptions : periodOptionsNonAdmin}
         label={'Period'}

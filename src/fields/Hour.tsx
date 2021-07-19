@@ -106,6 +106,7 @@ export default function Hour() {
   return (
     <Box display='flex' p={1} m={1}>
       <CustomSelect
+        single
         options={isAdmin ? atEveryOptions : atOptionsNonAdmin}
         label={'At/Every'}
         value={hourAtEvery}
@@ -139,6 +140,7 @@ export default function Hour() {
         <>
           <Typography classes={{ root: classes.between }}>between</Typography>
           <CustomSelect
+            single
             options={possibleStartTimes}
             label={''}
             value={startHour}
@@ -154,6 +156,7 @@ export default function Hour() {
           />
           <Typography classes={{ root: classes.between }}>and</Typography>
           <CustomSelect
+            single
             options={possibleEndTimes}
             label={''}
             value={endHour}
