@@ -113,6 +113,7 @@ export default function Minute() {
   return (
     <Box display='flex' p={1} m={1}>
       <CustomSelect
+        single
         options={isAdmin ? atEveryOptions : atOptionsNonAdmin}
         label={'At/Every'}
         disableClearable
@@ -146,6 +147,7 @@ export default function Minute() {
         <>
           <Typography classes={{ root: classes.between }}>between</Typography>
           <CustomSelect
+            single
             options={possibleStartTimes}
             label={''}
             value={startMinute}
@@ -161,6 +163,7 @@ export default function Minute() {
           />
           <Typography classes={{ root: classes.between }}>and</Typography>
           <CustomSelect
+            single
             options={possibleEndTimes}
             label={''}
             value={endMinute}
