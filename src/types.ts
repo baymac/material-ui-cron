@@ -1,4 +1,4 @@
-import { AutocompleteGetTagProps } from '@material-ui/lab/Autocomplete'
+import { AutocompleteRenderGetTagProps } from '@material-ui/core/Autocomplete'
 import { SetterOrUpdater } from 'recoil'
 
 export type PeriodType = 'year' | 'month' | 'week' | 'day' | 'hour' | 'minute'
@@ -6,7 +6,7 @@ export type PeriodType = 'year' | 'month' | 'week' | 'day' | 'hour' | 'minute'
 export interface CustomSelectProps {
   renderTags?: (
     value: SelectOptions[],
-    getTagProps: AutocompleteGetTagProps
+    getTagProps: AutocompleteRenderGetTagProps
   ) => React.ReactNode
   options: Array<SelectOptions>
   value: SelectOptions | SelectOptions[]

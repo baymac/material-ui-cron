@@ -1,4 +1,4 @@
-import { makeStyles, createStyles } from '@material-ui/core'
+import { makeStyles, createStyles } from '@material-ui/styles'
 import Box from '@material-ui/core/Box'
 import Typography from '@material-ui/core/Typography'
 import cronstrue from 'cronstrue'
