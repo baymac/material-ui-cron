@@ -1,5 +1,5 @@
 import Box from '@material-ui/core/Box'
-import { makeStyles } from '@material-ui/core/styles'
+import { makeStyles } from '@material-ui/styles'
 import Typography from '@material-ui/core/Typography'
 import clsx from 'clsx'
 import React from 'react'
@@ -50,13 +50,11 @@ export default function Hour() {
   const [hour, setHour] = useRecoilState(hourState)
   const [hourOptions, setHourOptions] = React.useState(defaultHourOptions)
 
-  const [possibleStartTimes, setPossibleStartTimes] = React.useState(
-    POSSIBLE_TIME_RANGES
-  )
+  const [possibleStartTimes, setPossibleStartTimes] =
+    React.useState(POSSIBLE_TIME_RANGES)
 
-  const [possibleEndTimes, setPossibleEndTimes] = React.useState(
-    POSSIBLE_TIME_RANGES
-  )
+  const [possibleEndTimes, setPossibleEndTimes] =
+    React.useState(POSSIBLE_TIME_RANGES)
 
   React.useEffect(() => {
     const startIndex = possibleStartTimes.findIndex(

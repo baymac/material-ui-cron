@@ -116,7 +116,8 @@ export function hasNoDuplicates(part: string) {
 
 export const REGEX_ALL = /^([*])\/([1-9]{1})([0-9]{0,1})$/
 export const REGEX_EVERY = /^([0-9]{1,4})\/([1-9]{1,2})$/
-export const REGEX_EVERY_HYPEN = /^([0-9]{1,2}-[0-9]{1,2})\/([1-9]{1})?([0-9]{1})$/
+export const REGEX_EVERY_HYPEN =
+  /^([0-9]{1,2}-[0-9]{1,2})\/([1-9]{1})?([0-9]{1})$/
 export const REGEX_COMMA = /^[0-9]{1,2}(,[0-9]{1,2})+$/
 export const REGEX_HYPHEN = /^([0-9]{1,2}-[0-9]{1,2})$/
 export const REGEX_SINGLE_DIGIT = /^([0-9]{1,2})$/

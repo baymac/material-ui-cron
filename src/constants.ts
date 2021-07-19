@@ -60,7 +60,8 @@ const periodOptionsWithHourDisabled = () =>
       : periodOption
   )
 
-export const periodOptionsNonAdmin: SelectOptions[] = periodOptionsWithHourDisabled()
+export const periodOptionsNonAdmin: SelectOptions[] =
+  periodOptionsWithHourDisabled()
 
 /* WEEK */
 
@@ -112,11 +113,11 @@ export const LAST_DAY_OF_MONTH_OPT = {
   label: 'Last Day of Month',
 }
 
-export const DEFAULT_DAY_OF_MONTH_OPTS_WITH_L = defaultDayOfMonthOptionsWithOrdinal().concat(
-  LAST_DAY_OF_MONTH_OPT
-)
+export const DEFAULT_DAY_OF_MONTH_OPTS_WITH_L =
+  defaultDayOfMonthOptionsWithOrdinal().concat(LAST_DAY_OF_MONTH_OPT)
 
-export const DEFAULT_DAY_OF_MONTH_OPTS_WITH_ORD = defaultDayOfMonthOptionsWithOrdinal()
+export const DEFAULT_DAY_OF_MONTH_OPTS_WITH_ORD =
+  defaultDayOfMonthOptionsWithOrdinal()
 
 export const DEFAULT_DAY_OF_MONTH_OPTS = defaultDayOfMonthOptions()
 

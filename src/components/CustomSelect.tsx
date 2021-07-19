@@ -2,7 +2,7 @@ import Chip from '@material-ui/core/Chip'
 import TextField from '@material-ui/core/TextField'
 import Autocomplete, {
   AutocompleteChangeReason,
-} from '@material-ui/lab/Autocomplete'
+} from '@material-ui/core/Autocomplete'
 import React from 'react'
 import { CustomSelectProps, SelectOptions } from '../types'
 import { getSortedOptions } from '../utils'
@@ -28,20 +28,20 @@ export default function CustomSelect(props: CustomSelectProps) {
     if (reason === 'clear') {
       setValue([options[0]])
     } else if (
-      reason === 'select-option' &&
+      reason === 'selectOption' &&
       single &&
       props.multiple !== false
     ) {
-      const val = ((newValue as unknown) as SelectOptions[]).filter(
+      const val = (newValue as unknown as SelectOptions[]).filter(
         // @ts-ignore
         (val) => val.label === event.target.childNodes[0].wholeText
       )
       setValue(val)
-    } else if (sort && reason === 'select-option') {
-      setValue(getSortedOptions((newValue as unknown) as SelectOptions[]))
-    } else if (reason !== 'remove-option') {
+    } else if (sort && reason === 'selectOption') {
+      setValue(getSortedOptions(newValue as unknown as SelectOptions[]))
+    } else if (reason !== 'removeOption') {
       setValue(newValue)
-    } else if (reason === 'remove-option' && disableEmpty) {
+    } else if (reason === 'removeOption' && disableEmpty) {
       if ((newValue as SelectOptions[]).length !== 0) {
         setValue(newValue)
       }
@@ -55,7 +55,7 @@ export default function CustomSelect(props: CustomSelectProps) {
         options={options}
         value={value}
         onChange={handleChange}
-        getOptionSelected={(option, val) =>
+        isOptionEqualToValue={(option, val) =>
           (option as SelectOptions).value === (val as SelectOptions).value
         }
         getOptionLabel={(option) => (option as SelectOptions).label}
