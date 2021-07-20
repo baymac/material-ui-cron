@@ -16,6 +16,7 @@ import Minute from './fields/Minute'
 import Month from './fields/Month'
 import Period from './fields/Period'
 import Week from './fields/Week'
+import { supportedLanguages } from './i18n'
 import { cronExpState } from './selector'
 import {
   cronExpInputState,
@@ -30,7 +31,7 @@ import {
   weekState,
 } from './store'
 import { SchedulerProps } from './types'
-import { definedLocalMapping, getPeriodIndex } from './utils'
+import { getPeriodIndex } from './utils'
 
 const useStyles = makeStyles({
   header: {
@@ -101,9 +102,9 @@ export default function Scheduler(props: SchedulerProps) {
     if (customLocale) {
       setResolvedLocale(customLocale)
     } else if (locale) {
-      setResolvedLocale(definedLocalMapping[locale])
+      setResolvedLocale(supportedLanguages[locale])
     } else {
-      setResolvedLocale(definedLocalMapping['en'])
+      setResolvedLocale(supportedLanguages['en'])
     }
   }, [locale, customLocale])
 

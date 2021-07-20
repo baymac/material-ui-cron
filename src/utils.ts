@@ -1,6 +1,5 @@
 import { DEFAULT_DAY_OF_MONTH_OPTS, DEFAULT_MINUTE_OPTS } from './constants'
-import enLocale from './constants/enLocal'
-import { CronValidation, definedLocalesMap, SelectOptions } from './types'
+import { CronValidation, SelectOptions } from './types'
 
 export const getIndex = (obj: SelectOptions, arr: Array<SelectOptions>) => {
   return arr.findIndex((x) => x.value === obj.value)
@@ -358,8 +357,4 @@ export function range(start: number, end: number, step = 1): Array<string> {
   return Array(len)
     .fill('00')
     .map((_, idx) => `${start + idx * step}`)
-}
-
-export const definedLocalMapping: definedLocalesMap = {
-  en: enLocale,
 }

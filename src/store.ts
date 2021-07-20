@@ -11,7 +11,7 @@ import {
   onEveryOptions,
   weekOptions,
 } from './constants'
-import defaultLocale from './constants/enLocal'
+import defaultLocale from './localization/enLocale'
 import { Locale, SelectOptions } from './types'
 import { getTimesOfTheDay } from './utils'
 
