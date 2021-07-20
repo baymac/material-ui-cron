@@ -1,22 +1,34 @@
-import { atom } from 'recoil'
+import { atom, selector } from 'recoil'
 import {
   atEveryOptions,
   defaultMinuteOptionsWithOrdinal,
-  defaultWeekSelection,
   DEFAULT_DAY_OF_MONTH_OPTS,
   DEFAULT_DAY_OF_MONTH_OPTS_WITH_ORD,
   DEFAULT_HOUR_OPTS_EVERY,
   DEFAULT_MINUTE_OPTS,
-  DEFAULT_MONTH_OPTS,
+  getMonthOptions,
+  getPeriodOptions,
   onEveryOptions,
-  periodOptions,
+  weekOptions,
 } from './constants'
-import { SelectOptions } from './types'
+import defaultLocale from './constants/enLocal'
+import { Locale, SelectOptions } from './types'
 import { getTimesOfTheDay } from './utils'
+
+export const localeState = atom<Locale>({
+  key: 'localeState',
+  default: defaultLocale,
+})
 
 export const periodState = atom<SelectOptions>({
   key: 'periodState',
-  default: periodOptions[1],
+  default: selector({
+    key: 'periodStateDefaultSelector',
+    get: ({ get }) => {
+      const resolvedLocale = get(localeState)
+      return getPeriodOptions(resolvedLocale.periodOptions)[1]
+    },
+  }),
 })
 
 export const minuteState = atom<SelectOptions[]>({
@@ -26,7 +38,16 @@ export const minuteState = atom<SelectOptions[]>({
 
 export const minuteAtEveryState = atom<SelectOptions>({
   key: 'minuteAtEveryState',
-  default: atEveryOptions[0],
+  default: selector({
+    key: 'minuteAtEveryStateDefaultSelector',
+    get: ({ get }) => {
+      const resolvedLocale = get(localeState)
+      return atEveryOptions(
+        resolvedLocale.atOptionLabel,
+        resolvedLocale.everyOptionLabel
+      )[0]
+    },
+  }),
 })
 
 export const minuteRangeStartSchedulerState = atom({
@@ -46,7 +67,16 @@ export const hourState = atom<SelectOptions[]>({
 
 export const hourAtEveryState = atom<SelectOptions>({
   key: 'hourAtEveryState',
-  default: atEveryOptions[0],
+  default: selector({
+    key: 'hourAtEveryStateDefaultSelector',
+    get: ({ get }) => {
+      const resolvedLocale = get(localeState)
+      return atEveryOptions(
+        resolvedLocale.atOptionLabel,
+        resolvedLocale.everyOptionLabel
+      )[0]
+    },
+  }),
 })
 
 export const hourRangeStartSchedulerState = atom({
@@ -61,7 +91,17 @@ export const hourRangeEndSchedulerState = atom({
 
 export const dayOfMonthAtEveryState = atom<SelectOptions>({
   key: 'dayOfMonthAtEveryState',
-  default: onEveryOptions[0],
+  default: selector({
+    key: 'dayOfMonthAtEveryStateDefaultSelector',
+    get: ({ get }) => {
+      const resolvedLocale = get(localeState)
+      console.log(resolvedLocale)
+      return onEveryOptions(
+        resolvedLocale.onOptionLabel,
+        resolvedLocale.everyOptionLabel
+      )[0]
+    },
+  }),
 })
 
 export const dayOfMonthState = atom<SelectOptions[]>({
@@ -81,12 +121,24 @@ export const dayOfMonthRangeEndSchedulerState = atom({
 
 export const weekState = atom<SelectOptions[]>({
   key: 'weekState',
-  default: defaultWeekSelection(),
+  default: selector({
+    key: 'weekStateDefaultSelector',
+    get: ({ get }) => {
+      const resolvedLocale = get(localeState)
+      return weekOptions(resolvedLocale.weekDaysOptions)
+    },
+  }),
 })
 
 export const monthState = atom<SelectOptions[]>({
   key: 'monthState',
-  default: DEFAULT_MONTH_OPTS,
+  default: selector({
+    key: 'monthStateDefaultSelector',
+    get: ({ get }) => {
+      const resolvedLocale = get(localeState)
+      return getMonthOptions(resolvedLocale.shortMonthOptions)
+    },
+  }),
 })
 
 export const cronValidationErrorMessageState = atom<string>({
@@ -96,7 +148,7 @@ export const cronValidationErrorMessageState = atom<string>({
 
 export const isAdminState = atom<boolean>({
   key: 'isAdminState',
-  default: false,
+  default: true,
 })
 
 export const cronExpInputState = atom<string>({

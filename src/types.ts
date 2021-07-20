@@ -48,4 +48,34 @@ export interface SchedulerProps {
   setCron: React.Dispatch<React.SetStateAction<string>>
   setCronError: React.Dispatch<React.SetStateAction<string>>
   isAdmin?: boolean
+  locale?: definedLocales
+  customLocale?: Locale
 }
+
+export interface Locale {
+  atEveryText: string
+  betweenText: string
+  inText: string
+  onText: string
+  andText: string
+  onEveryText: string
+  everyText: string
+  atOptionLabel: string
+  everyOptionLabel: string
+  periodLabel: string
+  minuteLabel: string
+  monthLabel: string
+  multiDayOfMonthLabel: string
+  dayOfMonthLabel: string
+  hourLabel: string
+  dayOfWeekLabel: string
+  weekDaysOptions: string[]
+  periodOptions: string[]
+  shortMonthOptions: string[]
+  onOptionLabel: string
+  lastDayOfMonthLabel: string
+}
+
+export type definedLocales = 'en'
+
+export type definedLocalesMap = Record<definedLocales, Locale>

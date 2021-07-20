@@ -1,6 +1,6 @@
 import Box from '@material-ui/core/Box'
-import { makeStyles } from '@material-ui/styles'
 import Typography from '@material-ui/core/Typography'
+import { makeStyles } from '@material-ui/styles'
 import React from 'react'
 import {
   useRecoilState,
@@ -23,13 +23,14 @@ import {
   dayOfMonthState,
   hourState,
   isAdminState,
+  localeState,
   minuteState,
   monthState,
   periodState,
   weekState,
 } from './store'
 import { SchedulerProps } from './types'
-import { getPeriodIndex } from './utils'
+import { definedLocalMapping, getPeriodIndex } from './utils'
 
 const useStyles = makeStyles({
   header: {
@@ -41,7 +42,7 @@ const useStyles = makeStyles({
 })
 
 export default function Scheduler(props: SchedulerProps) {
-  const { cron, setCron, setCronError, isAdmin } = props
+  const { cron, setCron, setCronError, isAdmin, locale, customLocale } = props
   const classes = useStyles()
   const period = useRecoilValue(periodState)
   const [periodIndex, setPeriodIndex] = React.useState(0)
@@ -52,6 +53,7 @@ export default function Scheduler(props: SchedulerProps) {
   const setIsAdmin = useSetRecoilState(isAdminState)
 
   const [cronExpInput, setCronExpInput] = useRecoilState(cronExpInputState)
+  const setResolvedLocale = useSetRecoilState(localeState)
 
   const resetCronExpInput = useResetRecoilState(cronExpInputState)
   const resetMinute = useResetRecoilState(minuteState)
@@ -94,6 +96,16 @@ export default function Scheduler(props: SchedulerProps) {
       resetPeriod()
     }
   }, [])
+
+  React.useEffect(() => {
+    if (customLocale) {
+      setResolvedLocale(customLocale)
+    } else if (locale) {
+      setResolvedLocale(definedLocalMapping[locale])
+    } else {
+      setResolvedLocale(definedLocalMapping['en'])
+    }
+  }, [locale, customLocale])
 
   return (
     <>

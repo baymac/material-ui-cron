@@ -1,9 +1,9 @@
-import { makeStyles } from '@material-ui/styles'
+import Box from '@material-ui/core/Box'
 import Typography from '@material-ui/core/Typography'
+import { makeStyles } from '@material-ui/styles'
 import clsx from 'clsx'
 import React from 'react'
 import { useRecoilState, useRecoilValue } from 'recoil'
-import Box from '@material-ui/core/Box'
 import CustomSelect from '../components/CustomSelect'
 import {
   atEveryOptions,
@@ -14,6 +14,7 @@ import {
 } from '../constants'
 import {
   isAdminState,
+  localeState,
   minuteAtEveryState,
   minuteRangeEndSchedulerState,
   minuteRangeStartSchedulerState,
@@ -110,12 +111,24 @@ export default function Minute() {
     }
   }, [isAdmin])
 
+  const resolvedLocale = useRecoilValue(localeState)
+
   return (
     <Box display='flex' p={1} m={1}>
       <CustomSelect
         single
-        options={isAdmin ? atEveryOptions : atOptionsNonAdmin}
-        label={'At/Every'}
+        options={
+          isAdmin
+            ? atEveryOptions(
+                resolvedLocale.atOptionLabel,
+                resolvedLocale.everyOptionLabel
+              )
+            : atOptionsNonAdmin(
+                resolvedLocale.atOptionLabel,
+                resolvedLocale.everyOptionLabel
+              )
+        }
+        label={resolvedLocale.atEveryText}
         disableClearable
         value={minuteAtEvery}
         setValue={setMinuteAtEvery}
@@ -128,7 +141,7 @@ export default function Minute() {
       />
       <CustomSelect
         options={minuteOptions}
-        label={'Minute(s)'}
+        label={resolvedLocale.minuteLabel}
         value={minute}
         setValue={setMinute}
         disableClearable={minuteAtEvery.value === 'every' || minute.length < 2}
@@ -145,7 +158,9 @@ export default function Minute() {
       />
       {minuteAtEvery.value === 'every' && (
         <>
-          <Typography classes={{ root: classes.between }}>between</Typography>
+          <Typography classes={{ root: classes.between }}>
+            {resolvedLocale.betweenText}
+          </Typography>
           <CustomSelect
             single
             options={possibleStartTimes}
@@ -161,7 +176,9 @@ export default function Minute() {
             }}
             disabled={!isAdmin}
           />
-          <Typography classes={{ root: classes.between }}>and</Typography>
+          <Typography classes={{ root: classes.between }}>
+            {resolvedLocale.andText}
+          </Typography>
           <CustomSelect
             single
             options={possibleEndTimes}

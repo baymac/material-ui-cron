@@ -27,31 +27,35 @@ export const generateOrdinalOptions = (
 
 /* PERIOD */
 
-export const periodOptions: SelectOptions[] = [
+export const getPeriodOptions = (
+  periodOptionLabels: string[]
+): SelectOptions[] => [
   {
+    label: periodOptionLabels[0],
     value: 'hour',
-    label: 'hour',
   },
   {
+    label: periodOptionLabels[1],
     value: 'day',
-    label: 'day',
   },
   {
+    label: periodOptionLabels[2],
     value: 'week',
-    label: 'week',
   },
   {
+    label: periodOptionLabels[3],
     value: 'month',
-    label: 'month',
   },
   {
+    label: periodOptionLabels[4],
     value: 'year',
-    label: 'year',
   },
 ]
 
-const periodOptionsWithHourDisabled = () =>
-  periodOptions.map((periodOption) =>
+export const getPeriodOptionsWithHourDisabled = (
+  periodOptionLabels: string[]
+) =>
+  getPeriodOptions(periodOptionLabels).map((periodOption) =>
     periodOption.value === 'hour'
       ? {
           ...periodOption,
@@ -60,38 +64,13 @@ const periodOptionsWithHourDisabled = () =>
       : periodOption
   )
 
-export const periodOptionsNonAdmin: SelectOptions[] =
-  periodOptionsWithHourDisabled()
-
 /* WEEK */
 
-export const WEEK_DAYS = [
-  'SUNDAY',
-  'MONDAY',
-  'TUESDAY',
-  'WEDNESDAY',
-  'THURSDAY',
-  'FRIDAY',
-  'SATURDAY',
-]
-
-export const defaultWeekOptions = () =>
-  WEEK_DAYS.map((day, idx) => ({
+export const weekOptions = (weekDayLabels: string[]): SelectOptions[] =>
+  weekDayLabels.map((day, idx) => ({
     value: `${idx}`,
     label: day,
   }))
-
-export const DEFAULT_WEEK_OPTS = [
-  { value: '0', label: 'SUNDAY' },
-  { value: '1', label: 'MONDAY' },
-  { value: '2', label: 'TUESDAY' },
-  { value: '3', label: 'WEDNESDAY' },
-  { value: '4', label: 'THURSDAY' },
-  { value: '5', label: 'FRIDAY' },
-  { value: '6', label: 'SATURDAY' },
-]
-
-export const defaultWeekSelection = () => defaultWeekOptions()
 
 /* DAY OF MONTH */
 
@@ -108,58 +87,27 @@ export const defaultDayOfMonthOptionsWithOrdinal = () => {
   return generateOrdinalOptions(1, 31)
 }
 
-export const LAST_DAY_OF_MONTH_OPT = {
+export const getLastDayOfMonthOption = (lastDayOfMonthLabel: string) => ({
   value: 'L',
-  label: 'Last Day of Month',
-}
+  label: lastDayOfMonthLabel,
+})
 
-export const DEFAULT_DAY_OF_MONTH_OPTS_WITH_L =
-  defaultDayOfMonthOptionsWithOrdinal().concat(LAST_DAY_OF_MONTH_OPT)
+export const getDayOfMonthsOptionsWithL = (lastDayOfMonthLabel: string) =>
+  defaultDayOfMonthOptionsWithOrdinal().concat(
+    getLastDayOfMonthOption(lastDayOfMonthLabel)
+  )
 
-export const DEFAULT_DAY_OF_MONTH_OPTS_WITH_ORD =
-  defaultDayOfMonthOptionsWithOrdinal()
+export const DEFAULT_DAY_OF_MONTH_OPTS_WITH_ORD = defaultDayOfMonthOptionsWithOrdinal()
 
 export const DEFAULT_DAY_OF_MONTH_OPTS = defaultDayOfMonthOptions()
 
 /* MONTH */
 
-export const MONTHS = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-]
-
-export const MONTHS_SHORT = [
-  'Jan',
-  'Feb',
-  'Mar',
-  'Apr',
-  'May',
-  'Jun',
-  'Jul',
-  'Aug',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dec',
-]
-
-export const defaultMonthOptions = () =>
-  MONTHS.map((month, idx) => ({
+export const getMonthOptions = (monthOptionLabels: string[]) =>
+  monthOptionLabels.map((month, idx) => ({
     value: `${idx + 1}`,
-    label: MONTHS_SHORT[idx],
+    label: month,
   }))
-
-export const DEFAULT_MONTH_OPTS = defaultMonthOptions()
 
 /* HOUR */
 
@@ -201,48 +149,59 @@ export const defaultMinuteOptionsWithOrdinal = () => DEFAULT_MINUTE_OPTS
 
 export const DEFAULT_MINUTE_OPTS = defaultMinuteOptions()
 
-export const atEveryOptions: SelectOptions[] = [
+export const atEveryOptions = (
+  atLabel: string,
+  everyLabel: string
+): SelectOptions[] => [
   {
     value: 'at',
-    label: 'at',
+    label: atLabel,
   },
   {
     value: 'every',
-    label: 'every',
+    label: everyLabel,
   },
 ]
 
-export const everyOptionsNonAdmin: SelectOptions[] = [
+export const everyOptionsNonAdmin = (
+  atLabel: string,
+  everyLabel: string
+): SelectOptions[] => [
   {
     value: 'at',
-    label: 'at',
+    label: atLabel,
     disabled: true,
   },
   {
     value: 'every',
-    label: 'every',
+    label: everyLabel,
   },
 ]
 
-export const atOptionsNonAdmin: SelectOptions[] = [
+export const atOptionsNonAdmin = (
+  atLabel: string,
+  everyLabel: string
+): SelectOptions[] => [
   {
     value: 'at',
-    label: 'at',
+    label: atLabel,
   },
   {
     value: 'every',
-    label: 'every',
+    label: everyLabel,
     disabled: true,
   },
 ]
-
-export const onEveryOptions: SelectOptions[] = [
+export const onEveryOptions = (
+  onLabel: string,
+  everyLabel: string
+): SelectOptions[] => [
   {
     value: 'on',
-    label: 'on',
+    label: onLabel,
   },
   {
     value: 'every',
-    label: 'every',
+    label: everyLabel,
   },
 ]
