@@ -1,6 +1,5 @@
 import Box from '@material-ui/core/Box'
 import { makeStyles } from '@material-ui/styles'
-import Typography from '@material-ui/core/Typography'
 import React from 'react'
 import {
   useRecoilState,
@@ -32,9 +31,6 @@ import { SchedulerProps } from './types'
 import { getPeriodIndex } from './utils'
 
 const useStyles = makeStyles({
-  header: {
-    margin: '10px 5px 0 16px',
-  },
   box: {
     minHeight: 'min-content',
   },
@@ -98,9 +94,6 @@ export default function Scheduler(props: SchedulerProps) {
   return (
     <>
       <Box display='flex' flexDirection='column' className={classes.box}>
-        <Typography variant='h5' className={classes.header}>
-          Scheduler
-        </Typography>
         <Period />
         {periodIndex > 3 && <Month />}
         {periodIndex > 2 && <DayOfMonth />}

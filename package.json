@@ -73,7 +73,7 @@
   },
   "dependencies": {
     "@material-ui/core": "^5.0.0-beta.1",
-    "@material-ui/styles": "^4.11.4",
+    "@material-ui/styles": "^5.0.0-beta.1",
     "cronstrue": "^1.114.0",
     "recoil": "^0.3.1"
   }
