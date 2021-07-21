@@ -89,7 +89,7 @@ export default function Scheduler(props: SchedulerProps) {
       resetMonth()
       resetPeriod()
     }
-  }, [cron])
+  }, [])
 
   return (
     <>
