@@ -8,7 +8,9 @@ assignees: ''
 
 **Describe the feature**
 
-**Justification** Provide the business reasons for this request.
+**Justification**
+
+Provide the business reasons for this request.
 
 **Solution (optional)**
 
