@@ -1,4 +1,4 @@
-import { AutocompleteRenderGetTagProps } from '@material-ui/core/Autocomplete'
+import { AutocompleteRenderGetTagProps } from '@material-ui/core'
 import { SetterOrUpdater } from 'recoil'
 
 export type PeriodType = 'year' | 'month' | 'week' | 'day' | 'hour' | 'minute'
@@ -74,6 +74,34 @@ export interface Locale {
   shortMonthOptions: string[]
   onOptionLabel: string
   lastDayOfMonthLabel: string
+  cronDescriptionText: // Can be among the list of locale available for construe library https://github.com/bradymholt/cronstrue#supported-locales, if more locales added to construe, add it here
+  | 'en'
+    | 'ca'
+    | 'cs'
+    | 'es'
+    | 'da'
+    | 'de'
+    | 'fi'
+    | 'fr'
+    | 'fa'
+    | 'he'
+    | 'it'
+    | 'ja'
+    | 'ko'
+    | 'nb'
+    | 'nl'
+    | 'pl'
+    | 'pt_BR'
+    | 'ro'
+    | 'ru'
+    | 'sk'
+    | 'sl'
+    | 'sw'
+    | 'sv'
+    | 'tr'
+    | 'uk'
+    | 'zh_CN'
+    | 'zh_TW'
 }
 
 export type definedLocales = 'en'

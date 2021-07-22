@@ -43,6 +43,7 @@ const enLocale: Locale = {
   ],
   onOptionLabel: 'on',
   lastDayOfMonthLabel: 'Last day of month',
+  cronDescriptionText: 'en',
 }
 
 export default enLocale
