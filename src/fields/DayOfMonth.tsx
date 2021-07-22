@@ -1,15 +1,15 @@
 import Box from '@material-ui/core/Box'
-import { makeStyles } from '@material-ui/styles'
 import Typography from '@material-ui/core/Typography'
+import { makeStyles } from '@material-ui/styles'
 import clsx from 'clsx'
 import React from 'react'
-import { useRecoilState } from 'recoil'
+import { useRecoilState, useRecoilValue } from 'recoil'
 import CustomSelect from '../components/CustomSelect'
 import {
   DEFAULT_DAY_OF_MONTH_OPTS,
-  DEFAULT_DAY_OF_MONTH_OPTS_WITH_L,
   DEFAULT_DAY_OF_MONTH_OPTS_WITH_ORD,
-  LAST_DAY_OF_MONTH_OPT,
+  getDayOfMonthsOptionsWithL,
+  getLastDayOfMonthOption,
   onEveryOptions,
 } from '../constants'
 import {
@@ -17,6 +17,7 @@ import {
   dayOfMonthRangeEndSchedulerState,
   dayOfMonthRangeStartSchedulerState,
   dayOfMonthState,
+  localeState,
 } from '../store'
 import { SelectOptions } from '../types'
 import { getIndex } from '../utils'
@@ -48,7 +49,10 @@ const useStyles = makeStyles({
 
 export default function DayOfMonth() {
   const classes = useStyles()
-  const [dayOfMonthAtEvery, setMonthAtEvery] = useRecoilState(
+
+  const resolvedLocale = useRecoilValue(localeState)
+
+  const [dayOfMonthAtEvery, setDayOfMonthAtEvery] = useRecoilState(
     dayOfMonthAtEveryState
   )
   const [startMonth, setStartMonth] = useRecoilState(
@@ -59,7 +63,7 @@ export default function DayOfMonth() {
   )
   const [dayOfMonth, setDayOfMonth] = useRecoilState(dayOfMonthState)
   const [dayOfMonthOptions, setDayOfMonthOptions] = React.useState(
-    DEFAULT_DAY_OF_MONTH_OPTS_WITH_L
+    getDayOfMonthsOptionsWithL(resolvedLocale.lastDayOfMonthLabel)
   )
 
   const [possibleStartDays, setPossibleStartDays] = React.useState(
@@ -105,18 +109,30 @@ export default function DayOfMonth() {
       }
       setDayOfMonthOptions(DEFAULT_DAY_OF_MONTH_OPTS)
     } else {
-      setDayOfMonthOptions(DEFAULT_DAY_OF_MONTH_OPTS_WITH_L)
+      setDayOfMonthOptions(
+        getDayOfMonthsOptionsWithL(resolvedLocale.lastDayOfMonthLabel)
+      )
     }
   }, [dayOfMonthAtEvery])
 
   const handleChange = (newOptions: SelectOptions[]) => {
     if (dayOfMonthAtEvery.value === 'on') {
-      if (getIndex(LAST_DAY_OF_MONTH_OPT, newOptions) === 0) {
-        setDayOfMonth(
-          newOptions.filter((option) => option !== LAST_DAY_OF_MONTH_OPT)
-        )
-      } else if (getIndex(LAST_DAY_OF_MONTH_OPT, newOptions) > 0) {
-        setDayOfMonth([LAST_DAY_OF_MONTH_OPT])
+      if (
+        getIndex(
+          getLastDayOfMonthOption(resolvedLocale.lastDayOfMonthLabel),
+          newOptions
+        ) === 0
+      ) {
+        setDayOfMonth(newOptions.filter((option) => option.value !== 'L'))
+      } else if (
+        getIndex(
+          getLastDayOfMonthOption(resolvedLocale.lastDayOfMonthLabel),
+          newOptions
+        ) > 0
+      ) {
+        setDayOfMonth([
+          getLastDayOfMonthOption(resolvedLocale.lastDayOfMonthLabel),
+        ])
       } else {
         setDayOfMonth(newOptions)
       }
@@ -129,10 +145,13 @@ export default function DayOfMonth() {
     <Box display='flex' p={1} m={1}>
       <CustomSelect
         single
-        options={onEveryOptions}
-        label={'On/Every'}
+        options={onEveryOptions(
+          resolvedLocale.onOptionLabel,
+          resolvedLocale.everyOptionLabel
+        )}
+        label={resolvedLocale.onEveryText}
         value={dayOfMonthAtEvery}
-        setValue={setMonthAtEvery}
+        setValue={setDayOfMonthAtEvery}
         multiple={false}
         disableClearable
         classes={{
@@ -143,7 +162,11 @@ export default function DayOfMonth() {
       />
       <CustomSelect
         options={dayOfMonthOptions}
-        label={dayOfMonthAtEvery.value === 'on' ? 'Day of the Month' : 'Days'}
+        label={
+          dayOfMonthAtEvery.value === 'on'
+            ? resolvedLocale.multiDayOfMonthLabel
+            : resolvedLocale.dayOfMonthLabel
+        }
         value={dayOfMonth}
         setValue={handleChange}
         single={dayOfMonthAtEvery.value === 'every'}
@@ -162,7 +185,9 @@ export default function DayOfMonth() {
       />
       {dayOfMonthAtEvery.value === 'every' && (
         <>
-          <Typography classes={{ root: classes.between }}>between</Typography>
+          <Typography classes={{ root: classes.between }}>
+            {resolvedLocale.betweenText}
+          </Typography>
           <CustomSelect
             single
             options={possibleStartDays}
@@ -177,7 +202,9 @@ export default function DayOfMonth() {
               }),
             }}
           />
-          <Typography classes={{ root: classes.between }}>and</Typography>
+          <Typography classes={{ root: classes.between }}>
+            {resolvedLocale.andText}
+          </Typography>
           <CustomSelect
             single
             options={possibleEndDays}

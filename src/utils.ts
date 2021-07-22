@@ -1,8 +1,4 @@
-import {
-  DEFAULT_DAY_OF_MONTH_OPTS,
-  DEFAULT_MINUTE_OPTS,
-  periodOptions,
-} from './constants'
+import { DEFAULT_DAY_OF_MONTH_OPTS, DEFAULT_MINUTE_OPTS } from './constants'
 import { CronValidation, SelectOptions } from './types'
 
 export const getIndex = (obj: SelectOptions, arr: Array<SelectOptions>) => {
@@ -17,7 +13,16 @@ export const getMinutesIndex = (obj: SelectOptions) => {
 }
 
 export const getPeriodIndex = (obj: SelectOptions) => {
-  return getIndex(obj, periodOptions)
+  if (obj.value === 'hour') {
+    return 0
+  } else if (obj.value === 'day') {
+    return 1
+  } else if (obj.value === 'week') {
+    return 2
+  } else if (obj.value === 'month') {
+    return 3
+  }
+  return 4
 }
 
 export const getDayOfMonthIndex = (obj: SelectOptions) => {
@@ -116,8 +121,7 @@ export function hasNoDuplicates(part: string) {
 
 export const REGEX_ALL = /^([*])\/([1-9]{1})([0-9]{0,1})$/
 export const REGEX_EVERY = /^([0-9]{1,4})\/([1-9]{1,2})$/
-export const REGEX_EVERY_HYPEN =
-  /^([0-9]{1,2}-[0-9]{1,2})\/([1-9]{1})?([0-9]{1})$/
+export const REGEX_EVERY_HYPEN = /^([0-9]{1,2}-[0-9]{1,2})\/([1-9]{1})?([0-9]{1})$/
 export const REGEX_COMMA = /^[0-9]{1,2}(,[0-9]{1,2})+$/
 export const REGEX_HYPHEN = /^([0-9]{1,2}-[0-9]{1,2})$/
 export const REGEX_SINGLE_DIGIT = /^([0-9]{1,2})$/

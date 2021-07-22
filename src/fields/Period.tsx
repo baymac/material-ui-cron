@@ -1,12 +1,15 @@
 import Box from '@material-ui/core/Box/Box'
-import { makeStyles } from '@material-ui/styles'
 import Typography from '@material-ui/core/Typography'
+import { makeStyles } from '@material-ui/styles'
 import clsx from 'clsx'
 import React from 'react'
 import { useRecoilState, useRecoilValue } from 'recoil'
 import CustomSelect from '../components/CustomSelect'
-import { periodOptions, periodOptionsNonAdmin } from '../constants'
-import { isAdminState, periodState } from '../store'
+import {
+  getPeriodOptions,
+  getPeriodOptionsWithHourDisabled,
+} from '../constants'
+import { isAdminState, localeState, periodState } from '../store'
 
 const useStyles = makeStyles({
   period: {
@@ -25,14 +28,22 @@ export default function Period() {
 
   const isAdmin = useRecoilValue(isAdminState)
 
+  const resolvedLocale = useRecoilValue(localeState)
+
   return (
     <Box display='flex' p={1} m={1}>
-      <Typography classes={{ root: classes.every }}>Every</Typography>
+      <Typography classes={{ root: classes.every }}>
+        {resolvedLocale.everyText}
+      </Typography>
       <CustomSelect
         single
         disableClearable
-        options={isAdmin ? periodOptions : periodOptionsNonAdmin}
-        label={'Period'}
+        options={
+          isAdmin
+            ? getPeriodOptions(resolvedLocale.periodOptions)
+            : getPeriodOptionsWithHourDisabled(resolvedLocale.periodOptions)
+        }
+        label={resolvedLocale.periodLabel}
         value={period}
         setValue={setPeriod}
         multiple={false}

@@ -1,11 +1,11 @@
 import { makeStyles, createStyles } from '@material-ui/styles'
 import Box from '@material-ui/core/Box'
 import Typography from '@material-ui/core/Typography'
-import cronstrue from 'cronstrue'
+import cronstrue from 'cronstrue/i18n'
 import React from 'react'
 import { useRecoilValue } from 'recoil'
 import { cronExpState } from '../selector'
-import { cronValidationErrorMessageState } from '../store'
+import { cronValidationErrorMessageState, localeState } from '../store'
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -18,6 +18,7 @@ const useStyles = makeStyles(() =>
 export default function CronReader() {
   const classes = useStyles()
   const cronExp = useRecoilValue(cronExpState)
+  const resolvedLocale = useRecoilValue(localeState)
 
   const [cronHr, setCronHr] = React.useState('')
 
@@ -27,7 +28,11 @@ export default function CronReader() {
 
   React.useEffect(() => {
     try {
-      setCronHr(cronstrue.toString(cronExp))
+      setCronHr(
+        cronstrue.toString(cronExp, {
+          locale: resolvedLocale.cronDescriptionText,
+        })
+      )
     } catch (e) {
       setCronHr('Incorrect cron selection')
     }

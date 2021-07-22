@@ -15,6 +15,7 @@ import Minute from './fields/Minute'
 import Month from './fields/Month'
 import Period from './fields/Period'
 import Week from './fields/Week'
+import { supportedLanguages } from './i18n'
 import { cronExpState } from './selector'
 import {
   cronExpInputState,
@@ -22,6 +23,7 @@ import {
   dayOfMonthState,
   hourState,
   isAdminState,
+  localeState,
   minuteState,
   monthState,
   periodState,
@@ -37,7 +39,7 @@ const useStyles = makeStyles({
 })
 
 export default function Scheduler(props: SchedulerProps) {
-  const { cron, setCron, setCronError, isAdmin } = props
+  const { cron, setCron, setCronError, isAdmin, locale, customLocale } = props
   const classes = useStyles()
   const period = useRecoilValue(periodState)
   const [periodIndex, setPeriodIndex] = React.useState(0)
@@ -48,6 +50,7 @@ export default function Scheduler(props: SchedulerProps) {
   const setIsAdmin = useSetRecoilState(isAdminState)
 
   const [cronExpInput, setCronExpInput] = useRecoilState(cronExpInputState)
+  const setResolvedLocale = useSetRecoilState(localeState)
 
   const resetCronExpInput = useResetRecoilState(cronExpInputState)
   const resetMinute = useResetRecoilState(minuteState)
@@ -90,6 +93,16 @@ export default function Scheduler(props: SchedulerProps) {
       resetPeriod()
     }
   }, [])
+
+  React.useEffect(() => {
+    if (customLocale) {
+      setResolvedLocale(customLocale)
+    } else if (locale) {
+      setResolvedLocale(supportedLanguages[locale])
+    } else {
+      setResolvedLocale(supportedLanguages['en'])
+    }
+  }, [locale, customLocale])
 
   return (
     <>

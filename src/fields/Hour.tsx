@@ -18,6 +18,7 @@ import {
   hourRangeStartSchedulerState,
   hourState,
   isAdminState,
+  localeState,
 } from '../store'
 import { getTimesOfTheDay } from '../utils'
 
@@ -50,11 +51,13 @@ export default function Hour() {
   const [hour, setHour] = useRecoilState(hourState)
   const [hourOptions, setHourOptions] = React.useState(defaultHourOptions)
 
-  const [possibleStartTimes, setPossibleStartTimes] =
-    React.useState(POSSIBLE_TIME_RANGES)
+  const [possibleStartTimes, setPossibleStartTimes] = React.useState(
+    POSSIBLE_TIME_RANGES
+  )
 
-  const [possibleEndTimes, setPossibleEndTimes] =
-    React.useState(POSSIBLE_TIME_RANGES)
+  const [possibleEndTimes, setPossibleEndTimes] = React.useState(
+    POSSIBLE_TIME_RANGES
+  )
 
   React.useEffect(() => {
     const startIndex = possibleStartTimes.findIndex(
@@ -103,12 +106,24 @@ export default function Hour() {
     }
   }, [isAdmin])
 
+  const resolvedLocale = useRecoilValue(localeState)
+
   return (
     <Box display='flex' p={1} m={1}>
       <CustomSelect
         single
-        options={isAdmin ? atEveryOptions : atOptionsNonAdmin}
-        label={'At/Every'}
+        options={
+          isAdmin
+            ? atEveryOptions(
+                resolvedLocale.atOptionLabel,
+                resolvedLocale.everyOptionLabel
+              )
+            : atOptionsNonAdmin(
+                resolvedLocale.atOptionLabel,
+                resolvedLocale.everyOptionLabel
+              )
+        }
+        label={resolvedLocale.atEveryText}
         value={hourAtEvery}
         setValue={setHourAtEvery}
         multiple={false}
@@ -121,7 +136,7 @@ export default function Hour() {
       />
       <CustomSelect
         options={hourOptions}
-        label={'Hour(s)'}
+        label={resolvedLocale.hourLabel}
         value={hour}
         setValue={setHour}
         single={hourAtEvery.value === 'every' || !isAdmin}
@@ -138,7 +153,9 @@ export default function Hour() {
       />
       {hourAtEvery.value === 'every' && (
         <>
-          <Typography classes={{ root: classes.between }}>between</Typography>
+          <Typography classes={{ root: classes.between }}>
+            {resolvedLocale.betweenText}
+          </Typography>
           <CustomSelect
             single
             options={possibleStartTimes}
@@ -154,7 +171,9 @@ export default function Hour() {
             }}
             disabled={!isAdmin}
           />
-          <Typography classes={{ root: classes.between }}>and</Typography>
+          <Typography classes={{ root: classes.between }}>
+            {resolvedLocale.andText}
+          </Typography>
           <CustomSelect
             single
             options={possibleEndTimes}

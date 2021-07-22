@@ -52,6 +52,50 @@ function SchedulerDemo() {
 
 `material-ui-cron` is written in TypeScript with complete definitions.
 
+## Internalization and Localization
+
+This library supports Internalization (i18n). Currently languages supported are:
+
+1. English
+
+We are welcoming translation contributions from the community.
+
+### How to contribute to translation
+
+1. Clone `/src/localization/enLocal.ts` and rename it to desired langauge prefix
+   (based on
+   https://meta.wikimedia.org/wiki/Template:List_of_language_names_ordered_by_code).
+
+2. Add language prefix to `definedLocales` type inside `/src/types.ts`
+
+3. Add locale mapping inside `/src/i18n.ts`
+
+### How to use translation
+
+#### Using predefined locale:
+
+```javascript
+<Scheduler
+  cron={cronExp}
+  setCron={setCronExp}
+  setCronError={setCronError}
+  isAdmin={isAdmin}
+  locale={'en'} // if not supplied, localization defaults to en
+/>
+```
+
+#### Using custom locale:
+
+```javascript
+<Scheduler
+  cron={cronExp}
+  setCron={setCronExp}
+  setCronError={setCronError}
+  isAdmin={isAdmin}
+  customLocale={{...your translations}} // should be a valid object of type Locale, overrides value supplied to locale prop
+/>
+```
+
 ## Acknowledgement
 
 This library was developed as a part of [Udaan](https://udaan.com/)'s Data

@@ -2,16 +2,15 @@ import { selector, SetRecoilState } from 'recoil'
 import {
   atEveryOptions,
   defaultMinuteOptionsWithOrdinal,
-  defaultWeekOptions,
   DEFAULT_DAY_OF_MONTH_OPTS,
   DEFAULT_DAY_OF_MONTH_OPTS_WITH_ORD,
   DEFAULT_HOUR_OPTS_EVERY,
   DEFAULT_MINUTE_OPTS,
-  DEFAULT_MONTH_OPTS,
-  DEFAULT_WEEK_OPTS,
-  LAST_DAY_OF_MONTH_OPT,
+  getLastDayOfMonthOption,
+  getMonthOptions,
+  getPeriodOptions,
   onEveryOptions,
-  periodOptions,
+  weekOptions,
 } from './constants'
 import {
   cronValidationErrorMessageState,
@@ -23,6 +22,7 @@ import {
   hourRangeEndSchedulerState,
   hourRangeStartSchedulerState,
   hourState,
+  localeState,
   minuteAtEveryState,
   minuteRangeEndSchedulerState,
   minuteRangeStartSchedulerState,
@@ -31,6 +31,7 @@ import {
   periodState,
   weekState,
 } from './store'
+import { Locale } from './types'
 import {
   getMinutesIndex,
   getPeriodIndex,
@@ -130,7 +131,10 @@ export const monthCronState = selector<string>({
       getPeriodIndex(get(periodState)) < 4 ||
       get(monthState)
         .map((month) => month.value)
-        .join('') === DEFAULT_MONTH_OPTS.map((month) => month.value).join('')
+        .join('') ===
+        getMonthOptions(get(localeState).shortMonthOptions)
+          .map((month) => month.value)
+          .join('')
     ) {
       return '*'
     } else if (isIncreasingSequence(months) && months.length !== 1) {
@@ -150,7 +154,10 @@ export const dayOfWeekCronState = selector<string>({
     } else if (
       get(weekState)
         .map((dayOfWeek) => dayOfWeek.value)
-        .join('') === DEFAULT_WEEK_OPTS.map((week) => week.value).join('')
+        .join('') ===
+      weekOptions(get(localeState).weekDaysOptions)
+        .map((week) => week.value)
+        .join('')
     ) {
       return '*'
     } else if (isIncreasingSequence(weeks) && weeks.length !== 1) {
@@ -174,12 +181,13 @@ export const cronExpState = selector<string>({
     set(cronValidationErrorMessageState, res.hasError ? res.message : '')
     if (!res.hasError) {
       const cronParts = newValue.toString().split(' ')
-      generateMinute(cronParts[0], set)
-      generateHour(cronParts[1], set)
-      generateDayOfMonth(cronParts[2], set)
-      generateMonth(cronParts[3], set)
-      generateWeek(cronParts[4], set)
+      generateMinute(cronParts[0], get(localeState), set)
+      generateHour(cronParts[1], get(localeState), set)
+      generateDayOfMonth(cronParts[2], get(localeState), set)
+      generateMonth(cronParts[3], get(localeState), set)
+      generateWeek(cronParts[4], get(localeState), set)
       const period = get(periodState)
+      const periodOptions = getPeriodOptions(get(localeState).periodOptions)
       if (cronParts[3] !== '*' && getPeriodIndex(period) < 4) {
         set(periodState, periodOptions[4])
       } else if (cronParts[2] !== '*' && getPeriodIndex(period) < 3) {
@@ -193,10 +201,13 @@ export const cronExpState = selector<string>({
   },
 })
 
-const generateMinute = (part: string, set: SetRecoilState) => {
+const generateMinute = (part: string, locale: Locale, set: SetRecoilState) => {
   if (part.indexOf('/') > 0) {
     let subparts = part.split('/')
-    set(minuteAtEveryState, atEveryOptions[1])
+    set(
+      minuteAtEveryState,
+      atEveryOptions(locale.atOptionLabel, locale.everyOptionLabel)[1]
+    )
     if (subparts[0].indexOf('-') > 0) {
       let subsubparts = subparts[0].split('-')
       set(
@@ -221,7 +232,10 @@ const generateMinute = (part: string, set: SetRecoilState) => {
       })
     )
   } else if (part !== '*') {
-    set(minuteAtEveryState, atEveryOptions[0])
+    set(
+      minuteAtEveryState,
+      atEveryOptions(locale.atOptionLabel, locale.everyOptionLabel)[0]
+    )
     set(
       minuteState,
       DEFAULT_MINUTE_OPTS.filter((_, idx) => {
@@ -229,15 +243,21 @@ const generateMinute = (part: string, set: SetRecoilState) => {
       })
     )
   } else if (part === '*') {
-    set(minuteAtEveryState, atEveryOptions[0])
+    set(
+      minuteAtEveryState,
+      atEveryOptions(locale.atOptionLabel, locale.everyOptionLabel)[0]
+    )
     set(minuteState, DEFAULT_MINUTE_OPTS)
   }
 }
 
-const generateHour = (part: string, set: SetRecoilState) => {
+const generateHour = (part: string, locale: Locale, set: SetRecoilState) => {
   if (part.indexOf('/') > 0) {
     let subparts = part.split('/')
-    set(hourAtEveryState, atEveryOptions[1])
+    set(
+      hourAtEveryState,
+      atEveryOptions(locale.atOptionLabel, locale.everyOptionLabel)[1]
+    )
     if (subparts[0].indexOf('-') > 0) {
       let subsubparts = subparts[0].split('-')
       set(
@@ -262,7 +282,10 @@ const generateHour = (part: string, set: SetRecoilState) => {
       })
     )
   } else if (part !== '*') {
-    set(hourAtEveryState, atEveryOptions[0])
+    set(
+      hourAtEveryState,
+      atEveryOptions(locale.atOptionLabel, locale.everyOptionLabel)[0]
+    )
     set(
       hourState,
       DEFAULT_HOUR_OPTS_EVERY.filter((_, idx) => {
@@ -270,15 +293,25 @@ const generateHour = (part: string, set: SetRecoilState) => {
       })
     )
   } else if (part === '*') {
-    set(hourAtEveryState, atEveryOptions[0])
+    set(
+      hourAtEveryState,
+      atEveryOptions(locale.atOptionLabel, locale.everyOptionLabel)[0]
+    )
     set(hourState, DEFAULT_HOUR_OPTS_EVERY)
   }
 }
 
-const generateDayOfMonth = (part: string, set: SetRecoilState) => {
+const generateDayOfMonth = (
+  part: string,
+  locale: Locale,
+  set: SetRecoilState
+) => {
   if (part.indexOf('/') > 0) {
     let subparts = part.split('/')
-    set(dayOfMonthAtEveryState, onEveryOptions[1])
+    set(
+      dayOfMonthAtEveryState,
+      onEveryOptions(locale.onOptionLabel, locale.everyOptionLabel)[1]
+    )
     if (subparts[0].indexOf('-') > 0) {
       let subsubparts = subparts[0].split('-')
       set(
@@ -301,8 +334,11 @@ const generateDayOfMonth = (part: string, set: SetRecoilState) => {
     }
     set(dayOfMonthState, [DEFAULT_DAY_OF_MONTH_OPTS[Number(subparts[1]) - 1]])
   } else if (part === 'L') {
-    set(dayOfMonthAtEveryState, onEveryOptions[0])
-    set(dayOfMonthState, [LAST_DAY_OF_MONTH_OPT])
+    set(
+      dayOfMonthAtEveryState,
+      onEveryOptions(locale.onOptionLabel, locale.everyOptionLabel)[0]
+    )
+    set(dayOfMonthState, [getLastDayOfMonthOption(locale.lastDayOfMonthLabel)])
   } else if (part.indexOf('-') > 0) {
     let subparts = part.split('-')
     set(
@@ -312,7 +348,10 @@ const generateDayOfMonth = (part: string, set: SetRecoilState) => {
       })
     )
   } else if (part !== '*') {
-    set(dayOfMonthAtEveryState, onEveryOptions[0])
+    set(
+      dayOfMonthAtEveryState,
+      onEveryOptions(locale.onOptionLabel, locale.everyOptionLabel)[0]
+    )
     set(
       dayOfMonthState,
       DEFAULT_DAY_OF_MONTH_OPTS_WITH_ORD.filter((_, idx) => {
@@ -320,49 +359,52 @@ const generateDayOfMonth = (part: string, set: SetRecoilState) => {
       })
     )
   } else if (part === '*') {
-    set(dayOfMonthAtEveryState, onEveryOptions[0])
+    set(
+      dayOfMonthAtEveryState,
+      onEveryOptions(locale.onOptionLabel, locale.everyOptionLabel)[0]
+    )
     set(dayOfMonthState, DEFAULT_DAY_OF_MONTH_OPTS_WITH_ORD)
   }
 }
 
-const generateMonth = (part: string, set: SetRecoilState) => {
+const generateMonth = (part: string, locale: Locale, set: SetRecoilState) => {
   if (part.indexOf('-') > 0) {
     let subparts = part.split('-')
     set(
       monthState,
-      DEFAULT_MONTH_OPTS.filter((_, idx) => {
+      getMonthOptions(locale.shortMonthOptions).filter((_, idx) => {
         return idx + 1 >= Number(subparts[0]) && idx + 1 <= Number(subparts[1])
       })
     )
   } else if (part !== '*') {
     set(
       monthState,
-      DEFAULT_MONTH_OPTS.filter((_, idx) => {
+      getMonthOptions(locale.shortMonthOptions).filter((_, idx) => {
         return part.split(',').includes((idx + 1).toString())
       })
     )
   } else {
-    set(monthState, DEFAULT_MONTH_OPTS)
+    set(monthState, getMonthOptions(locale.shortMonthOptions))
   }
 }
 
-const generateWeek = (part: string, set: SetRecoilState) => {
+const generateWeek = (part: string, locale: Locale, set: SetRecoilState) => {
   if (part.indexOf('-') > 0) {
     let subparts = part.split('-')
     set(
       weekState,
-      DEFAULT_WEEK_OPTS.filter((_, idx) => {
+      weekOptions(locale.weekDaysOptions).filter((_, idx) => {
         return idx >= Number(subparts[0]) && idx <= Number(subparts[1])
       })
     )
   } else if (part !== '*') {
     set(
       weekState,
-      DEFAULT_WEEK_OPTS.filter((_, idx) => {
+      weekOptions(locale.weekDaysOptions).filter((_, idx) => {
         return part.split(',').includes(idx.toString())
       })
     )
   } else {
-    set(weekState, defaultWeekOptions)
+    set(weekState, weekOptions(locale.weekDaysOptions))
   }
 }
