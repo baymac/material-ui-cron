@@ -17,6 +17,7 @@ export function SchedulerDemo() {
       setCron={setCronExp}
       setCronError={setCronError}
       isAdmin={isAdmin}
+      locale='zh_CN'
     />
   )
 }
