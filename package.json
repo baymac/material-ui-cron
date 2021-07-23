@@ -1,6 +1,6 @@
 {
   "name": "material-ui-cron",
-  "version": "0.1.0-beta.2",
+  "version": "0.1.0-beta.4",
   "description": "A React cron editor using material ui",
   "author": "Parichay Barpanda <parichay.barpanda@gmail.com> (https://github.com/baymac/)",
   "license": "MIT",
