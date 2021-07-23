@@ -104,6 +104,6 @@ export interface Locale {
     | 'zh_TW'
 }
 
-export type definedLocales = 'en'
+export type definedLocales = 'en' | 'zh_CN'
 
 export type definedLocalesMap = Record<definedLocales, Locale>
