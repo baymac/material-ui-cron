@@ -18,8 +18,11 @@ Live **demo** and **usage** at
 
 Be sure that you have these dependencies on your project:
 
-- react (>=16.8.0)
-- @material-ui/core (>=4.11.3)
+- react (>=17.0.1)
+- @material-ui/core (>5.0.0-beta.1)
+- @material-ui/styles: (>5.0.0-beta.1)
+
+More dependencies
 
 ```bash
 # Yarn
@@ -32,7 +35,10 @@ npm install --save material-ui-cron
 ## Usage
 
 ```javascript
-function SchedulerDemo() {
+import Scheduler from 'material-ui-cron'
+import React from 'react'
+
+export default function SchedulerDemo() {
   const [cronExp, setCronExp] = React.useState('0 0 * * *')
   const [cronError, setCronError] = React.useState('') // get error message if cron is invalid
   const [isAdmin, setIsAdmin] = React.useState(true) // set admin or non-admin to enable or disable high frequency scheduling (more than once a day)
