@@ -33,7 +33,8 @@
     "prettier": "prettier --write \"src/**/*.{ts?(x),css}\"",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
-    "deploy-storybook": "gh-pages -d storybook-static"
+    "deploy-storybook": "gh-pages -d storybook-static",
+    "prepare": "npm run build"
   },
   "devDependencies": {
     "@emotion/react": "^11.10.5",
