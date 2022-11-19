@@ -8,8 +8,8 @@ export default {
 
 export function SchedulerDemo() {
   const [cronExp, setCronExp] = React.useState('0 0 * * *')
-  const [cronError, setCronError] = React.useState('')
-  const [isAdmin, setIsAdmin] = React.useState(true)
+  const [, setCronError] = React.useState('')
+  const [isAdmin] = React.useState(true)
 
   return (
     <Scheduler
@@ -17,7 +17,6 @@ export function SchedulerDemo() {
       setCron={setCronExp}
       setCronError={setCronError}
       isAdmin={isAdmin}
-      locale='zh_CN'
     />
   )
 }

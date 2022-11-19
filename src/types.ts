@@ -1,30 +1,24 @@
-import { AutocompleteRenderGetTagProps } from '@material-ui/core'
-import { SetterOrUpdater } from 'recoil'
+import type {
+  AutocompleteProps,
+  AutocompleteRenderInputParams,
+} from '@mui/material/Autocomplete'
 
 export type PeriodType = 'year' | 'month' | 'week' | 'day' | 'hour' | 'minute'
 
-export interface CustomSelectProps {
-  renderTags?: (
-    value: SelectOptions[],
-    getTagProps: AutocompleteRenderGetTagProps
-  ) => React.ReactNode
-  options: Array<SelectOptions>
-  value: SelectOptions | SelectOptions[]
-  setValue: SetterOrUpdater<SelectOptions | SelectOptions[]>
-  noOptionsText?: string
-  label: string
-  size?: 'small' | 'medium'
-  disableClearable?: boolean
-  forcePopupIcon?: boolean
-  disabled?: boolean
-  multiple?: boolean
+export interface CustomSelectProps<
+  Multiple extends boolean | undefined,
+  DisableClearable extends boolean | undefined
+> extends Omit<
+    AutocompleteProps<SelectOptions, Multiple, DisableClearable, false>,
+    'renderInput'
+  > {
+  setValue(val: Multiple extends true ? SelectOptions[] : SelectOptions): void
+  label?: string
   filterSelectedOptions?: boolean
-  className?: string
-  classes?: any
   single?: boolean
   sort?: boolean
   disableEmpty?: boolean
-  limitTags?: number
+  renderInput?: (params: AutocompleteRenderInputParams) => React.ReactNode
 }
 
 export interface SelectOptions {
@@ -50,6 +44,7 @@ export interface SchedulerProps {
   isAdmin?: boolean
   locale?: definedLocales
   customLocale?: Locale
+  variant?: 'standard' | 'outlined' | 'filled'
 }
 
 export interface Locale {

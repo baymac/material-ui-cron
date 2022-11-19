@@ -1,7 +1,5 @@
-import Box from '@material-ui/core/Box/Box'
-import Typography from '@material-ui/core/Typography'
-import { makeStyles } from '@material-ui/styles'
-import clsx from 'clsx'
+import Box from '@mui/material/Box/Box'
+import Typography from '@mui/material/Typography'
 import React from 'react'
 import { useRecoilState, useRecoilValue } from 'recoil'
 import CustomSelect from '../components/CustomSelect'
@@ -9,30 +7,24 @@ import {
   getPeriodOptions,
   getPeriodOptionsWithHourDisabled,
 } from '../constants'
-import { isAdminState, localeState, periodState } from '../store'
-
-const useStyles = makeStyles({
-  period: {
-    minWidth: 200,
-    marginRight: '6px',
-    maxWidth: 200,
-  },
-  every: {
-    margin: '8.5px 6px 0 0',
-  },
-})
+import { isAdminState, localeState, periodState, variantState } from '../store'
 
 export default function Period() {
   const [period, setPeriod] = useRecoilState(periodState)
-  const classes = useStyles()
 
   const isAdmin = useRecoilValue(isAdminState)
 
   const resolvedLocale = useRecoilValue(localeState)
 
+  const variant = useRecoilValue(variantState)
+
   return (
     <Box display='flex' p={1} m={1}>
-      <Typography classes={{ root: classes.every }}>
+      <Typography
+        sx={{
+          margin: (variant === 'standard' ? 'auto' : '8.5px') + ' 6px 0 0',
+        }}
+      >
         {resolvedLocale.everyText}
       </Typography>
       <CustomSelect
@@ -46,11 +38,10 @@ export default function Period() {
         label={resolvedLocale.periodLabel}
         value={period}
         setValue={setPeriod}
-        multiple={false}
-        classes={{
-          root: clsx({
-            [classes.period]: true,
-          }),
+        sx={{
+          minWidth: 200,
+          marginRight: '6px',
+          maxWidth: 200,
         }}
       />
     </Box>

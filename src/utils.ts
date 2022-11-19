@@ -66,10 +66,10 @@ export const hasValidCronParts = (cronExp: string) =>
   cronExp.split(' ').length === 5
 
 export const getNumbersInCronPart = (part: string) => {
-  let numbers = []
+  const numbers = []
   let tmpNumber = ''
   for (let i = 0; i < part.length; i++) {
-    let num = Number(part[i])
+    const num = Number(part[i])
     if (num >= 0 && num <= 9) {
       tmpNumber += num
     } else {
@@ -88,7 +88,7 @@ export const getNumbersInCronPart = (part: string) => {
 export const doesNumberStartWithZero = (part: string) => {
   let tmpNumber = ''
   for (let i = 0; i < part.length; i++) {
-    let num = Number(part[i])
+    const num = Number(part[i])
     if (num >= 0 && num <= 9) {
       tmpNumber += num
     } else {
@@ -114,14 +114,15 @@ export const hasValidNumbersInCronPart = (
 export function hasNoDuplicates(part: string) {
   const subparts = part.split('/')
   return subparts.every((subpart) => {
-    let numArr = getNumbersInCronPart(subpart)
+    const numArr = getNumbersInCronPart(subpart)
     return new Set(numArr).size === numArr.length
   })
 }
 
 export const REGEX_ALL = /^([*])\/([1-9]{1})([0-9]{0,1})$/
 export const REGEX_EVERY = /^([0-9]{1,4})\/([1-9]{1,2})$/
-export const REGEX_EVERY_HYPEN = /^([0-9]{1,2}-[0-9]{1,2})\/([1-9]{1})?([0-9]{1})$/
+export const REGEX_EVERY_HYPEN =
+  /^([0-9]{1,2}-[0-9]{1,2})\/([1-9]{1})?([0-9]{1})$/
 export const REGEX_COMMA = /^[0-9]{1,2}(,[0-9]{1,2})+$/
 export const REGEX_HYPHEN = /^([0-9]{1,2}-[0-9]{1,2})$/
 export const REGEX_SINGLE_DIGIT = /^([0-9]{1,2})$/

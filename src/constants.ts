@@ -97,7 +97,8 @@ export const getDayOfMonthsOptionsWithL = (lastDayOfMonthLabel: string) =>
     getLastDayOfMonthOption(lastDayOfMonthLabel)
   )
 
-export const DEFAULT_DAY_OF_MONTH_OPTS_WITH_ORD = defaultDayOfMonthOptionsWithOrdinal()
+export const DEFAULT_DAY_OF_MONTH_OPTS_WITH_ORD =
+  defaultDayOfMonthOptionsWithOrdinal()
 
 export const DEFAULT_DAY_OF_MONTH_OPTS = defaultDayOfMonthOptions()
 

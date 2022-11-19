@@ -1,7 +1,5 @@
-import Box from '@material-ui/core/Box'
-import Typography from '@material-ui/core/Typography'
-import { makeStyles } from '@material-ui/styles'
-import clsx from 'clsx'
+import Box from '@mui/material/Box'
+import Typography from '@mui/material/Typography'
 import React from 'react'
 import { useRecoilState, useRecoilValue } from 'recoil'
 import CustomSelect from '../components/CustomSelect'
@@ -21,28 +19,7 @@ import {
   minuteState,
 } from '../store'
 
-const useStyles = makeStyles({
-  every: {
-    minWidth: '100px',
-    marginRight: '6px',
-  },
-  minute: {
-    minWidth: '130px',
-    maxWidth: '300px',
-    marginRight: '6px',
-  },
-  betweenSelect: {
-    minWidth: '90px',
-    maxWidth: '90px',
-    marginRight: '6px',
-  },
-  between: {
-    margin: '8px 6px 0 0',
-  },
-})
-
 export default function Minute() {
-  const classes = useStyles()
   const [minuteAtEvery, setMinuteAtEvery] = useRecoilState(minuteAtEveryState)
   const [startMinute, setStartMinute] = useRecoilState(
     minuteRangeStartSchedulerState
@@ -132,11 +109,9 @@ export default function Minute() {
         disableClearable
         value={minuteAtEvery}
         setValue={setMinuteAtEvery}
-        multiple={false}
-        classes={{
-          root: clsx({
-            [classes.every]: true,
-          }),
+        sx={{
+          minWidth: 100,
+          mr: 1,
         }}
       />
       <CustomSelect
@@ -148,17 +123,18 @@ export default function Minute() {
         single={minuteAtEvery.value === 'every' || !isAdmin}
         sort
         disableEmpty
+        multiple
         disabled={minuteAtEvery.value === 'every' && !isAdmin}
-        classes={{
-          root: clsx({
-            [classes.minute]: true,
-          }),
+        sx={{
+          minWidth: 130,
+          maxWidth: 300,
+          mr: 1,
         }}
         limitTags={3}
       />
       {minuteAtEvery.value === 'every' && (
         <>
-          <Typography classes={{ root: classes.between }}>
+          <Typography sx={{ margin: '8px 6px 0 0' }}>
             {resolvedLocale.betweenText}
           </Typography>
           <CustomSelect
@@ -167,16 +143,15 @@ export default function Minute() {
             label={''}
             value={startMinute}
             setValue={setStartMinute}
-            multiple={false}
             disableClearable
-            classes={{
-              root: clsx({
-                [classes.betweenSelect]: true,
-              }),
+            sx={{
+              minWidth: 90,
+              maxWidth: 90,
+              mr: 1,
             }}
             disabled={!isAdmin}
           />
-          <Typography classes={{ root: classes.between }}>
+          <Typography sx={{ margin: '8px 6px 0 0' }}>
             {resolvedLocale.andText}
           </Typography>
           <CustomSelect
@@ -185,12 +160,11 @@ export default function Minute() {
             label={''}
             value={endMinute}
             setValue={setEndMinute}
-            multiple={false}
             disableClearable
-            classes={{
-              root: clsx({
-                [classes.betweenSelect]: true,
-              }),
+            sx={{
+              minWidth: 90,
+              maxWidth: 90,
+              mr: 1,
             }}
             disabled={!isAdmin}
           />

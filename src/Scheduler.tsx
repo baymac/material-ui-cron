@@ -1,5 +1,4 @@
-import Box from '@material-ui/core/Box'
-import { makeStyles } from '@material-ui/styles'
+import Box from '@mui/material/Box'
 import React from 'react'
 import {
   useRecoilState,
@@ -28,21 +27,25 @@ import {
   monthState,
   periodState,
   weekState,
+  variantState,
 } from './store'
 import { SchedulerProps } from './types'
 import { getPeriodIndex } from './utils'
 
-const useStyles = makeStyles({
-  box: {
-    minHeight: 'min-content',
-  },
-})
-
 export default function Scheduler(props: SchedulerProps) {
-  const { cron, setCron, setCronError, isAdmin, locale, customLocale } = props
-  const classes = useStyles()
+  const {
+    cron,
+    setCron,
+    setCronError,
+    isAdmin,
+    locale,
+    customLocale,
+    variant,
+  } = props
   const period = useRecoilValue(periodState)
   const [periodIndex, setPeriodIndex] = React.useState(0)
+
+  const setVariant = useSetRecoilState(variantState)
 
   const setCronExp = useSetRecoilState(cronExpState)
 
@@ -104,18 +107,24 @@ export default function Scheduler(props: SchedulerProps) {
     }
   }, [locale, customLocale])
 
+  React.useEffect(() => {
+    setVariant(variant)
+  }, [variant])
+
   return (
-    <>
-      <Box display='flex' flexDirection='column' className={classes.box}>
-        <Period />
-        {periodIndex > 3 && <Month />}
-        {periodIndex > 2 && <DayOfMonth />}
-        {periodIndex > 1 && <Week />}
-        {periodIndex > 0 && <Hour />}
-        <Minute />
-        <CronExp />
-        <CronReader />
-      </Box>
-    </>
+    <Box
+      display='flex'
+      flexDirection='column'
+      sx={{ minHeight: 'min-content' }}
+    >
+      <Period />
+      {periodIndex > 3 && <Month />}
+      {periodIndex > 2 && <DayOfMonth />}
+      {periodIndex > 1 && <Week />}
+      {periodIndex > 0 && <Hour />}
+      <Minute />
+      <CronExp />
+      <CronReader />
+    </Box>
   )
 }

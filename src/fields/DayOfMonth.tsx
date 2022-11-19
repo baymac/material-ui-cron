@@ -1,7 +1,5 @@
-import Box from '@material-ui/core/Box'
-import Typography from '@material-ui/core/Typography'
-import { makeStyles } from '@material-ui/styles'
-import clsx from 'clsx'
+import Box from '@mui/material/Box'
+import Typography from '@mui/material/Typography'
 import React from 'react'
 import { useRecoilState, useRecoilValue } from 'recoil'
 import CustomSelect from '../components/CustomSelect'
@@ -22,34 +20,7 @@ import {
 import { SelectOptions } from '../types'
 import { getIndex } from '../utils'
 
-const useStyles = makeStyles({
-  every: {
-    minWidth: '100px',
-    marginRight: '6px',
-  },
-  dayOfMonth: {
-    minWidth: '200px',
-    maxWidth: '350px',
-    marginRight: '6px',
-  },
-  days: {
-    minWidth: '120px',
-    maxWidth: '120px',
-    marginRight: '6px',
-  },
-  betweenSelect: {
-    minWidth: '90px',
-    maxWidth: '90px',
-    marginRight: '6px',
-  },
-  between: {
-    margin: '8px 6px 0 0',
-  },
-})
-
 export default function DayOfMonth() {
-  const classes = useStyles()
-
   const resolvedLocale = useRecoilValue(localeState)
 
   const [dayOfMonthAtEvery, setDayOfMonthAtEvery] = useRecoilState(
@@ -152,12 +123,10 @@ export default function DayOfMonth() {
         label={resolvedLocale.onEveryText}
         value={dayOfMonthAtEvery}
         setValue={setDayOfMonthAtEvery}
-        multiple={false}
         disableClearable
-        classes={{
-          root: clsx({
-            [classes.every]: true,
-          }),
+        sx={{
+          minWidth: 100,
+          mr: 1,
         }}
       />
       <CustomSelect
@@ -170,22 +139,22 @@ export default function DayOfMonth() {
         value={dayOfMonth}
         setValue={handleChange}
         single={dayOfMonthAtEvery.value === 'every'}
+        multiple
         sort
         disableEmpty
         limitTags={3}
         disableClearable={
           dayOfMonthAtEvery.value === 'every' || dayOfMonth.length < 2
         }
-        classes={{
-          root: clsx({
-            [classes.dayOfMonth]: dayOfMonthAtEvery.value === 'on',
-            [classes.days]: dayOfMonthAtEvery.value === 'every',
-          }),
+        sx={{
+          minWidth: dayOfMonthAtEvery.value === 'on' ? 200 : 120,
+          maxWidth: dayOfMonthAtEvery.value === 'on' ? 200 : 120,
+          mr: 1,
         }}
       />
       {dayOfMonthAtEvery.value === 'every' && (
         <>
-          <Typography classes={{ root: classes.between }}>
+          <Typography sx={{ margin: '8px 6px 0 0' }}>
             {resolvedLocale.betweenText}
           </Typography>
           <CustomSelect
@@ -194,15 +163,14 @@ export default function DayOfMonth() {
             label={''}
             value={startMonth}
             setValue={setStartMonth}
-            multiple={false}
             disableClearable
-            classes={{
-              root: clsx({
-                [classes.betweenSelect]: true,
-              }),
+            sx={{
+              minWidth: 90,
+              maxWidth: 90,
+              mr: 1,
             }}
           />
-          <Typography classes={{ root: classes.between }}>
+          <Typography sx={{ margin: '8px 6px 0 0' }}>
             {resolvedLocale.andText}
           </Typography>
           <CustomSelect
@@ -211,12 +179,11 @@ export default function DayOfMonth() {
             label={''}
             value={endMonth}
             setValue={setEndMonth}
-            multiple={false}
             disableClearable
-            classes={{
-              root: clsx({
-                [classes.betweenSelect]: true,
-              }),
+            sx={{
+              minWidth: 90,
+              maxWidth: 90,
+              mr: 1,
             }}
           />
         </>

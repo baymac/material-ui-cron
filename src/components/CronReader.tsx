@@ -1,22 +1,12 @@
-import { makeStyles, createStyles } from '@material-ui/styles'
-import Box from '@material-ui/core/Box'
-import Typography from '@material-ui/core/Typography'
+import Box from '@mui/material/Box'
+import Typography from '@mui/material/Typography'
 import cronstrue from 'cronstrue/i18n'
 import React from 'react'
 import { useRecoilValue } from 'recoil'
 import { cronExpState } from '../selector'
 import { cronValidationErrorMessageState, localeState } from '../store'
 
-const useStyles = makeStyles(() =>
-  createStyles({
-    error: {
-      color: 'red',
-    },
-  })
-)
-
 export default function CronReader() {
-  const classes = useStyles()
   const cronExp = useRecoilValue(cronExpState)
   const resolvedLocale = useRecoilValue(localeState)
 
@@ -41,12 +31,12 @@ export default function CronReader() {
   return (
     <Box display='flex' p={1} m={1}>
       {cronValidationErrorMessage.length === 0 && (
-        <Typography variant='h6' style={{ color: '#382B5F' }}>
+        <Typography variant='h6' color='primary' className='MaterialCronHr'>
           {cronHr}
         </Typography>
       )}
       {cronValidationErrorMessage.length > 0 && (
-        <Typography className={classes.error}>
+        <Typography sx={{ color: 'red' }}>
           {cronValidationErrorMessage}
         </Typography>
       )}

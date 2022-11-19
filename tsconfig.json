@@ -1,18 +1,17 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "ESNext",
     "lib": ["dom", "dom.iterable", "esnext"],
-    "module": "commonjs",
+    "module": "ESNext",
     "rootDir": "src",
-    "outDir": "dist/cjs",
+    "outDir": "dist",
     "jsx": "react",
+    "strict": true,
     "declaration": true,
-    "emitDeclarationOnly": true,
     "noImplicitAny": true,
-    "strictNullChecks": true,
-    "removeComments": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "moduleResolution": "Node"
   },
   "include": ["./src/**/*"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "src/stories/*"]
 }
