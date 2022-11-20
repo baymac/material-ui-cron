@@ -1,4 +1,4 @@
-import Box from '@mui/material/Box/Box'
+import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import React from 'react'
 import { useRecoilState, useRecoilValue } from 'recoil'
