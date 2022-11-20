@@ -1,13 +1,18 @@
-import Chip from '@material-ui/core/Chip'
-import TextField from '@material-ui/core/TextField'
+import Chip from '@mui/material/Chip'
+import TextField from '@mui/material/TextField'
 import Autocomplete, {
   AutocompleteChangeReason,
-} from '@material-ui/core/Autocomplete'
+} from '@mui/material/Autocomplete'
+import { variantState } from '../store'
+import { useRecoilValue } from 'recoil'
 import React from 'react'
 import { CustomSelectProps, SelectOptions } from '../types'
 import { getSortedOptions } from '../utils'
 
-export default function CustomSelect(props: CustomSelectProps) {
+export default function CustomSelect<
+  Multiple extends boolean | undefined = undefined,
+  DisableClearable extends boolean | undefined = undefined
+>(props: CustomSelectProps<Multiple, DisableClearable>) {
   const {
     options,
     value,
@@ -16,76 +21,74 @@ export default function CustomSelect(props: CustomSelectProps) {
     single,
     sort,
     disableEmpty,
-    disableClearable,
-    ...otherprops
+    ...otherProps
   } = props
 
+  const variant = useRecoilValue(variantState)
+
   const handleChange = (
-    event: React.ChangeEvent<{}>,
-    newValue: SelectOptions | SelectOptions[],
+    event: React.ChangeEvent<any>,
+    newValue: SelectOptions | SelectOptions[] | null,
     reason: AutocompleteChangeReason
   ) => {
+    const setValueFn: any = setValue
     if (reason === 'clear') {
-      setValue([options[0]])
+      setValueFn([options[0]])
     } else if (
       reason === 'selectOption' &&
       single &&
       props.multiple !== false
     ) {
       const val = (newValue as unknown as SelectOptions[]).filter(
-        // @ts-ignore
-        (val) => val.label === event.target.childNodes[0].wholeText
+        (val) => val.label === (event.target.childNodes[0] as Text).wholeText
       )
-      setValue(val)
+      setValueFn(val)
     } else if (sort && reason === 'selectOption') {
-      setValue(getSortedOptions(newValue as unknown as SelectOptions[]))
+      setValueFn(getSortedOptions(newValue as unknown as SelectOptions[]))
     } else if (reason !== 'removeOption') {
-      setValue(newValue)
+      setValueFn(newValue!)
     } else if (reason === 'removeOption' && disableEmpty) {
       if ((newValue as SelectOptions[]).length !== 0) {
-        setValue(newValue)
+        setValueFn(newValue!)
       }
     }
   }
 
   return (
-    <>
-      <Autocomplete
-        multiple
-        options={options}
-        value={value}
-        onChange={handleChange}
-        isOptionEqualToValue={(option, val) =>
-          (option as SelectOptions).value === (val as SelectOptions).value
-        }
-        getOptionLabel={(option) => (option as SelectOptions).label}
-        size='small'
-        forcePopupIcon
-        disableClearable={disableClearable}
-        autoComplete
-        disableCloseOnSelect={!single}
-        renderTags={(value, getTagProps) =>
-          value.map((option, index) => {
-            const disableSingleItemRemove =
-              value.length === 1 && disableEmpty ? { onDelete: undefined } : {}
-            return (
-              <Chip
-                label={(option as SelectOptions).label}
-                size='small'
-                {...getTagProps({ index })}
-                {...disableSingleItemRemove}
-              />
-            )
-          })
-        }
-        getOptionDisabled={(option) =>
-          (option as SelectOptions).disabled ? true : false
-        }
-        renderInput={(params) => {
-          return <TextField {...params} variant='outlined' label={label} />
-        }}
-        {...otherprops}
-      />
-    </>
+    <Autocomplete
+      options={options}
+      value={value!}
+      onChange={handleChange}
+      isOptionEqualToValue={(option, val) =>
+        (option as SelectOptions).value === (val as SelectOptions).value
+      }
+      getOptionLabel={(option) => option.label}
+      size='small'
+      forcePopupIcon
+      autoComplete
+      disableCloseOnSelect={!single}
+      renderTags={(value, getTagProps) =>
+        value.map((option, index) => {
+          const disableSingleItemRemove =
+            value.length === 1 && disableEmpty ? { onDelete: undefined } : {}
+          return (
+            // eslint-disable-next-line react/jsx-key
+            <Chip
+              label={option.label}
+              size='small'
+              {...getTagProps({ index })}
+              {...disableSingleItemRemove}
+            />
+          )
+        })
+      }
+      getOptionDisabled={(option) =>
+        (option as SelectOptions).disabled ? true : false
+      }
+      renderInput={(params) => (
+        <TextField {...params} variant={variant} label={label} />
+      )}
+      {...otherProps}
+    />
   )
 }

@@ -1,35 +1,21 @@
-import { makeStyles } from '@material-ui/styles'
-import Typography from '@material-ui/core/Typography'
-import clsx from 'clsx'
+import Typography from '@mui/material/Typography'
 import React from 'react'
 import { useRecoilState, useRecoilValue } from 'recoil'
-import Box from '@material-ui/core/Box'
+import Box from '@mui/material/Box'
 import CustomSelect from '../components/CustomSelect'
 import { weekOptions as defaultWeekOptions } from '../constants'
 import { localeState, weekState } from '../store'
 
-const useStyles = makeStyles({
-  week: {
-    minWidth: '300px',
-    maxWidth: '500px',
-    marginRight: '6px',
-  },
-  on: {
-    margin: '8.5px 6px 0 0',
-  },
-})
-
 export default function Week() {
-  const classes = useStyles()
   const [week, setWeek] = useRecoilState(weekState)
   const resolvedLocale = useRecoilValue(localeState)
-  const [weekOptions, setWeekOptions] = React.useState(
+  const [weekOptions] = React.useState(
     defaultWeekOptions(resolvedLocale.weekDaysOptions)
   )
 
   return (
     <Box display='flex' p={1} m={1}>
-      <Typography classes={{ root: classes.on }}>
+      <Typography sx={{ margin: '8.5px 6px 0 0' }}>
         {resolvedLocale.onText}
       </Typography>
       <CustomSelect
@@ -40,10 +26,11 @@ export default function Week() {
         disableClearable
         sort
         disableEmpty
-        classes={{
-          root: clsx({
-            [classes.week]: true,
-          }),
+        multiple
+        sx={{
+          minWidth: 300,
+          maxWidth: 500,
+          mr: 6,
         }}
         limitTags={3}
       />

@@ -19,8 +19,7 @@ Live **demo** and **usage** at
 Be sure that you have these dependencies on your project:
 
 - react (>=17.0.1)
-- @material-ui/core (>5.0.0-beta.1)
-- @material-ui/styles: (>5.0.0-beta.1)
+- @mui/material (>=5.0.0)
 
 More dependencies
 
@@ -63,6 +62,7 @@ export default function SchedulerDemo() {
 This library supports Internalization (i18n). Currently languages supported are:
 
 1. English
+2. Chinese (Simplified)
 
 We are welcoming translation contributions from the community.
 

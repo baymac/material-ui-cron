@@ -1,7 +1,5 @@
-import Box from '@material-ui/core/Box'
-import { makeStyles } from '@material-ui/styles'
-import Typography from '@material-ui/core/Typography'
-import clsx from 'clsx'
+import Box from '@mui/material/Box'
+import Typography from '@mui/material/Typography'
 import React from 'react'
 import { useRecoilState, useRecoilValue } from 'recoil'
 import CustomSelect from '../components/CustomSelect'
@@ -24,40 +22,18 @@ import { getTimesOfTheDay } from '../utils'
 
 const POSSIBLE_TIME_RANGES = getTimesOfTheDay()
 
-const useStyles = makeStyles({
-  every: {
-    minWidth: '100px',
-    marginRight: '6px',
-  },
-  hour: {
-    minWidth: '130px',
-    maxWidth: '450px',
-    marginRight: '6px',
-  },
-  betweenSelect: {
-    minWidth: '130px',
-    marginRight: '6px',
-  },
-  between: {
-    margin: '8px 6px 0 0',
-  },
-})
-
 export default function Hour() {
-  const classes = useStyles()
   const [hourAtEvery, setHourAtEvery] = useRecoilState(hourAtEveryState)
   const [startHour, setStartHour] = useRecoilState(hourRangeStartSchedulerState)
   const [endHour, setEndHour] = useRecoilState(hourRangeEndSchedulerState)
   const [hour, setHour] = useRecoilState(hourState)
   const [hourOptions, setHourOptions] = React.useState(defaultHourOptions)
 
-  const [possibleStartTimes, setPossibleStartTimes] = React.useState(
-    POSSIBLE_TIME_RANGES
-  )
+  const [possibleStartTimes, setPossibleStartTimes] =
+    React.useState(POSSIBLE_TIME_RANGES)
 
-  const [possibleEndTimes, setPossibleEndTimes] = React.useState(
-    POSSIBLE_TIME_RANGES
-  )
+  const [possibleEndTimes, setPossibleEndTimes] =
+    React.useState(POSSIBLE_TIME_RANGES)
 
   React.useEffect(() => {
     const startIndex = possibleStartTimes.findIndex(
@@ -126,12 +102,10 @@ export default function Hour() {
         label={resolvedLocale.atEveryText}
         value={hourAtEvery}
         setValue={setHourAtEvery}
-        multiple={false}
         disableClearable
-        classes={{
-          root: clsx({
-            [classes.every]: true,
-          }),
+        sx={{
+          minWidth: 100,
+          mr: 1,
         }}
       />
       <CustomSelect
@@ -142,50 +116,45 @@ export default function Hour() {
         single={hourAtEvery.value === 'every' || !isAdmin}
         sort
         disableEmpty
+        multiple
         limitTags={3}
         disableClearable={hourAtEvery.value === 'every' || hour.length < 2}
         disabled={!isAdmin && hourAtEvery.value === 'every'}
-        classes={{
-          root: clsx({
-            [classes.hour]: true,
-          }),
+        sx={{
+          minWidth: 130,
+          maxWidth: 450,
+          mr: 1,
         }}
       />
       {hourAtEvery.value === 'every' && (
         <>
-          <Typography classes={{ root: classes.between }}>
+          <Typography sx={{ margin: '8px 6px 0 0' }}>
             {resolvedLocale.betweenText}
           </Typography>
           <CustomSelect
             single
             options={possibleStartTimes}
-            label={''}
             value={startHour}
             setValue={setStartHour}
-            multiple={false}
             disableClearable
-            classes={{
-              root: clsx({
-                [classes.betweenSelect]: true,
-              }),
+            sx={{
+              minWidth: 130,
+              mr: 1,
             }}
             disabled={!isAdmin}
           />
-          <Typography classes={{ root: classes.between }}>
+          <Typography sx={{ margin: '8px 6px 0 0' }}>
             {resolvedLocale.andText}
           </Typography>
           <CustomSelect
             single
             options={possibleEndTimes}
-            label={''}
             value={endHour}
             setValue={setEndHour}
-            multiple={false}
             disableClearable
-            classes={{
-              root: clsx({
-                [classes.betweenSelect]: true,
-              }),
+            sx={{
+              minWidth: 130,
+              mr: 1,
             }}
             disabled={!isAdmin}
           />

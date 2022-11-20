@@ -203,13 +203,13 @@ export const cronExpState = selector<string>({
 
 const generateMinute = (part: string, locale: Locale, set: SetRecoilState) => {
   if (part.indexOf('/') > 0) {
-    let subparts = part.split('/')
+    const subparts = part.split('/')
     set(
       minuteAtEveryState,
       atEveryOptions(locale.atOptionLabel, locale.everyOptionLabel)[1]
     )
     if (subparts[0].indexOf('-') > 0) {
-      let subsubparts = subparts[0].split('-')
+      const subsubparts = subparts[0].split('-')
       set(
         minuteRangeStartSchedulerState,
         defaultMinuteOptionsWithOrdinal()[Number(subsubparts[0])]
@@ -224,7 +224,7 @@ const generateMinute = (part: string, locale: Locale, set: SetRecoilState) => {
     }
     set(minuteState, [DEFAULT_MINUTE_OPTS[Number(subparts[1])]])
   } else if (part.indexOf('-') > 0) {
-    let subparts = part.split('-')
+    const subparts = part.split('-')
     set(
       minuteState,
       DEFAULT_MINUTE_OPTS.filter((_, idx) => {
@@ -253,13 +253,13 @@ const generateMinute = (part: string, locale: Locale, set: SetRecoilState) => {
 
 const generateHour = (part: string, locale: Locale, set: SetRecoilState) => {
   if (part.indexOf('/') > 0) {
-    let subparts = part.split('/')
+    const subparts = part.split('/')
     set(
       hourAtEveryState,
       atEveryOptions(locale.atOptionLabel, locale.everyOptionLabel)[1]
     )
     if (subparts[0].indexOf('-') > 0) {
-      let subsubparts = subparts[0].split('-')
+      const subsubparts = subparts[0].split('-')
       set(
         hourRangeStartSchedulerState,
         getTimesOfTheDay()[Number(subsubparts[0])]
@@ -274,7 +274,7 @@ const generateHour = (part: string, locale: Locale, set: SetRecoilState) => {
     }
     set(hourState, [DEFAULT_HOUR_OPTS_EVERY[Number(subparts[1])]])
   } else if (part.indexOf('-') > 0) {
-    let subparts = part.split('-')
+    const subparts = part.split('-')
     set(
       hourState,
       DEFAULT_HOUR_OPTS_EVERY.filter((_, idx) => {
@@ -307,13 +307,13 @@ const generateDayOfMonth = (
   set: SetRecoilState
 ) => {
   if (part.indexOf('/') > 0) {
-    let subparts = part.split('/')
+    const subparts = part.split('/')
     set(
       dayOfMonthAtEveryState,
       onEveryOptions(locale.onOptionLabel, locale.everyOptionLabel)[1]
     )
     if (subparts[0].indexOf('-') > 0) {
-      let subsubparts = subparts[0].split('-')
+      const subsubparts = subparts[0].split('-')
       set(
         dayOfMonthRangeStartSchedulerState,
         DEFAULT_DAY_OF_MONTH_OPTS_WITH_ORD[Number(subsubparts[0]) - 1]
@@ -340,7 +340,7 @@ const generateDayOfMonth = (
     )
     set(dayOfMonthState, [getLastDayOfMonthOption(locale.lastDayOfMonthLabel)])
   } else if (part.indexOf('-') > 0) {
-    let subparts = part.split('-')
+    const subparts = part.split('-')
     set(
       dayOfMonthState,
       DEFAULT_DAY_OF_MONTH_OPTS_WITH_ORD.filter((_, idx) => {
@@ -369,7 +369,7 @@ const generateDayOfMonth = (
 
 const generateMonth = (part: string, locale: Locale, set: SetRecoilState) => {
   if (part.indexOf('-') > 0) {
-    let subparts = part.split('-')
+    const subparts = part.split('-')
     set(
       monthState,
       getMonthOptions(locale.shortMonthOptions).filter((_, idx) => {
@@ -390,7 +390,7 @@ const generateMonth = (part: string, locale: Locale, set: SetRecoilState) => {
 
 const generateWeek = (part: string, locale: Locale, set: SetRecoilState) => {
   if (part.indexOf('-') > 0) {
-    let subparts = part.split('-')
+    const subparts = part.split('-')
     set(
       weekState,
       weekOptions(locale.weekDaysOptions).filter((_, idx) => {

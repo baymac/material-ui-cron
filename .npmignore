@@ -3,3 +3,4 @@
 /dist/**/stories
 !/src
 /src/**/stories
+.yarn

@@ -155,3 +155,10 @@ export const cronExpInputState = atom<string>({
   key: 'cronExpInputState',
   default: '0 0 * * *',
 })
+
+export const variantState = atom<
+  'standard' | 'outlined' | 'filled' | undefined
+>({
+  key: 'textFieldVariantState',
+  default: undefined,
+})
