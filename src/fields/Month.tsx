@@ -1,26 +1,23 @@
-import Box from '@material-ui/core/Box'
-import Typography from '@material-ui/core/Typography'
-import { makeStyles } from '@material-ui/styles'
-import clsx from 'clsx'
+import Box from '@mui/material/Box'
+import Typography from '@mui/material/Typography'
+import { styled } from '@mui/material/styles'
 import React from 'react'
 import { useRecoilState, useRecoilValue } from 'recoil'
 import CustomSelect from '../components/CustomSelect'
 import { getMonthOptions } from '../constants'
 import { localeState, monthState } from '../store'
 
-const useStyles = makeStyles({
-  month: {
-    minWidth: '300px',
-    maxWidth: '500px',
-    marginRight: '6px',
-  },
-  in: {
-    margin: '8.5px 6px 0 0',
-  },
+const StyledMonthSelect = styled(CustomSelect)({
+  minWidth: '200px',
+  maxWidth: '350px',
+  marginRight: '6px',
+})
+
+const StyledInTypography = styled(Typography)({
+  margin: '8.5px 6px 0 0',
 })
 
 export default function Month() {
-  const classes = useStyles()
   const [month, setMonth] = useRecoilState(monthState)
   const resolvedLocale = useRecoilValue(localeState)
   const [monthOptions, setMonthOptions] = React.useState(
@@ -29,10 +26,10 @@ export default function Month() {
 
   return (
     <Box display='flex' p={1} m={1}>
-      <Typography classes={{ root: classes.in }}>
+      <StyledInTypography>
         {resolvedLocale.inText}
-      </Typography>
-      <CustomSelect
+      </StyledInTypography>
+      <StyledMonthSelect
         options={monthOptions}
         label={resolvedLocale.monthLabel}
         value={month}
@@ -40,11 +37,6 @@ export default function Month() {
         disableClearable
         sort
         disableEmpty
-        classes={{
-          root: clsx({
-            [classes.month]: true,
-          }),
-        }}
         limitTags={3}
       />
     </Box>

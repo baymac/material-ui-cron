@@ -1,8 +1,6 @@
-import Box from '@material-ui/core/Box/Box'
-import Typography from '@material-ui/core/Typography'
-import { makeStyles } from '@material-ui/styles'
-import clsx from 'clsx'
-import React from 'react'
+import Box from '@mui/material/Box'
+import Typography from '@mui/material/Typography'
+import { styled } from '@mui/material/styles'
 import { useRecoilState, useRecoilValue } from 'recoil'
 import CustomSelect from '../components/CustomSelect'
 import {
@@ -11,20 +9,18 @@ import {
 } from '../constants'
 import { isAdminState, localeState, periodState } from '../store'
 
-const useStyles = makeStyles({
-  period: {
-    minWidth: 200,
-    marginRight: '6px',
-    maxWidth: 200,
-  },
-  every: {
-    margin: '8.5px 6px 0 0',
-  },
+const StyledPeriodSelect = styled(CustomSelect)({
+  minWidth: '200px',
+  maxWidth: '350px',
+  marginRight: '6px',
+})
+
+const StyledEveryTypography = styled(Typography)({
+  margin: '8.5px 6px 0 0',
 })
 
 export default function Period() {
   const [period, setPeriod] = useRecoilState(periodState)
-  const classes = useStyles()
 
   const isAdmin = useRecoilValue(isAdminState)
 
@@ -32,10 +28,10 @@ export default function Period() {
 
   return (
     <Box display='flex' p={1} m={1}>
-      <Typography classes={{ root: classes.every }}>
+      <StyledEveryTypography>
         {resolvedLocale.everyText}
-      </Typography>
-      <CustomSelect
+      </StyledEveryTypography>
+      <StyledPeriodSelect
         single
         disableClearable
         options={
@@ -47,11 +43,6 @@ export default function Period() {
         value={period}
         setValue={setPeriod}
         multiple={false}
-        classes={{
-          root: clsx({
-            [classes.period]: true,
-          }),
-        }}
       />
     </Box>
   )

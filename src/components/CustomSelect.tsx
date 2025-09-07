@@ -1,8 +1,8 @@
-import Chip from '@material-ui/core/Chip'
-import TextField from '@material-ui/core/TextField'
+import Chip from '@mui/material/Chip'
+import TextField from '@mui/material/TextField'
 import Autocomplete, {
   AutocompleteChangeReason,
-} from '@material-ui/core/Autocomplete'
+} from '@mui/material/Autocomplete'
 import React from 'react'
 import { CustomSelectProps, SelectOptions } from '../types'
 import { getSortedOptions } from '../utils'
@@ -21,8 +21,8 @@ export default function CustomSelect(props: CustomSelectProps) {
   } = props
 
   const handleChange = (
-    event: React.ChangeEvent<{}>,
-    newValue: SelectOptions | SelectOptions[],
+    event: React.SyntheticEvent<Element, Event>,
+    newValue: SelectOptions | SelectOptions[] | null,
     reason: AutocompleteChangeReason
   ) => {
     if (reason === 'clear') {
@@ -32,17 +32,19 @@ export default function CustomSelect(props: CustomSelectProps) {
       single &&
       props.multiple !== false
     ) {
+      const target = event.target as HTMLElement
       const val = (newValue as unknown as SelectOptions[]).filter(
-        // @ts-ignore
-        (val) => val.label === event.target.childNodes[0].wholeText
+        (val) => val.label === target.textContent
       )
       setValue(val)
     } else if (sort && reason === 'selectOption') {
       setValue(getSortedOptions(newValue as unknown as SelectOptions[]))
     } else if (reason !== 'removeOption') {
-      setValue(newValue)
+      if (newValue !== null) {
+        setValue(newValue)
+      }
     } else if (reason === 'removeOption' && disableEmpty) {
-      if ((newValue as SelectOptions[]).length !== 0) {
+      if (newValue && (newValue as SelectOptions[]).length !== 0) {
         setValue(newValue)
       }
     }

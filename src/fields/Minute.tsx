@@ -1,6 +1,6 @@
-import Box from '@material-ui/core/Box'
-import Typography from '@material-ui/core/Typography'
-import { makeStyles } from '@material-ui/styles'
+import Box from '@mui/material/Box'
+import Typography from '@mui/material/Typography'
+import { styled } from '@mui/material/styles'
 import clsx from 'clsx'
 import React from 'react'
 import { useRecoilState, useRecoilValue } from 'recoil'
@@ -21,28 +21,28 @@ import {
   minuteState,
 } from '../store'
 
-const useStyles = makeStyles({
-  every: {
-    minWidth: '100px',
-    marginRight: '6px',
-  },
-  minute: {
-    minWidth: '130px',
-    maxWidth: '300px',
-    marginRight: '6px',
-  },
-  betweenSelect: {
-    minWidth: '90px',
-    maxWidth: '90px',
-    marginRight: '6px',
-  },
-  between: {
-    margin: '8px 6px 0 0',
-  },
+const StyledEverySelect = styled(CustomSelect)({
+  minWidth: '100px',
+  marginRight: '6px',
+})
+
+const StyledMinuteSelect = styled(CustomSelect)({
+  minWidth: '130px',
+  maxWidth: '300px',
+  marginRight: '6px',
+})
+
+const StyledBetweenSelect = styled(CustomSelect)({
+  minWidth: '90px',
+  maxWidth: '90px',
+  marginRight: '6px',
+})
+
+const StyledBetweenTypography = styled(Typography)({
+  margin: '8px 6px 0 0',
 })
 
 export default function Minute() {
-  const classes = useStyles()
   const [minuteAtEvery, setMinuteAtEvery] = useRecoilState(minuteAtEveryState)
   const [startMinute, setStartMinute] = useRecoilState(
     minuteRangeStartSchedulerState
@@ -115,7 +115,7 @@ export default function Minute() {
 
   return (
     <Box display='flex' p={1} m={1}>
-      <CustomSelect
+      <StyledMinuteSelect
         single
         options={
           isAdmin
@@ -133,13 +133,8 @@ export default function Minute() {
         value={minuteAtEvery}
         setValue={setMinuteAtEvery}
         multiple={false}
-        classes={{
-          root: clsx({
-            [classes.every]: true,
-          }),
-        }}
       />
-      <CustomSelect
+      <StyledMinuteSelect
         options={minuteOptions}
         label={resolvedLocale.minuteLabel}
         value={minute}
@@ -149,19 +144,14 @@ export default function Minute() {
         sort
         disableEmpty
         disabled={minuteAtEvery.value === 'every' && !isAdmin}
-        classes={{
-          root: clsx({
-            [classes.minute]: true,
-          }),
-        }}
         limitTags={3}
       />
       {minuteAtEvery.value === 'every' && (
         <>
-          <Typography classes={{ root: classes.between }}>
+          <StyledBetweenTypography>
             {resolvedLocale.betweenText}
-          </Typography>
-          <CustomSelect
+          </StyledBetweenTypography>
+          <StyledBetweenSelect
             single
             options={possibleStartTimes}
             label={''}
@@ -169,17 +159,12 @@ export default function Minute() {
             setValue={setStartMinute}
             multiple={false}
             disableClearable
-            classes={{
-              root: clsx({
-                [classes.betweenSelect]: true,
-              }),
-            }}
             disabled={!isAdmin}
           />
-          <Typography classes={{ root: classes.between }}>
+          <StyledBetweenTypography>
             {resolvedLocale.andText}
-          </Typography>
-          <CustomSelect
+          </StyledBetweenTypography>
+          <StyledBetweenSelect
             single
             options={possibleEndTimes}
             label={''}
@@ -187,11 +172,6 @@ export default function Minute() {
             setValue={setEndMinute}
             multiple={false}
             disableClearable
-            classes={{
-              root: clsx({
-                [classes.betweenSelect]: true,
-              }),
-            }}
             disabled={!isAdmin}
           />
         </>

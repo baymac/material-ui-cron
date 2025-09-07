@@ -1,7 +1,6 @@
-import Box from '@material-ui/core/Box'
-import Typography from '@material-ui/core/Typography'
-import { makeStyles } from '@material-ui/styles'
-import clsx from 'clsx'
+import Box from '@mui/material/Box'
+import Typography from '@mui/material/Typography'
+import { styled } from '@mui/material/styles'
 import React from 'react'
 import { useRecoilState, useRecoilValue } from 'recoil'
 import CustomSelect from '../components/CustomSelect'
@@ -22,33 +21,28 @@ import {
 import { SelectOptions } from '../types'
 import { getIndex } from '../utils'
 
-const useStyles = makeStyles({
-  every: {
-    minWidth: '100px',
-    marginRight: '6px',
-  },
-  dayOfMonth: {
-    minWidth: '200px',
-    maxWidth: '350px',
-    marginRight: '6px',
-  },
-  days: {
-    minWidth: '120px',
-    maxWidth: '120px',
-    marginRight: '6px',
-  },
-  betweenSelect: {
-    minWidth: '90px',
-    maxWidth: '90px',
-    marginRight: '6px',
-  },
-  between: {
-    margin: '8px 6px 0 0',
-  },
+const StyledEverySelect = styled(CustomSelect)({
+  minWidth: '100px',
+  marginRight: '6px',
+})
+
+const StyledDayOfMonthSelect = styled(CustomSelect)({
+  minWidth: '200px',
+  maxWidth: '350px',
+  marginRight: '6px',
+})
+
+const StyledBetweenSelect = styled(CustomSelect)({
+  minWidth: '90px',
+  maxWidth: '90px',
+  marginRight: '6px',
+})
+
+const StyledBetweenTypography = styled(Typography)({
+  margin: '8px 6px 0 0',
 })
 
 export default function DayOfMonth() {
-  const classes = useStyles()
 
   const resolvedLocale = useRecoilValue(localeState)
 
@@ -143,7 +137,7 @@ export default function DayOfMonth() {
 
   return (
     <Box display='flex' p={1} m={1}>
-      <CustomSelect
+      <StyledEverySelect
         single
         options={onEveryOptions(
           resolvedLocale.onOptionLabel,
@@ -154,13 +148,8 @@ export default function DayOfMonth() {
         setValue={setDayOfMonthAtEvery}
         multiple={false}
         disableClearable
-        classes={{
-          root: clsx({
-            [classes.every]: true,
-          }),
-        }}
       />
-      <CustomSelect
+      <StyledDayOfMonthSelect
         options={dayOfMonthOptions}
         label={
           dayOfMonthAtEvery.value === 'on'
@@ -176,19 +165,13 @@ export default function DayOfMonth() {
         disableClearable={
           dayOfMonthAtEvery.value === 'every' || dayOfMonth.length < 2
         }
-        classes={{
-          root: clsx({
-            [classes.dayOfMonth]: dayOfMonthAtEvery.value === 'on',
-            [classes.days]: dayOfMonthAtEvery.value === 'every',
-          }),
-        }}
       />
       {dayOfMonthAtEvery.value === 'every' && (
         <>
-          <Typography classes={{ root: classes.between }}>
+          <StyledBetweenTypography>
             {resolvedLocale.betweenText}
-          </Typography>
-          <CustomSelect
+          </StyledBetweenTypography>
+          <StyledBetweenSelect
             single
             options={possibleStartDays}
             label={''}
@@ -196,16 +179,11 @@ export default function DayOfMonth() {
             setValue={setStartMonth}
             multiple={false}
             disableClearable
-            classes={{
-              root: clsx({
-                [classes.betweenSelect]: true,
-              }),
-            }}
           />
-          <Typography classes={{ root: classes.between }}>
+          <StyledBetweenTypography>
             {resolvedLocale.andText}
-          </Typography>
-          <CustomSelect
+          </StyledBetweenTypography>
+          <StyledBetweenSelect
             single
             options={possibleEndDays}
             label={''}
@@ -213,11 +191,6 @@ export default function DayOfMonth() {
             setValue={setEndMonth}
             multiple={false}
             disableClearable
-            classes={{
-              root: clsx({
-                [classes.betweenSelect]: true,
-              }),
-            }}
           />
         </>
       )}
