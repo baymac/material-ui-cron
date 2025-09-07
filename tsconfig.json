@@ -1,18 +1,26 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "es2020",
     "lib": ["dom", "dom.iterable", "esnext"],
     "module": "commonjs",
     "rootDir": "src",
     "outDir": "dist/cjs",
-    "jsx": "react",
+    "jsx": "react-jsx",
     "declaration": true,
     "emitDeclarationOnly": true,
+    "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
     "removeComments": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": false
   },
   "include": ["./src/**/*"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "dist", "storybook-static"]
 }

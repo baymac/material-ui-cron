@@ -18,9 +18,10 @@ Live **demo** and **usage** at
 
 Be sure that you have these dependencies on your project:
 
-- react (>=17.0.1)
-- @material-ui/core (>5.0.0-beta.1)
-- @material-ui/styles: (>5.0.0-beta.1)
+- react (>=18.0.0)
+- @mui/material (>=5.15.0)
+- @emotion/react (>=11.11.0)
+- @emotion/styled (>=11.11.0)
 
 More dependencies
 

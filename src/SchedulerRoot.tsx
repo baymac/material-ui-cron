@@ -1,4 +1,3 @@
-import React from 'react'
 import { RecoilRoot } from 'recoil'
 import Scheduler from './Scheduler'
 import { SchedulerProps } from './types'
