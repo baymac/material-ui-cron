@@ -21,25 +21,31 @@ import {
 import { SelectOptions } from '../types'
 import { getIndex } from '../utils'
 
-const StyledEverySelect = styled(CustomSelect)({
-  minWidth: '100px',
-  marginRight: '6px',
-})
-
-const StyledDayOfMonthSelect = styled(CustomSelect)({
-  minWidth: '200px',
-  maxWidth: '350px',
-  marginRight: '6px',
-})
-
-const StyledBetweenSelect = styled(CustomSelect)({
-  minWidth: '90px',
-  maxWidth: '90px',
-  marginRight: '6px',
-})
 
 const StyledBetweenTypography = styled(Typography)({
-  margin: '8px 6px 0 0',
+  margin: '0 6px',
+  display: 'flex',
+  alignItems: 'center',
+  height: '40px', // Match the height of CustomSelect components
+})
+
+const StyledGridContainer = styled(Box)({
+  display: 'grid',
+  gridTemplateColumns: '100px 1fr',
+  gap: '16px',
+  alignItems: 'center',
+  padding: '8px 16px',
+  margin: '8px 16px',
+})
+
+const StyledOnEveryTypography = styled(Typography)({
+  textAlign: 'left',
+})
+
+const StyledRightControls = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '6px',
 })
 
 export default function DayOfMonth() {
@@ -136,64 +142,70 @@ export default function DayOfMonth() {
   }
 
   return (
-    <Box display='flex' p={1} m={1}>
-      <StyledEverySelect
-        single
-        options={onEveryOptions(
-          resolvedLocale.onOptionLabel,
-          resolvedLocale.everyOptionLabel
+    <StyledGridContainer>
+      <CustomSelect
+          size="sm"
+          single
+          options={onEveryOptions(
+            resolvedLocale.onOptionLabel,
+            resolvedLocale.everyOptionLabel
+          )}
+          label={resolvedLocale.onEveryText}
+          value={dayOfMonthAtEvery}
+          setValue={setDayOfMonthAtEvery}
+          multiple={false}
+          disableClearable
+        />
+      <StyledRightControls>
+        <CustomSelect
+          size="lg"
+          options={dayOfMonthOptions}
+          label={
+            dayOfMonthAtEvery.value === 'on'
+              ? resolvedLocale.multiDayOfMonthLabel
+              : resolvedLocale.dayOfMonthLabel
+          }
+          value={dayOfMonth}
+          setValue={handleChange}
+          single={dayOfMonthAtEvery.value === 'every'}
+          sort
+          disableEmpty
+          limitTags={3}
+          disableClearable={
+            dayOfMonthAtEvery.value === 'every' || dayOfMonth.length < 2
+          }
+        />
+        {dayOfMonthAtEvery.value === 'every' && (
+          <>
+            <StyledBetweenTypography>
+              {resolvedLocale.betweenText}
+            </StyledBetweenTypography>
+            <CustomSelect
+              size="md"
+              single
+              options={possibleStartDays}
+              label={''}
+              value={startMonth}
+              setValue={setStartMonth}
+              multiple={false}
+              disableClearable
+            />
+            <StyledBetweenTypography>
+              {resolvedLocale.andText}
+            </StyledBetweenTypography>
+            <CustomSelect
+              size="md"
+              single
+              options={possibleEndDays}
+              label={''}
+              value={endMonth}
+              setValue={setEndMonth}
+              multiple={false}
+              disableClearable
+            />
+          </>
         )}
-        label={resolvedLocale.onEveryText}
-        value={dayOfMonthAtEvery}
-        setValue={setDayOfMonthAtEvery}
-        multiple={false}
-        disableClearable
-      />
-      <StyledDayOfMonthSelect
-        options={dayOfMonthOptions}
-        label={
-          dayOfMonthAtEvery.value === 'on'
-            ? resolvedLocale.multiDayOfMonthLabel
-            : resolvedLocale.dayOfMonthLabel
-        }
-        value={dayOfMonth}
-        setValue={handleChange}
-        single={dayOfMonthAtEvery.value === 'every'}
-        sort
-        disableEmpty
-        limitTags={3}
-        disableClearable={
-          dayOfMonthAtEvery.value === 'every' || dayOfMonth.length < 2
-        }
-      />
-      {dayOfMonthAtEvery.value === 'every' && (
-        <>
-          <StyledBetweenTypography>
-            {resolvedLocale.betweenText}
-          </StyledBetweenTypography>
-          <StyledBetweenSelect
-            single
-            options={possibleStartDays}
-            label={''}
-            value={startMonth}
-            setValue={setStartMonth}
-            multiple={false}
-            disableClearable
-          />
-          <StyledBetweenTypography>
-            {resolvedLocale.andText}
-          </StyledBetweenTypography>
-          <StyledBetweenSelect
-            single
-            options={possibleEndDays}
-            label={''}
-            value={endMonth}
-            setValue={setEndMonth}
-            multiple={false}
-            disableClearable
-          />
-        </>
-      )}
-    </Box>
+      </StyledRightControls>
+    </StyledGridContainer>
   )
 }

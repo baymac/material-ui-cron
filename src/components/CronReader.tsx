@@ -11,6 +11,12 @@ const ErrorTypography = styled(Typography)({
   color: 'red',
 })
 
+const StyledBox = styled(Box)({
+  display: 'flex',
+  padding: '8px 16px',
+  margin: '8px 16px',
+})
+
 export default function CronReader() {
   const cronExp = useRecoilValue(cronExpState)
   const resolvedLocale = useRecoilValue(localeState)
@@ -34,7 +40,7 @@ export default function CronReader() {
   }, [cronExp, resolvedLocale.cronDescriptionText])
 
   return (
-    <Box display='flex' p={1} m={1}>
+    <StyledBox>
       {cronValidationErrorMessage.length === 0 && (
         <Typography variant='h6' style={{ color: '#382B5F' }}>
           {cronHr}
@@ -45,6 +51,6 @@ export default function CronReader() {
           {cronValidationErrorMessage}
         </ErrorTypography>
       )}
-    </Box>
+    </StyledBox>
   )
 }

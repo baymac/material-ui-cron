@@ -13,7 +13,7 @@ export interface CustomSelectProps {
   setValue: SetterOrUpdater<any>
   noOptionsText?: string
   label: string
-  size?: 'small' | 'medium'
+  size?: 'sm' | 'md' | 'lg'
   disableClearable?: boolean
   forcePopupIcon?: boolean
   disabled?: boolean
