@@ -9,14 +9,18 @@ import {
 } from '../constants'
 import { isAdminState, localeState, periodState } from '../store'
 
-const StyledPeriodSelect = styled(CustomSelect)({
-  minWidth: '200px',
-  maxWidth: '350px',
-  marginRight: '6px',
+
+const StyledGridContainer = styled(Box)({
+  display: 'grid',
+  gridTemplateColumns: '100px 1fr',
+  gap: '16px',
+  alignItems: 'center',
+  padding: '8px 16px',
+  margin: '8px 16px',
 })
 
 const StyledEveryTypography = styled(Typography)({
-  margin: '8.5px 6px 0 0',
+  textAlign: 'left',
 })
 
 export default function Period() {
@@ -27,11 +31,12 @@ export default function Period() {
   const resolvedLocale = useRecoilValue(localeState)
 
   return (
-    <Box display='flex' p={1} m={1}>
+    <StyledGridContainer>
       <StyledEveryTypography>
         {resolvedLocale.everyText}
       </StyledEveryTypography>
-      <StyledPeriodSelect
+      <CustomSelect
+        size="lg"
         single
         disableClearable
         options={
@@ -44,6 +49,6 @@ export default function Period() {
         setValue={setPeriod}
         multiple={false}
       />
-    </Box>
+    </StyledGridContainer>
   )
 }

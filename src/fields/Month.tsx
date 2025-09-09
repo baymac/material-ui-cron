@@ -7,14 +7,17 @@ import CustomSelect from '../components/CustomSelect'
 import { getMonthOptions } from '../constants'
 import { localeState, monthState } from '../store'
 
-const StyledMonthSelect = styled(CustomSelect)({
-  minWidth: '200px',
-  maxWidth: '350px',
-  marginRight: '6px',
+const StyledGridContainer = styled(Box)({
+  display: 'grid',
+  gridTemplateColumns: '100px 1fr',
+  gap: '16px',
+  alignItems: 'center',
+  padding: '8px 16px',
+  margin: '8px 16px',
 })
 
 const StyledInTypography = styled(Typography)({
-  margin: '8.5px 6px 0 0',
+  textAlign: 'left',
 })
 
 export default function Month() {
@@ -25,11 +28,12 @@ export default function Month() {
   )
 
   return (
-    <Box display='flex' p={1} m={1}>
+    <StyledGridContainer>
       <StyledInTypography>
         {resolvedLocale.inText}
       </StyledInTypography>
-      <StyledMonthSelect
+      <CustomSelect
+        size="lg"
         options={monthOptions}
         label={resolvedLocale.monthLabel}
         value={month}
@@ -39,6 +43,6 @@ export default function Month() {
         disableEmpty
         limitTags={3}
       />
-    </Box>
+    </StyledGridContainer>
   )
 }

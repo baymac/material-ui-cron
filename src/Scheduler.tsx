@@ -62,6 +62,17 @@ export default function Scheduler(props: SchedulerProps) {
   const resetDayOfWeek = useResetRecoilState(weekState)
   const resetMonth = useResetRecoilState(monthState)
   const resetPeriod = useResetRecoilState(periodState)
+  
+  const resetAll = () => {
+    setCronExpInput('0 0 * * 1-5')
+    resetCronExpInput()
+    resetMinute()
+    resetHour()
+    resetDayOfMonth()
+    resetDayOfWeek()
+    resetMonth()
+    resetPeriod()
+  }
 
   React.useEffect(() => {
     setCronError(cronError)
@@ -116,7 +127,7 @@ export default function Scheduler(props: SchedulerProps) {
         {periodIndex > 1 && <Week />}
         {periodIndex > 0 && <Hour />}
         <Minute />
-        <CronExp />
+        <CronExp resetAll={resetAll} />
         <CronReader />
       </StyledBox>
     </>

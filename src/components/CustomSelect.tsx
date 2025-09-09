@@ -17,8 +17,25 @@ export default function CustomSelect(props: CustomSelectProps) {
     sort,
     disableEmpty,
     disableClearable,
+    size = 'md',
     ...otherprops
   } = props
+
+  // Map custom sizes to MUI sizes and widths
+  const getSizeConfig = (customSize: 'sm' | 'md' | 'lg') => {
+    switch (customSize) {
+      case 'sm':
+        return { muiSize: 'small' as const, width: '100px' }
+      case 'md':
+        return { muiSize: 'small' as const, width: '160px' }
+      case 'lg':
+        return { muiSize: 'small' as const, width: '300px' }
+      default:
+        return { muiSize: 'small' as const, width: '100px' }
+    }
+  }
+
+  const sizeConfig = getSizeConfig(size)
 
   const handleChange = (
     event: React.SyntheticEvent<Element, Event>,
@@ -61,11 +78,20 @@ export default function CustomSelect(props: CustomSelectProps) {
           (option as SelectOptions).value === (val as SelectOptions).value
         }
         getOptionLabel={(option) => (option as SelectOptions).label}
-        size='small'
+        size={sizeConfig.muiSize}
         forcePopupIcon
         disableClearable={disableClearable}
         autoComplete
         disableCloseOnSelect={!single}
+        sx={{ 
+          width: sizeConfig.width,
+          '& .MuiAutocomplete-inputRoot': {
+            cursor: 'pointer',
+          },
+          '& .MuiAutocomplete-input': {
+            cursor: 'pointer',
+          }
+        }}
         renderTags={(value, getTagProps) =>
           value.map((option, index) => {
             const disableSingleItemRemove =

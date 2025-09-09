@@ -7,14 +7,18 @@ import CustomSelect from '../components/CustomSelect'
 import { weekOptions as defaultWeekOptions } from '../constants'
 import { localeState, weekState } from '../store'
 
-const StyledWeekSelect = styled(CustomSelect)({
-  minWidth: '200px',
-  maxWidth: '350px',
-  marginRight: '6px',
+
+const StyledGridContainer = styled(Box)({
+  display: 'grid',
+  gridTemplateColumns: '100px 1fr',
+  gap: '16px',
+  alignItems: 'center',
+  padding: '8px 16px',
+  margin: '8px 16px',
 })
 
 const StyledOnTypography = styled(Typography)({
-  margin: '8.5px 6px 0 0',
+  textAlign: 'left',
 })
 
 export default function Week() {
@@ -25,11 +29,12 @@ export default function Week() {
   )
 
   return (
-    <Box display='flex' p={1} m={1}>
+    <StyledGridContainer>
       <StyledOnTypography>
         {resolvedLocale.onText}
       </StyledOnTypography>
-      <StyledWeekSelect
+      <CustomSelect
+        size="lg"
         options={weekOptions}
         label="Week Days"
         value={week}
@@ -40,6 +45,6 @@ export default function Week() {
         limitTags={3}
         disableClearable={week.length < 2}
       />
-    </Box>
+    </StyledGridContainer>
   )
 }

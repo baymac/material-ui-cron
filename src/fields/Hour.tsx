@@ -23,24 +23,31 @@ import { getTimesOfTheDay } from '../utils'
 
 const POSSIBLE_TIME_RANGES = getTimesOfTheDay()
 
-const StyledEverySelect = styled(CustomSelect)({
-  minWidth: '100px',
-  marginRight: '6px',
-})
-
-const StyledHourSelect = styled(CustomSelect)({
-  minWidth: '130px',
-  maxWidth: '450px',
-  marginRight: '6px',
-})
-
-const StyledBetweenSelect = styled(CustomSelect)({
-  minWidth: '130px',
-  marginRight: '6px',
-})
 
 const StyledBetweenTypography = styled(Typography)({
-  margin: '8px 6px 0 0',
+  margin: '0 6px',
+  display: 'flex',
+  alignItems: 'center',
+  height: '40px', // Match the height of CustomSelect components
+})
+
+const StyledGridContainer = styled(Box)({
+  display: 'grid',
+  gridTemplateColumns: '100px 1fr',
+  gap: '16px',
+  alignItems: 'center',
+  padding: '8px 16px',
+  margin: '8px 16px',
+})
+
+const StyledAtEveryTypography = styled(Typography)({
+  textAlign: 'left',
+})
+
+const StyledRightControls = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '6px',
 })
 
 export default function Hour() {
@@ -108,68 +115,75 @@ export default function Hour() {
   const resolvedLocale = useRecoilValue(localeState)
 
   return (
-    <Box display='flex' p={1} m={1}>
-      <StyledEverySelect
-        single
-        options={
-          isAdmin
-            ? atEveryOptions(
-                resolvedLocale.atOptionLabel,
-                resolvedLocale.everyOptionLabel
-              )
-            : atOptionsNonAdmin(
-                resolvedLocale.atOptionLabel,
-                resolvedLocale.everyOptionLabel
-              )
-        }
-        label={resolvedLocale.atEveryText}
-        value={hourAtEvery}
-        setValue={setHourAtEvery}
-        multiple={false}
-        disableClearable
-      />
-      <StyledHourSelect
-        options={hourOptions}
-        label={resolvedLocale.hourLabel}
-        value={hour}
-        setValue={setHour}
-        single={hourAtEvery.value === 'every' || !isAdmin}
-        sort
-        disableEmpty
-        limitTags={3}
-        disableClearable={hourAtEvery.value === 'every' || hour.length < 2}
-        disabled={!isAdmin && hourAtEvery.value === 'every'}
-      />
-      {hourAtEvery.value === 'every' && (
-        <>
-          <StyledBetweenTypography>
-            {resolvedLocale.betweenText}
-          </StyledBetweenTypography>
-          <StyledBetweenSelect
-            single
-            options={possibleStartTimes}
-            label={''}
-            value={startHour}
-            setValue={setStartHour}
-            multiple={false}
-            disableClearable
-            disabled={!isAdmin}
-          />
-          <StyledBetweenTypography>
-            {resolvedLocale.andText}
-          </StyledBetweenTypography>
-          <StyledBetweenSelect
-            single
-            options={possibleEndTimes}
-            label={''}
-            value={endHour}
-            setValue={setEndHour}
-            multiple={false}
-            disableClearable
-            disabled={!isAdmin}
-          />
-        </>
-      )}
-    </Box>
+    <StyledGridContainer>
+      <CustomSelect
+          size="sm"
+          single
+          options={
+            isAdmin
+              ? atEveryOptions(
+                  resolvedLocale.atOptionLabel,
+                  resolvedLocale.everyOptionLabel
+                )
+              : atOptionsNonAdmin(
+                  resolvedLocale.atOptionLabel,
+                  resolvedLocale.everyOptionLabel
+                )
+          }
+          label={resolvedLocale.atEveryText}
+          value={hourAtEvery}
+          setValue={setHourAtEvery}
+          multiple={false}
+          disableClearable
+        />
+      <StyledRightControls>
+        
+        <CustomSelect
+          size="lg"
+          options={hourOptions}
+          label={resolvedLocale.hourLabel}
+          value={hour}
+          setValue={setHour}
+          single={hourAtEvery.value === 'every' || !isAdmin}
+          sort
+          disableEmpty
+          limitTags={3}
+          disableClearable={hourAtEvery.value === 'every' || hour.length < 2}
+          disabled={!isAdmin && hourAtEvery.value === 'every'}
+        />
+        {hourAtEvery.value === 'every' && (
+          <>
+            <StyledBetweenTypography>
+              {resolvedLocale.betweenText}
+            </StyledBetweenTypography>
+            <CustomSelect
+              size="md"
+              single
+              options={possibleStartTimes}
+              label={''}
+              value={startHour}
+              setValue={setStartHour}
+              multiple={false}
+              disableClearable
+              disabled={!isAdmin}
+            />
+            <StyledBetweenTypography>
+              {resolvedLocale.andText}
+            </StyledBetweenTypography>
+            <CustomSelect
+              size="md"
+              single
+              options={possibleEndTimes}
+              label={''}
+              value={endHour}
+              setValue={setEndHour}
+              multiple={false}
+              disableClearable
+              disabled={!isAdmin}
+            />
+          </>
+        )}
+      </StyledRightControls>
+    </StyledGridContainer>
   )
 }

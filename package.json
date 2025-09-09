@@ -67,6 +67,7 @@
     "react-dom": "^18.0.0"
   },
   "dependencies": {
+    "@mui/icons-material": "^7.3.2",
     "@mui/material": "^5.15.3",
     "@mui/system": "^5.15.3",
     "cronstrue": "^2.41.0",
