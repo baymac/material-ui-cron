@@ -5,8 +5,7 @@
 
 A React cron editor built with [material ui](https://material-ui.com/)
 
-Live **demo** and **usage** at
-[https://baymac.github.io/material-ui-cron/](https://baymac.github.io/material-ui-cron/?path=/story/material-ui-cron--scheduler-demo)
+For **demo** and **usage** clone repo and run `yarn && yarn dev`.
 
 ![material-ui-cron demo](/docs/material-ui-cron-demo.png)
 
