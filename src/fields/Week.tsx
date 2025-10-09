@@ -1,12 +1,11 @@
-import Box from '@mui/material/Box'
-import { styled } from '@mui/material/styles'
-import Typography from '@mui/material/Typography'
-import React from 'react'
-import { useRecoilState, useRecoilValue } from 'recoil'
-import CustomSelect from '../components/CustomSelect'
-import { weekOptions as defaultWeekOptions } from '../constants'
-import { localeState, weekState } from '../store'
-
+import Box from '@mui/material/Box';
+import { styled } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
+import React from 'react';
+import { useRecoilState, useRecoilValue } from 'recoil';
+import CustomSelect from '../components/CustomSelect';
+import { weekOptions as defaultWeekOptions } from '../constants';
+import { localeState, weekState } from '../store';
 
 const StyledGridContainer = styled(Box)({
   display: 'grid',
@@ -15,28 +14,26 @@ const StyledGridContainer = styled(Box)({
   alignItems: 'center',
   padding: '8px 16px',
   margin: '8px 16px',
-})
+});
 
 const StyledOnTypography = styled(Typography)({
   textAlign: 'left',
-})
+});
 
 export default function Week() {
-  const [week, setWeek] = useRecoilState(weekState)
-  const resolvedLocale = useRecoilValue(localeState)
+  const [week, setWeek] = useRecoilState(weekState);
+  const resolvedLocale = useRecoilValue(localeState);
   const [weekOptions, setWeekOptions] = React.useState(
-    defaultWeekOptions(resolvedLocale.weekDaysOptions)
-  )
+    defaultWeekOptions(resolvedLocale.weekDaysOptions),
+  );
 
   return (
     <StyledGridContainer>
-      <StyledOnTypography>
-        {resolvedLocale.onText}
-      </StyledOnTypography>
+      <StyledOnTypography>{resolvedLocale.onText}</StyledOnTypography>
       <CustomSelect
-        size="lg"
+        size='lg'
         options={weekOptions}
-        label="Week Days"
+        label='Week Days'
         value={week}
         setValue={setWeek}
         multiple
@@ -46,5 +43,5 @@ export default function Week() {
         disableClearable={week.length < 2}
       />
     </StyledGridContainer>
-  )
+  );
 }

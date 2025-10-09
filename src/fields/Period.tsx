@@ -1,14 +1,10 @@
-import Box from '@mui/material/Box'
-import Typography from '@mui/material/Typography'
-import { styled } from '@mui/material/styles'
-import { useRecoilState, useRecoilValue } from 'recoil'
-import CustomSelect from '../components/CustomSelect'
-import {
-  getPeriodOptions,
-  getPeriodOptionsWithHourDisabled,
-} from '../constants'
-import { isAdminState, localeState, periodState } from '../store'
-
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import { styled } from '@mui/material/styles';
+import { useRecoilState, useRecoilValue } from 'recoil';
+import CustomSelect from '../components/CustomSelect';
+import { getPeriodOptions, getPeriodOptionsWithHourDisabled } from '../constants';
+import { isAdminState, localeState, periodState } from '../store';
 
 const StyledGridContainer = styled(Box)({
   display: 'grid',
@@ -17,26 +13,24 @@ const StyledGridContainer = styled(Box)({
   alignItems: 'center',
   padding: '8px 16px',
   margin: '8px 16px',
-})
+});
 
 const StyledEveryTypography = styled(Typography)({
   textAlign: 'left',
-})
+});
 
 export default function Period() {
-  const [period, setPeriod] = useRecoilState(periodState)
+  const [period, setPeriod] = useRecoilState(periodState);
 
-  const isAdmin = useRecoilValue(isAdminState)
+  const isAdmin = useRecoilValue(isAdminState);
 
-  const resolvedLocale = useRecoilValue(localeState)
+  const resolvedLocale = useRecoilValue(localeState);
 
   return (
     <StyledGridContainer>
-      <StyledEveryTypography>
-        {resolvedLocale.everyText}
-      </StyledEveryTypography>
+      <StyledEveryTypography>{resolvedLocale.everyText}</StyledEveryTypography>
       <CustomSelect
-        size="lg"
+        size='lg'
         single
         disableClearable
         options={
@@ -50,5 +44,5 @@ export default function Period() {
         multiple={false}
       />
     </StyledGridContainer>
-  )
+  );
 }

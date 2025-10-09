@@ -1,11 +1,9 @@
-import Chip from '@mui/material/Chip'
-import TextField from '@mui/material/TextField'
-import Autocomplete, {
-  AutocompleteChangeReason,
-} from '@mui/material/Autocomplete'
-import React from 'react'
-import { CustomSelectProps, SelectOptions } from '../types'
-import { getSortedOptions } from '../utils'
+import Chip from '@mui/material/Chip';
+import TextField from '@mui/material/TextField';
+import Autocomplete, { type AutocompleteChangeReason } from '@mui/material/Autocomplete';
+import type React from 'react';
+import type { CustomSelectProps, SelectOptions } from '../types';
+import { getSortedOptions } from '../utils';
 
 export default function CustomSelect(props: CustomSelectProps) {
   const {
@@ -19,53 +17,54 @@ export default function CustomSelect(props: CustomSelectProps) {
     disableClearable,
     size = 'md',
     ...otherprops
-  } = props
+  } = props;
 
   // Map custom sizes to MUI sizes and widths
   const getSizeConfig = (customSize: 'sm' | 'md' | 'lg') => {
     switch (customSize) {
       case 'sm':
-        return { muiSize: 'small' as const, width: '100px' }
+        return { muiSize: 'small' as const, width: '100px' };
       case 'md':
-        return { muiSize: 'small' as const, width: '160px' }
+        return { muiSize: 'small' as const, width: '160px' };
       case 'lg':
-        return { muiSize: 'small' as const, width: '300px' }
+        return { muiSize: 'small' as const, width: '300px' };
       default:
-        return { muiSize: 'small' as const, width: '100px' }
+        return { muiSize: 'small' as const, width: '100px' };
     }
-  }
+  };
 
-  const sizeConfig = getSizeConfig(size)
+  const sizeConfig = getSizeConfig(size);
 
   const handleChange = (
     event: React.SyntheticEvent<Element, Event>,
     newValue: SelectOptions | SelectOptions[] | null,
-    reason: AutocompleteChangeReason
+    reason: AutocompleteChangeReason,
   ) => {
+    // Prevent unnecessary updates if value hasn't changed
+    if (JSON.stringify(newValue) === JSON.stringify(value)) {
+      return;
+    }
+
     if (reason === 'clear') {
-      setValue([options[0]])
-    } else if (
-      reason === 'selectOption' &&
-      single &&
-      props.multiple !== false
-    ) {
-      const target = event.target as HTMLElement
+      setValue([options[0]]);
+    } else if (reason === 'selectOption' && single && props.multiple !== false) {
+      const target = event.target as HTMLElement;
       const val = (newValue as unknown as SelectOptions[]).filter(
-        (val) => val.label === target.textContent
-      )
-      setValue(val)
+        (val) => val.label === target.textContent,
+      );
+      setValue(val);
     } else if (sort && reason === 'selectOption') {
-      setValue(getSortedOptions(newValue as unknown as SelectOptions[]))
+      setValue(getSortedOptions(newValue as unknown as SelectOptions[]));
     } else if (reason !== 'removeOption') {
       if (newValue !== null) {
-        setValue(newValue)
+        setValue(newValue);
       }
     } else if (reason === 'removeOption' && disableEmpty) {
       if (newValue && (newValue as SelectOptions[]).length !== 0) {
-        setValue(newValue)
+        setValue(newValue);
       }
     }
-  }
+  };
 
   return (
     <>
@@ -83,37 +82,62 @@ export default function CustomSelect(props: CustomSelectProps) {
         disableClearable={disableClearable}
         autoComplete
         disableCloseOnSelect={!single}
-        sx={{ 
+        sx={{
           width: sizeConfig.width,
           '& .MuiAutocomplete-inputRoot': {
             cursor: 'pointer',
           },
           '& .MuiAutocomplete-input': {
             cursor: 'pointer',
-          }
+          },
+          // Keep text and label white when disabled
+          '& .MuiInputBase-root.Mui-disabled .MuiInputBase-input': {
+            color: 'white',
+            WebkitTextFillColor: 'white',
+          },
+          '& .MuiInputBase-root.Mui-disabled .MuiInputLabel-root': {
+            color: 'white',
+          },
+          '& .MuiFormLabel-root.Mui-disabled': {
+            color: 'white',
+          },
         }}
         renderTags={(value, getTagProps) =>
           value.map((option, index) => {
             const disableSingleItemRemove =
-              value.length === 1 && disableEmpty ? { onDelete: undefined } : {}
+              value.length === 1 && disableEmpty ? { onDelete: undefined } : {};
             return (
               <Chip
                 label={(option as SelectOptions).label}
                 size='small'
                 {...getTagProps({ index })}
                 {...disableSingleItemRemove}
+                key={(option as SelectOptions).label}
               />
-            )
+            );
           })
         }
-        getOptionDisabled={(option) =>
-          (option as SelectOptions).disabled ? true : false
-        }
+        getOptionDisabled={(option) => ((option as SelectOptions).disabled ? true : false)}
         renderInput={(params) => {
-          return <TextField {...params} variant='outlined' label={label} />
+          return (
+            <TextField
+              {...params}
+              variant='outlined'
+              label={label}
+              sx={{
+                '& .MuiInputBase-input.Mui-disabled': {
+                  color: 'white',
+                  WebkitTextFillColor: 'white',
+                },
+                '& .MuiFormLabel-root.Mui-disabled': {
+                  color: 'white',
+                },
+              }}
+            />
+          );
         }}
         {...otherprops}
       />
     </>
-  )
+  );
 }

@@ -1,4 +1,4 @@
-import { Locale } from '../types'
+import type { Locale } from '../types';
 
 const enLocale: Locale = {
   everyText: '每',
@@ -17,15 +17,7 @@ const enLocale: Locale = {
   multiDayOfMonthLabel: '一个月内的哪几天',
   dayOfMonthLabel: '天',
   hourLabel: '几点',
-  weekDaysOptions: [
-    '星期天',
-    '星期一',
-    '星期二',
-    '星期三',
-    '星期四',
-    '星期五',
-    '星期六',
-  ],
+  weekDaysOptions: ['星期天', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'],
   periodOptions: ['小时', '天', '星期', '月', '年'],
   shortMonthOptions: [
     '一月',
@@ -44,6 +36,6 @@ const enLocale: Locale = {
   onOptionLabel: '在',
   lastDayOfMonthLabel: '这个月的最后一天',
   cronDescriptionText: 'zh_CN',
-}
+};
 
-export default enLocale
+export default enLocale;

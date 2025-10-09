@@ -1,43 +1,41 @@
-import { styled } from '@mui/material/styles'
-import Box from '@mui/material/Box'
-import Typography from '@mui/material/Typography'
-import cronstrue from 'cronstrue/i18n'
-import React from 'react'
-import { useRecoilValue } from 'recoil'
-import { cronExpState } from '../selector'
-import { cronValidationErrorMessageState, localeState } from '../store'
+import { styled } from '@mui/material/styles';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import cronstrue from 'cronstrue/i18n';
+import React from 'react';
+import { useRecoilValue } from 'recoil';
+import { cronExpState } from '../selector';
+import { cronValidationErrorMessageState, localeState } from '../store';
 
 const ErrorTypography = styled(Typography)({
   color: 'red',
-})
+});
 
 const StyledBox = styled(Box)({
   display: 'flex',
   padding: '8px 16px',
   margin: '8px 16px',
-})
+});
 
 export default function CronReader() {
-  const cronExp = useRecoilValue(cronExpState)
-  const resolvedLocale = useRecoilValue(localeState)
+  const cronExp = useRecoilValue(cronExpState);
+  const resolvedLocale = useRecoilValue(localeState);
 
-  const [cronHr, setCronHr] = React.useState('')
+  const [cronHr, setCronHr] = React.useState('');
 
-  const cronValidationErrorMessage = useRecoilValue(
-    cronValidationErrorMessageState
-  )
+  const cronValidationErrorMessage = useRecoilValue(cronValidationErrorMessageState);
 
   React.useEffect(() => {
     try {
       setCronHr(
         cronstrue.toString(cronExp, {
           locale: resolvedLocale.cronDescriptionText,
-        })
-      )
+        }),
+      );
     } catch (e) {
-      setCronHr('Incorrect cron selection')
+      setCronHr('Incorrect cron selection');
     }
-  }, [cronExp, resolvedLocale.cronDescriptionText])
+  }, [cronExp, resolvedLocale.cronDescriptionText]);
 
   return (
     <StyledBox>
@@ -47,10 +45,8 @@ export default function CronReader() {
         </Typography>
       )}
       {cronValidationErrorMessage.length > 0 && (
-        <ErrorTypography>
-          {cronValidationErrorMessage}
-        </ErrorTypography>
+        <ErrorTypography>{cronValidationErrorMessage}</ErrorTypography>
       )}
     </StyledBox>
-  )
+  );
 }

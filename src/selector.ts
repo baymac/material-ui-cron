@@ -1,4 +1,4 @@
-import { selector, SetRecoilState } from 'recoil'
+import { selector, type SetRecoilState } from 'recoil';
 import {
   atEveryOptions,
   defaultMinuteOptionsWithOrdinal,
@@ -11,7 +11,7 @@ import {
   getPeriodOptions,
   onEveryOptions,
   weekOptions,
-} from './constants'
+} from './constants';
 import {
   cronValidationErrorMessageState,
   dayOfMonthAtEveryState,
@@ -30,8 +30,8 @@ import {
   monthState,
   periodState,
   weekState,
-} from './store'
-import { Locale } from './types'
+} from './store';
+import type { Locale } from './types';
 import {
   getMinutesIndex,
   getPeriodIndex,
@@ -39,94 +39,90 @@ import {
   getTimesOfTheDay,
   isIncreasingSequence,
   validateCronExp,
-} from './utils'
+} from './utils';
 
 export const minuteCronState = selector<string>({
   key: 'minuteCronState',
   get: ({ get }) => {
-    const minutes = get(minuteState)
+    const minutes = get(minuteState);
     if (
       minutes.map((minute) => minute.value).join('') ===
       DEFAULT_MINUTE_OPTS.map((minute) => minute.value).join('')
     ) {
-      return '*'
+      return '*';
     } else if (get(minuteAtEveryState).value === 'every') {
-      const startIndex = getMinutesIndex(get(minuteRangeStartSchedulerState))
-      const endIndex = getMinutesIndex(get(minuteRangeEndSchedulerState))
+      const startIndex = getMinutesIndex(get(minuteRangeStartSchedulerState));
+      const endIndex = getMinutesIndex(get(minuteRangeEndSchedulerState));
       if (endIndex - startIndex === 59) {
-        return `*/${minutes.map((minute) => minute.value).join('')}`
+        return `*/${minutes.map((minute) => minute.value).join('')}`;
       }
-      return `${startIndex}-${endIndex}/${minutes
-        .map((minute) => minute.value)
-        .join('')}`
+      return `${startIndex}-${endIndex}/${minutes.map((minute) => minute.value).join('')}`;
     } else if (isIncreasingSequence(minutes) && minutes.length !== 1) {
-      return `${minutes[0].value}-${minutes[minutes.length - 1].value}`
+      return `${minutes[0].value}-${minutes[minutes.length - 1].value}`;
     } else {
-      return minutes.map((minute) => minute.value).join(',')
+      return minutes.map((minute) => minute.value).join(',');
     }
   },
-})
+});
 
 export const hourCronState = selector<string>({
   key: 'hourCronState',
   get: ({ get }) => {
-    const hours = get(hourState)
+    const hours = get(hourState);
     if (
       getPeriodIndex(get(periodState)) < 1 ||
       hours.map((hour) => hour.value).join('') ===
         DEFAULT_HOUR_OPTS_EVERY.map((hour) => hour.value).join('')
     ) {
-      return '*'
+      return '*';
     } else if (get(hourAtEveryState).value === 'every') {
-      const startIndex = getTimeIndex(get(hourRangeStartSchedulerState))
-      const endIndex = getTimeIndex(get(hourRangeEndSchedulerState))
+      const startIndex = getTimeIndex(get(hourRangeStartSchedulerState));
+      const endIndex = getTimeIndex(get(hourRangeEndSchedulerState));
       if (endIndex - startIndex === 23) {
-        return `*/${hours.map((hour) => hour.value).join('')}`
+        return `*/${hours.map((hour) => hour.value).join('')}`;
       }
-      return `${startIndex}-${endIndex}/${hours
-        .map((hour) => hour.value)
-        .join('')}`
+      return `${startIndex}-${endIndex}/${hours.map((hour) => hour.value).join('')}`;
     } else if (isIncreasingSequence(hours) && hours.length !== 1) {
-      return `${hours[0].value}-${hours[hours.length - 1].value}`
+      return `${hours[0].value}-${hours[hours.length - 1].value}`;
     } else {
-      return hours.map((hour) => hour.value).join(',')
+      return hours.map((hour) => hour.value).join(',');
     }
   },
-})
+});
 
 export const dayOfMonthCronState = selector<string>({
   key: 'dayOfMonthCronState',
   get: ({ get }) => {
-    const dayOfMonth = get(dayOfMonthState)
+    const dayOfMonth = get(dayOfMonthState);
     if (
       getPeriodIndex(get(periodState)) < 3 ||
       dayOfMonth.map((dayOfMonth) => dayOfMonth.value).join('') ===
         DEFAULT_DAY_OF_MONTH_OPTS.map((day) => day.value).join('')
     ) {
-      return '*'
+      return '*';
     } else if (get(dayOfMonthAtEveryState).value === 'every') {
-      const startIndex = get(dayOfMonthRangeStartSchedulerState).value
-      const endIndex = get(dayOfMonthRangeEndSchedulerState).value
+      const startIndex = get(dayOfMonthRangeStartSchedulerState).value;
+      const endIndex = get(dayOfMonthRangeEndSchedulerState).value;
       if (Number(endIndex) - Number(startIndex) === 30) {
-        return `*/${dayOfMonth.map((dayOfMonth) => dayOfMonth.value).join('')}`
+        return `*/${dayOfMonth.map((dayOfMonth) => dayOfMonth.value).join('')}`;
       }
       return `${startIndex}-${endIndex}/${dayOfMonth
         .map((dayOfMonth) => dayOfMonth.value)
-        .join('')}`
+        .join('')}`;
     } else if (dayOfMonth[0].value === 'L') {
-      return 'L'
+      return 'L';
     } else if (isIncreasingSequence(dayOfMonth) && dayOfMonth.length !== 1) {
-      return `${dayOfMonth[0].value}-${dayOfMonth[dayOfMonth.length - 1].value}`
+      return `${dayOfMonth[0].value}-${dayOfMonth[dayOfMonth.length - 1].value}`;
     } else {
-      return dayOfMonth.map((dayOfMonth) => dayOfMonth.value).join(',')
+      return dayOfMonth.map((dayOfMonth) => dayOfMonth.value).join(',');
     }
   },
-})
+});
 
 export const monthCronState = selector<string>({
   key: 'monthCronState',
   get: ({ get }) => {
-    const months = get(monthState)
+    const months = get(monthState);
     if (
       getPeriodIndex(get(periodState)) < 4 ||
       get(monthState)
@@ -136,21 +132,21 @@ export const monthCronState = selector<string>({
           .map((month) => month.value)
           .join('')
     ) {
-      return '*'
+      return '*';
     } else if (isIncreasingSequence(months) && months.length !== 1) {
-      return `${months[0].value}-${months[months.length - 1].value}`
+      return `${months[0].value}-${months[months.length - 1].value}`;
     } else {
-      return months.map((month) => month.value).join(',')
+      return months.map((month) => month.value).join(',');
     }
   },
-})
+});
 
 export const dayOfWeekCronState = selector<string>({
   key: 'dayOfWeekCronState',
   get: ({ get }) => {
-    const weeks = get(weekState)
+    const weeks = get(weekState);
     if (getPeriodIndex(get(periodState)) < 2) {
-      return '*'
+      return '*';
     } else if (
       get(weekState)
         .map((dayOfWeek) => dayOfWeek.value)
@@ -159,252 +155,203 @@ export const dayOfWeekCronState = selector<string>({
         .map((week) => week.value)
         .join('')
     ) {
-      return '*'
+      return '*';
     } else if (isIncreasingSequence(weeks) && weeks.length !== 1) {
-      return `${weeks[0].value}-${weeks[weeks.length - 1].value}`
+      return `${weeks[0].value}-${weeks[weeks.length - 1].value}`;
     } else if (weeks.length === 1) {
-      return weeks[0].value
+      return weeks[0].value;
     } else {
-      return weeks.map((week) => week.value).join(',')
+      return weeks.map((week) => week.value).join(',');
     }
   },
-})
+});
 
 export const cronExpState = selector<string>({
   key: 'cronExpState',
   get: ({ get }) =>
     `${get(minuteCronState)} ${get(hourCronState)} ${get(
-      dayOfMonthCronState
+      dayOfMonthCronState,
     )} ${get(monthCronState)} ${get(dayOfWeekCronState)}`,
   set: ({ get, set }, newValue) => {
-    const res = validateCronExp(newValue.toString())
-    set(cronValidationErrorMessageState, res.hasError ? res.message : '')
+    const res = validateCronExp(newValue.toString());
+    set(cronValidationErrorMessageState, res.hasError ? res.message : '');
     if (!res.hasError) {
-      const cronParts = newValue.toString().split(' ')
-      generateMinute(cronParts[0], get(localeState), set)
-      generateHour(cronParts[1], get(localeState), set)
-      generateDayOfMonth(cronParts[2], get(localeState), set)
-      generateMonth(cronParts[3], get(localeState), set)
-      generateWeek(cronParts[4], get(localeState), set)
-      const period = get(periodState)
-      const periodOptions = getPeriodOptions(get(localeState).periodOptions)
+      const cronParts = newValue.toString().split(' ');
+      generateMinute(cronParts[0], get(localeState), set);
+      generateHour(cronParts[1], get(localeState), set);
+      generateDayOfMonth(cronParts[2], get(localeState), set);
+      generateMonth(cronParts[3], get(localeState), set);
+      generateWeek(cronParts[4], get(localeState), set);
+      const period = get(periodState);
+      const periodOptions = getPeriodOptions(get(localeState).periodOptions);
       if (cronParts[3] !== '*' && getPeriodIndex(period) < 4) {
-        set(periodState, periodOptions[4])
+        set(periodState, periodOptions[4]);
       } else if (cronParts[2] !== '*' && getPeriodIndex(period) < 3) {
-        set(periodState, periodOptions[3])
+        set(periodState, periodOptions[3]);
       } else if (cronParts[4] !== '*' && getPeriodIndex(period) < 2) {
-        set(periodState, periodOptions[2])
+        set(periodState, periodOptions[2]);
       } else if (cronParts[1] !== '*' && getPeriodIndex(period) < 1) {
-        set(periodState, periodOptions[1])
+        set(periodState, periodOptions[1]);
       }
     }
   },
-})
+});
 
 const generateMinute = (part: string, locale: Locale, set: SetRecoilState) => {
   if (part.indexOf('/') > 0) {
-    let subparts = part.split('/')
-    set(
-      minuteAtEveryState,
-      atEveryOptions(locale.atOptionLabel, locale.everyOptionLabel)[1]
-    )
+    const subparts = part.split('/');
+    set(minuteAtEveryState, atEveryOptions(locale.atOptionLabel, locale.everyOptionLabel)[1]);
     if (subparts[0].indexOf('-') > 0) {
-      let subsubparts = subparts[0].split('-')
+      const subsubparts = subparts[0].split('-');
       set(
         minuteRangeStartSchedulerState,
-        defaultMinuteOptionsWithOrdinal()[Number(subsubparts[0])]
-      )
-      set(
-        minuteRangeEndSchedulerState,
-        defaultMinuteOptionsWithOrdinal()[Number(subsubparts[1])]
-      )
+        defaultMinuteOptionsWithOrdinal()[Number(subsubparts[0])],
+      );
+      set(minuteRangeEndSchedulerState, defaultMinuteOptionsWithOrdinal()[Number(subsubparts[1])]);
     } else if (subparts[0] === '*') {
-      set(minuteRangeStartSchedulerState, defaultMinuteOptionsWithOrdinal()[0])
-      set(minuteRangeEndSchedulerState, defaultMinuteOptionsWithOrdinal()[59])
+      set(minuteRangeStartSchedulerState, defaultMinuteOptionsWithOrdinal()[0]);
+      set(minuteRangeEndSchedulerState, defaultMinuteOptionsWithOrdinal()[59]);
     }
-    set(minuteState, [DEFAULT_MINUTE_OPTS[Number(subparts[1])]])
+    set(minuteState, [DEFAULT_MINUTE_OPTS[Number(subparts[1])]]);
   } else if (part.indexOf('-') > 0) {
-    let subparts = part.split('-')
+    const subparts = part.split('-');
     set(
       minuteState,
       DEFAULT_MINUTE_OPTS.filter((_, idx) => {
-        return idx >= Number(subparts[0]) && idx <= Number(subparts[1])
-      })
-    )
+        return idx >= Number(subparts[0]) && idx <= Number(subparts[1]);
+      }),
+    );
   } else if (part !== '*') {
-    set(
-      minuteAtEveryState,
-      atEveryOptions(locale.atOptionLabel, locale.everyOptionLabel)[0]
-    )
+    set(minuteAtEveryState, atEveryOptions(locale.atOptionLabel, locale.everyOptionLabel)[0]);
     set(
       minuteState,
       DEFAULT_MINUTE_OPTS.filter((_, idx) => {
-        return part.split(',').includes(idx.toString())
-      })
-    )
+        return part.split(',').includes(idx.toString());
+      }),
+    );
   } else if (part === '*') {
-    set(
-      minuteAtEveryState,
-      atEveryOptions(locale.atOptionLabel, locale.everyOptionLabel)[0]
-    )
-    set(minuteState, DEFAULT_MINUTE_OPTS)
+    set(minuteAtEveryState, atEveryOptions(locale.atOptionLabel, locale.everyOptionLabel)[0]);
+    set(minuteState, DEFAULT_MINUTE_OPTS);
   }
-}
+};
 
 const generateHour = (part: string, locale: Locale, set: SetRecoilState) => {
   if (part.indexOf('/') > 0) {
-    let subparts = part.split('/')
-    set(
-      hourAtEveryState,
-      atEveryOptions(locale.atOptionLabel, locale.everyOptionLabel)[1]
-    )
+    const subparts = part.split('/');
+    set(hourAtEveryState, atEveryOptions(locale.atOptionLabel, locale.everyOptionLabel)[1]);
     if (subparts[0].indexOf('-') > 0) {
-      let subsubparts = subparts[0].split('-')
-      set(
-        hourRangeStartSchedulerState,
-        getTimesOfTheDay()[Number(subsubparts[0])]
-      )
-      set(
-        hourRangeEndSchedulerState,
-        getTimesOfTheDay()[Number(subsubparts[1])]
-      )
+      const subsubparts = subparts[0].split('-');
+      set(hourRangeStartSchedulerState, getTimesOfTheDay()[Number(subsubparts[0])]);
+      set(hourRangeEndSchedulerState, getTimesOfTheDay()[Number(subsubparts[1])]);
     } else if (subparts[0] === '*') {
-      set(hourRangeStartSchedulerState, getTimesOfTheDay()[0])
-      set(hourRangeEndSchedulerState, getTimesOfTheDay()[23])
+      set(hourRangeStartSchedulerState, getTimesOfTheDay()[0]);
+      set(hourRangeEndSchedulerState, getTimesOfTheDay()[23]);
     }
-    set(hourState, [DEFAULT_HOUR_OPTS_EVERY[Number(subparts[1])]])
+    set(hourState, [DEFAULT_HOUR_OPTS_EVERY[Number(subparts[1])]]);
   } else if (part.indexOf('-') > 0) {
-    let subparts = part.split('-')
+    const subparts = part.split('-');
     set(
       hourState,
       DEFAULT_HOUR_OPTS_EVERY.filter((_, idx) => {
-        return idx >= Number(subparts[0]) && idx <= Number(subparts[1])
-      })
-    )
+        return idx >= Number(subparts[0]) && idx <= Number(subparts[1]);
+      }),
+    );
   } else if (part !== '*') {
-    set(
-      hourAtEveryState,
-      atEveryOptions(locale.atOptionLabel, locale.everyOptionLabel)[0]
-    )
+    set(hourAtEveryState, atEveryOptions(locale.atOptionLabel, locale.everyOptionLabel)[0]);
     set(
       hourState,
       DEFAULT_HOUR_OPTS_EVERY.filter((_, idx) => {
-        return part.split(',').includes(idx.toString())
-      })
-    )
+        return part.split(',').includes(idx.toString());
+      }),
+    );
   } else if (part === '*') {
-    set(
-      hourAtEveryState,
-      atEveryOptions(locale.atOptionLabel, locale.everyOptionLabel)[0]
-    )
-    set(hourState, DEFAULT_HOUR_OPTS_EVERY)
+    set(hourAtEveryState, atEveryOptions(locale.atOptionLabel, locale.everyOptionLabel)[0]);
+    set(hourState, DEFAULT_HOUR_OPTS_EVERY);
   }
-}
+};
 
-const generateDayOfMonth = (
-  part: string,
-  locale: Locale,
-  set: SetRecoilState
-) => {
+const generateDayOfMonth = (part: string, locale: Locale, set: SetRecoilState) => {
   if (part.indexOf('/') > 0) {
-    let subparts = part.split('/')
-    set(
-      dayOfMonthAtEveryState,
-      onEveryOptions(locale.onOptionLabel, locale.everyOptionLabel)[1]
-    )
+    const subparts = part.split('/');
+    set(dayOfMonthAtEveryState, onEveryOptions(locale.onOptionLabel, locale.everyOptionLabel)[1]);
     if (subparts[0].indexOf('-') > 0) {
-      let subsubparts = subparts[0].split('-')
+      const subsubparts = subparts[0].split('-');
       set(
         dayOfMonthRangeStartSchedulerState,
-        DEFAULT_DAY_OF_MONTH_OPTS_WITH_ORD[Number(subsubparts[0]) - 1]
-      )
+        DEFAULT_DAY_OF_MONTH_OPTS_WITH_ORD[Number(subsubparts[0]) - 1],
+      );
       set(
         dayOfMonthRangeEndSchedulerState,
-        DEFAULT_DAY_OF_MONTH_OPTS_WITH_ORD[Number(subsubparts[1]) - 1]
-      )
+        DEFAULT_DAY_OF_MONTH_OPTS_WITH_ORD[Number(subsubparts[1]) - 1],
+      );
     } else if (subparts[0] === '*') {
-      set(
-        dayOfMonthRangeStartSchedulerState,
-        DEFAULT_DAY_OF_MONTH_OPTS_WITH_ORD[0]
-      )
-      set(
-        dayOfMonthRangeEndSchedulerState,
-        DEFAULT_DAY_OF_MONTH_OPTS_WITH_ORD[30]
-      )
+      set(dayOfMonthRangeStartSchedulerState, DEFAULT_DAY_OF_MONTH_OPTS_WITH_ORD[0]);
+      set(dayOfMonthRangeEndSchedulerState, DEFAULT_DAY_OF_MONTH_OPTS_WITH_ORD[30]);
     }
-    set(dayOfMonthState, [DEFAULT_DAY_OF_MONTH_OPTS[Number(subparts[1]) - 1]])
+    set(dayOfMonthState, [DEFAULT_DAY_OF_MONTH_OPTS[Number(subparts[1]) - 1]]);
   } else if (part === 'L') {
-    set(
-      dayOfMonthAtEveryState,
-      onEveryOptions(locale.onOptionLabel, locale.everyOptionLabel)[0]
-    )
-    set(dayOfMonthState, [getLastDayOfMonthOption(locale.lastDayOfMonthLabel)])
+    set(dayOfMonthAtEveryState, onEveryOptions(locale.onOptionLabel, locale.everyOptionLabel)[0]);
+    set(dayOfMonthState, [getLastDayOfMonthOption(locale.lastDayOfMonthLabel)]);
   } else if (part.indexOf('-') > 0) {
-    let subparts = part.split('-')
+    const subparts = part.split('-');
     set(
       dayOfMonthState,
       DEFAULT_DAY_OF_MONTH_OPTS_WITH_ORD.filter((_, idx) => {
-        return idx + 1 >= Number(subparts[0]) && idx + 1 <= Number(subparts[1])
-      })
-    )
+        return idx + 1 >= Number(subparts[0]) && idx + 1 <= Number(subparts[1]);
+      }),
+    );
   } else if (part !== '*') {
-    set(
-      dayOfMonthAtEveryState,
-      onEveryOptions(locale.onOptionLabel, locale.everyOptionLabel)[0]
-    )
+    set(dayOfMonthAtEveryState, onEveryOptions(locale.onOptionLabel, locale.everyOptionLabel)[0]);
     set(
       dayOfMonthState,
       DEFAULT_DAY_OF_MONTH_OPTS_WITH_ORD.filter((_, idx) => {
-        return part.split(',').includes((idx + 1).toString())
-      })
-    )
+        return part.split(',').includes((idx + 1).toString());
+      }),
+    );
   } else if (part === '*') {
-    set(
-      dayOfMonthAtEveryState,
-      onEveryOptions(locale.onOptionLabel, locale.everyOptionLabel)[0]
-    )
-    set(dayOfMonthState, DEFAULT_DAY_OF_MONTH_OPTS_WITH_ORD)
+    set(dayOfMonthAtEveryState, onEveryOptions(locale.onOptionLabel, locale.everyOptionLabel)[0]);
+    set(dayOfMonthState, DEFAULT_DAY_OF_MONTH_OPTS_WITH_ORD);
   }
-}
+};
 
 const generateMonth = (part: string, locale: Locale, set: SetRecoilState) => {
   if (part.indexOf('-') > 0) {
-    let subparts = part.split('-')
+    const subparts = part.split('-');
     set(
       monthState,
       getMonthOptions(locale.shortMonthOptions).filter((_, idx) => {
-        return idx + 1 >= Number(subparts[0]) && idx + 1 <= Number(subparts[1])
-      })
-    )
+        return idx + 1 >= Number(subparts[0]) && idx + 1 <= Number(subparts[1]);
+      }),
+    );
   } else if (part !== '*') {
     set(
       monthState,
       getMonthOptions(locale.shortMonthOptions).filter((_, idx) => {
-        return part.split(',').includes((idx + 1).toString())
-      })
-    )
+        return part.split(',').includes((idx + 1).toString());
+      }),
+    );
   } else {
-    set(monthState, getMonthOptions(locale.shortMonthOptions))
+    set(monthState, getMonthOptions(locale.shortMonthOptions));
   }
-}
+};
 
 const generateWeek = (part: string, locale: Locale, set: SetRecoilState) => {
   if (part.indexOf('-') > 0) {
-    let subparts = part.split('-')
+    const subparts = part.split('-');
     set(
       weekState,
       weekOptions(locale.weekDaysOptions).filter((_, idx) => {
-        return idx >= Number(subparts[0]) && idx <= Number(subparts[1])
-      })
-    )
+        return idx >= Number(subparts[0]) && idx <= Number(subparts[1]);
+      }),
+    );
   } else if (part !== '*') {
     set(
       weekState,
       weekOptions(locale.weekDaysOptions).filter((_, idx) => {
-        return part.split(',').includes(idx.toString())
-      })
-    )
+        return part.split(',').includes(idx.toString());
+      }),
+    );
   } else {
-    set(weekState, weekOptions(locale.weekDaysOptions))
+    set(weekState, weekOptions(locale.weekDaysOptions));
   }
-}
+};

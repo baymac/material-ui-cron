@@ -1,4 +1,4 @@
-import { Locale } from '../types'
+import type { Locale } from '../types';
 
 const enLocale: Locale = {
   everyText: 'Every',
@@ -17,15 +17,7 @@ const enLocale: Locale = {
   multiDayOfMonthLabel: 'Day of the Month',
   dayOfMonthLabel: 'Days',
   hourLabel: 'Hour(s)',
-  weekDaysOptions: [
-    'SUNDAY',
-    'MONDAY',
-    'TUESDAY',
-    'WEDNESDAY',
-    'THURSDAY',
-    'FRIDAY',
-    'SATURDAY',
-  ],
+  weekDaysOptions: ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'],
   periodOptions: ['hour', 'day', 'week', 'month', 'year'],
   shortMonthOptions: [
     'Jan',
@@ -44,6 +36,6 @@ const enLocale: Locale = {
   onOptionLabel: 'on',
   lastDayOfMonthLabel: 'Last day of month',
   cronDescriptionText: 'en',
-}
+};
 
-export default enLocale
+export default enLocale;
