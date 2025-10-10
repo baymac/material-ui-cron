@@ -1,11 +1,7 @@
-import { RecoilRoot } from 'recoil';
+// Removed RecoilRoot; Jotai does not require a provider
 import Scheduler from './Scheduler';
 import type { SchedulerProps } from './types';
 
 export default function SchedulerRoot(props: SchedulerProps) {
-  return (
-    <RecoilRoot>
-      <Scheduler {...props} />
-    </RecoilRoot>
-  );
+  return <Scheduler {...props} />;
 }

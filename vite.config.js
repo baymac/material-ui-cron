@@ -26,7 +26,7 @@ export default defineConfig({
         '@mui/system',
         '@emotion/react',
         '@emotion/styled',
-        'recoil',
+          'jotai',
         'cronstrue',
       ],
       output: {

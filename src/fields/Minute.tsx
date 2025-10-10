@@ -3,7 +3,7 @@ import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
 import clsx from 'clsx';
 import React from 'react';
-import { useRecoilState, useRecoilValue } from 'recoil';
+import { useAtom, useAtomValue } from 'jotai';
 import CustomSelect from '../components/CustomSelect';
 import {
   atEveryOptions,
@@ -48,10 +48,10 @@ const StyledRightControls = styled(Box)({
 });
 
 export default function Minute() {
-  const [minuteAtEvery, setMinuteAtEvery] = useRecoilState(minuteAtEveryState);
-  const [startMinute, setStartMinute] = useRecoilState(minuteRangeStartSchedulerState);
-  const [endMinute, setEndMinute] = useRecoilState(minuteRangeEndSchedulerState);
-  const [minute, setMinute] = useRecoilState(minuteState);
+  const [minuteAtEvery, setMinuteAtEvery] = useAtom(minuteAtEveryState);
+  const [startMinute, setStartMinute] = useAtom(minuteRangeStartSchedulerState);
+  const [endMinute, setEndMinute] = useAtom(minuteRangeEndSchedulerState);
+  const [minute, setMinute] = useAtom(minuteState);
   const [minuteOptions, setMinuteOptions] = React.useState(DEFAULT_MINUTE_OPTS);
 
   const [possibleStartTimes, setPossibleStartTimes] = React.useState(
@@ -78,7 +78,7 @@ export default function Minute() {
     setPossibleStartTimes(limitedPossibleTimeRange);
   }, [endMinute]);
 
-  const isAdmin = useRecoilValue(isAdminState);
+  const isAdmin = useAtomValue(isAdminState);
 
   React.useEffect(() => {
     if (minuteAtEvery.value === 'every') {
@@ -104,7 +104,7 @@ export default function Minute() {
     }
   }, [isAdmin]);
 
-  const resolvedLocale = useRecoilValue(localeState);
+  const resolvedLocale = useAtomValue(localeState);
 
   return (
     <StyledGridContainer>

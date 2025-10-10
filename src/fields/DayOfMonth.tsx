@@ -2,7 +2,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
 import React from 'react';
-import { useRecoilState, useRecoilValue } from 'recoil';
+import { useAtom, useAtomValue } from 'jotai';
 import CustomSelect from '../components/CustomSelect';
 import {
   DEFAULT_DAY_OF_MONTH_OPTS,
@@ -48,12 +48,12 @@ const StyledRightControls = styled(Box)({
 });
 
 export default function DayOfMonth() {
-  const resolvedLocale = useRecoilValue(localeState);
+  const resolvedLocale = useAtomValue(localeState);
 
-  const [dayOfMonthAtEvery, setDayOfMonthAtEvery] = useRecoilState(dayOfMonthAtEveryState);
-  const [startMonth, setStartMonth] = useRecoilState(dayOfMonthRangeStartSchedulerState);
-  const [endMonth, setEndMonth] = useRecoilState(dayOfMonthRangeEndSchedulerState);
-  const [dayOfMonth, setDayOfMonth] = useRecoilState(dayOfMonthState);
+  const [dayOfMonthAtEvery, setDayOfMonthAtEvery] = useAtom(dayOfMonthAtEveryState);
+  const [startMonth, setStartMonth] = useAtom(dayOfMonthRangeStartSchedulerState);
+  const [endMonth, setEndMonth] = useAtom(dayOfMonthRangeEndSchedulerState);
+  const [dayOfMonth, setDayOfMonth] = useAtom(dayOfMonthState);
   const [dayOfMonthOptions, setDayOfMonthOptions] = React.useState(
     getDayOfMonthsOptionsWithL(resolvedLocale.lastDayOfMonthLabel),
   );

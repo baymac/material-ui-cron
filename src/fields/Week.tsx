@@ -2,7 +2,7 @@ import Box from '@mui/material/Box';
 import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import React from 'react';
-import { useRecoilState, useRecoilValue } from 'recoil';
+import { useAtom, useAtomValue } from 'jotai';
 import CustomSelect from '../components/CustomSelect';
 import { weekOptions as defaultWeekOptions } from '../constants';
 import { localeState, weekState } from '../store';
@@ -21,8 +21,8 @@ const StyledOnTypography = styled(Typography)({
 });
 
 export default function Week() {
-  const [week, setWeek] = useRecoilState(weekState);
-  const resolvedLocale = useRecoilValue(localeState);
+  const [week, setWeek] = useAtom(weekState);
+  const resolvedLocale = useAtomValue(localeState);
   const [weekOptions, setWeekOptions] = React.useState(
     defaultWeekOptions(resolvedLocale.weekDaysOptions),
   );

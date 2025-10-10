@@ -2,7 +2,7 @@ import Box from '@mui/material/Box';
 import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import React from 'react';
-import { useRecoilState, useRecoilValue } from 'recoil';
+import { useAtom, useAtomValue } from 'jotai';
 import CustomSelect from '../components/CustomSelect';
 import {
   atEveryOptions,
@@ -50,10 +50,10 @@ const StyledRightControls = styled(Box)({
 });
 
 export default function Hour() {
-  const [hourAtEvery, setHourAtEvery] = useRecoilState(hourAtEveryState);
-  const [startHour, setStartHour] = useRecoilState(hourRangeStartSchedulerState);
-  const [endHour, setEndHour] = useRecoilState(hourRangeEndSchedulerState);
-  const [hour, setHour] = useRecoilState(hourState);
+  const [hourAtEvery, setHourAtEvery] = useAtom(hourAtEveryState);
+  const [startHour, setStartHour] = useAtom(hourRangeStartSchedulerState);
+  const [endHour, setEndHour] = useAtom(hourRangeEndSchedulerState);
+  const [hour, setHour] = useAtom(hourState);
   const [hourOptions, setHourOptions] = React.useState(defaultHourOptions);
 
   const [possibleStartTimes, setPossibleStartTimes] = React.useState(POSSIBLE_TIME_RANGES);
@@ -78,7 +78,7 @@ export default function Hour() {
     setPossibleStartTimes(limitedPossibleTimeRange);
   }, [endHour]);
 
-  const isAdmin = useRecoilValue(isAdminState);
+  const isAdmin = useAtomValue(isAdminState);
 
   React.useEffect(() => {
     if (hourAtEvery.value === 'every') {
@@ -99,7 +99,7 @@ export default function Hour() {
     }
   }, [isAdmin]);
 
-  const resolvedLocale = useRecoilValue(localeState);
+  const resolvedLocale = useAtomValue(localeState);
 
   return (
     <StyledGridContainer>

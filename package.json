@@ -36,6 +36,7 @@
     "build-storybook": "storybook build"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.2.5",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@storybook/addon-essentials": "^8.6.14",
@@ -45,10 +46,9 @@
     "@types/node": "^24.7.1",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.1",
-    "@biomejs/biome": "^2.2.5",
     "@vitejs/plugin-react": "^5.0.4",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
     "storybook": "^8.6.14",
     "typescript": "^5.9.3",
     "vite": "^6.0.0",
@@ -57,15 +57,15 @@
   "peerDependencies": {
     "@emotion/react": "^11.11.0",
     "@emotion/styled": "^11.11.0",
-    "react": ">=18 <20",
-    "react-dom": ">=18 <20"
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
   },
   "dependencies": {
     "@mui/icons-material": "^7.3.4",
     "@mui/material": "^7.3.4",
     "@mui/system": "^7.3.3",
     "cronstrue": "^3.3.0",
-    "recoil": "^0.7.7"
+    "jotai": "^2.15.0"
   },
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }

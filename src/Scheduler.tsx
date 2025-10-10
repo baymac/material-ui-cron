@@ -1,7 +1,7 @@
 import Box from '@mui/material/Box';
 import { styled } from '@mui/material/styles';
 import React from 'react';
-import { useRecoilState, useRecoilValue, useResetRecoilState, useSetRecoilState } from 'recoil';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import CronExp from './components/CronExp';
 import CronReader from './components/CronReader';
 import DayOfMonth from './fields/DayOfMonth';
@@ -25,6 +25,14 @@ import {
 } from './store';
 import type { SchedulerProps } from './types';
 import { getPeriodIndex } from './utils';
+import {
+  DEFAULT_DAY_OF_MONTH_OPTS,
+  DEFAULT_HOUR_OPTS_EVERY,
+  DEFAULT_MINUTE_OPTS,
+  getPeriodOptions,
+  getMonthOptions,
+  weekOptions,
+} from './constants';
 
 const StyledBox = styled(Box)({
   minHeight: 'min-content',
@@ -38,22 +46,23 @@ const StyledBox = styled(Box)({
 
 export default function Scheduler(props: SchedulerProps) {
   const { cron, setCron, setCronError, isAdmin, locale, customLocale } = props;
-  const period = useRecoilValue(periodState);
+  const period = useAtomValue(periodState);
   const [periodIndex, setPeriodIndex] = React.useState(0);
 
-  const cronError = useRecoilValue(cronValidationErrorMessageState);
-  const setIsAdmin = useSetRecoilState(isAdminState);
+  const cronError = useAtomValue(cronValidationErrorMessageState);
+  const setIsAdmin = useSetAtom(isAdminState);
 
-  const [cronExpInput, setCronExpInput] = useRecoilState(cronExpInputState);
-  const setResolvedLocale = useSetRecoilState(localeState);
+  const [cronExpInput, setCronExpInput] = useAtom(cronExpInputState);
+  const setResolvedLocale = useSetAtom(localeState);
+  const currentLocale = useAtomValue(localeState);
 
-  const resetCronExpInput = useResetRecoilState(cronExpInputState);
-  const resetMinute = useResetRecoilState(minuteState);
-  const resetHour = useResetRecoilState(hourState);
-  const resetDayOfMonth = useResetRecoilState(dayOfMonthState);
-  const resetDayOfWeek = useResetRecoilState(weekState);
-  const resetMonth = useResetRecoilState(monthState);
-  const resetPeriod = useResetRecoilState(periodState);
+  // Jotai does not provide reset hooks; emulate by setting initial values on unmount
+  const setMinute = useSetAtom(minuteState);
+  const setHour = useSetAtom(hourState);
+  const setDayOfMonth = useSetAtom(dayOfMonthState);
+  const setWeek = useSetAtom(weekState);
+  const setMonth = useSetAtom(monthState);
+  const setPeriod = useSetAtom(periodState);
 
   React.useEffect(() => {
     setCronError(cronError);
@@ -82,22 +91,23 @@ export default function Scheduler(props: SchedulerProps) {
   // Only reset atoms on unmount.
   React.useEffect(() => {
     return () => {
-      resetCronExpInput();
-      resetMinute();
-      resetHour();
-      resetDayOfMonth();
-      resetDayOfWeek();
-      resetMonth();
-      resetPeriod();
+      setCronExpInput('0 0 * * *');
+      setMinute([DEFAULT_MINUTE_OPTS[0]]);
+      setHour([DEFAULT_HOUR_OPTS_EVERY[0]]);
+      setDayOfMonth(DEFAULT_DAY_OF_MONTH_OPTS);
+      setWeek(weekOptions(currentLocale.weekDaysOptions));
+      setMonth(getMonthOptions(currentLocale.shortMonthOptions));
+      setPeriod(getPeriodOptions(currentLocale.periodOptions)[1]);
     };
   }, [
-    resetCronExpInput,
-    resetMinute,
-    resetHour,
-    resetDayOfMonth,
-    resetDayOfWeek,
-    resetMonth,
-    resetPeriod,
+    setCronExpInput,
+    setMinute,
+    setHour,
+    setDayOfMonth,
+    setWeek,
+    setMonth,
+    setPeriod,
+    currentLocale,
   ]);
 
   React.useEffect(() => {

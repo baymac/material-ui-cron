@@ -4,7 +4,7 @@ import Tooltip from '@mui/material/Tooltip';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { styled } from '@mui/material/styles';
 import React from 'react';
-import { useRecoilState, useRecoilValue, useResetRecoilState } from 'recoil';
+import { useAtom, useAtomValue } from 'jotai';
 import useDebounce from '../hooks/useDebounce';
 import { cronExpState } from '../selector';
 import { cronExpInputState, isAdminState } from '../store';
@@ -66,12 +66,9 @@ const StyledTextField = styled(TextField)({
 });
 
 export default function CronExp() {
-  const isAdmin = useRecoilValue(isAdminState);
-
-  const [cronExp, setCronExp] = useRecoilState(cronExpState);
-
-  const [cronExpInput, setCronExpInput] = useRecoilState(cronExpInputState);
-  const resetCronExpInput = useResetRecoilState(cronExpInputState);
+  const isAdmin = useAtomValue(isAdminState);
+  const [cronExp, setCronExp] = useAtom(cronExpState);
+  const [cronExpInput, setCronExpInput] = useAtom(cronExpInputState);
 
   const debouncedCronExpInput = useDebounce(cronExpInput, 500);
 
@@ -98,7 +95,7 @@ export default function CronExp() {
       />
       <Tooltip title='Reset' arrow>
         <span>
-          <StyledResetButton onClick={resetCronExpInput} disabled={!isAdmin}>
+          <StyledResetButton onClick={() => setCronExpInput('0 0 * * *')} disabled={!isAdmin}>
             <RestartAltIcon />
           </StyledResetButton>
         </span>

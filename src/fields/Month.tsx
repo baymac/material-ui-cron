@@ -2,7 +2,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
 import React from 'react';
-import { useRecoilState, useRecoilValue } from 'recoil';
+import { useAtom, useAtomValue } from 'jotai';
 import CustomSelect from '../components/CustomSelect';
 import { getMonthOptions } from '../constants';
 import { localeState, monthState } from '../store';
@@ -21,8 +21,8 @@ const StyledInTypography = styled(Typography)({
 });
 
 export default function Month() {
-  const [month, setMonth] = useRecoilState(monthState);
-  const resolvedLocale = useRecoilValue(localeState);
+  const [month, setMonth] = useAtom(monthState);
+  const resolvedLocale = useAtomValue(localeState);
   const [monthOptions, setMonthOptions] = React.useState(
     getMonthOptions(resolvedLocale.shortMonthOptions),
   );

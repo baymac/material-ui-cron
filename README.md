@@ -63,6 +63,7 @@ export default function SchedulerDemo() {
 This library supports Internalization (i18n). Currently languages supported are:
 
 1. English
+2. Chinese
 
 We are welcoming translation contributions from the community.
 
@@ -72,7 +73,7 @@ We are welcoming translation contributions from the community.
    (based on
    https://meta.wikimedia.org/wiki/Template:List_of_language_names_ordered_by_code).
 
-2. Add language prefix to `definedLocales` type inside `/src/types.ts`
+2. Add language prefix to `definedLocales` type inside `/src/types.ts` (if required)
 
 3. Add locale mapping inside `/src/i18n.ts`
 

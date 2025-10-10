@@ -1,7 +1,7 @@
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
-import { useRecoilState, useRecoilValue } from 'recoil';
+import { useAtom, useAtomValue } from 'jotai';
 import CustomSelect from '../components/CustomSelect';
 import { getPeriodOptions, getPeriodOptionsWithHourDisabled } from '../constants';
 import { isAdminState, localeState, periodState } from '../store';
@@ -20,11 +20,11 @@ const StyledEveryTypography = styled(Typography)({
 });
 
 export default function Period() {
-  const [period, setPeriod] = useRecoilState(periodState);
+  const [period, setPeriod] = useAtom(periodState);
 
-  const isAdmin = useRecoilValue(isAdminState);
+  const isAdmin = useAtomValue(isAdminState);
 
-  const resolvedLocale = useRecoilValue(localeState);
+  const resolvedLocale = useAtomValue(localeState);
 
   return (
     <StyledGridContainer>

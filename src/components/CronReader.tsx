@@ -3,7 +3,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import cronstrue from 'cronstrue/i18n';
 import React from 'react';
-import { useRecoilValue } from 'recoil';
+import { useAtomValue } from 'jotai';
 import { cronExpState } from '../selector';
 import { cronValidationErrorMessageState, localeState } from '../store';
 
@@ -18,12 +18,12 @@ const StyledBox = styled(Box)({
 });
 
 export default function CronReader() {
-  const cronExp = useRecoilValue(cronExpState);
-  const resolvedLocale = useRecoilValue(localeState);
+  const cronExp = useAtomValue(cronExpState);
+  const resolvedLocale = useAtomValue(localeState);
 
   const [cronHr, setCronHr] = React.useState('');
 
-  const cronValidationErrorMessage = useRecoilValue(cronValidationErrorMessageState);
+  const cronValidationErrorMessage = useAtomValue(cronValidationErrorMessageState);
 
   React.useEffect(() => {
     try {

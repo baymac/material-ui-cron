@@ -1,5 +1,5 @@
 import type { AutocompleteRenderGetTagProps } from '@mui/material';
-import type { SetterOrUpdater } from 'recoil';
+// Replaced Recoil setter type with a generic setter signature
 
 export type PeriodType = 'year' | 'month' | 'week' | 'day' | 'hour' | 'minute';
 
@@ -10,7 +10,7 @@ export interface CustomSelectProps {
   ) => React.ReactNode;
   options: Array<SelectOptions>;
   value: SelectOptions | SelectOptions[];
-  setValue: SetterOrUpdater<any>;
+  setValue: (value: any) => void;
   noOptionsText?: string;
   label: string;
   size?: 'sm' | 'md' | 'lg';
