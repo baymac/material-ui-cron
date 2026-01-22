@@ -5,9 +5,6 @@ module.exports = {
     name: '@storybook/react-vite',
     options: {},
   },
-  docs: {
-    autodocs: 'tag',
-  },
   viteFinal: async (config) => {
     config.assetsInclude = config.assetsInclude || [];
     config.assetsInclude.push('**/*.md');
