@@ -267,3 +267,55 @@ describe('Scheduler redesign (browser)', () => {
     expect(within(list).getAllByRole('listitem').length).toBeGreaterThan(0);
   });
 });
+
+// ---- PR2: At/Every (On/Every) selectors swapped to segmented pills ----
+describe('Scheduler segmented controls (browser)', () => {
+  it('renders the At/Every selector as a segmented toggle and switches mode on click', async () => {
+    const user = userEvent.setup();
+    render(<Scheduler cron='0 0 * * *' setCron={noop} setCronError={noop} isAdmin />);
+
+    // A `day` cron reveals the Hour + Minute rows; each carries an At/Every
+    // ToggleButtonGroup (role="group"). The first is Hour (render order).
+    const groups = await screen.findAllByRole('group', { name: 'At/Every' });
+    expect(groups).toHaveLength(2);
+
+    const hourGroup = groups[0];
+    expect(within(hourGroup).getByRole('button', { name: 'at' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+
+    // Clicking "every" flips the mode end-to-end: the segment becomes pressed
+    // and the derived cron (shown in the header field) moves off the every-hour
+    // default into an interval expression.
+    await user.click(within(hourGroup).getByRole('button', { name: 'every' }));
+    await waitFor(() =>
+      expect(within(hourGroup).getByRole('button', { name: 'every' })).toHaveAttribute(
+        'aria-pressed',
+        'true',
+      ),
+    );
+    const cronField = screen.getByLabelText('cron expression') as HTMLInputElement;
+    await waitFor(() => expect(cronField.value).not.toBe('0 0 * * *'));
+    // Every-mode hour serialises to an interval expression (e.g. `*/1` or
+    // `2-23/1`); both carry the step slash.
+    expect(cronField.value).toMatch(/\//);
+  });
+
+  it('disables the "every" segment for non-admins', async () => {
+    render(<Scheduler cron='0 0 * * *' setCron={noop} setCronError={noop} isAdmin={false} />);
+    const groups = await screen.findAllByRole('group', { name: 'At/Every' });
+    const everyButtons = groups.flatMap((group) =>
+      within(group).getAllByRole('button', { name: 'every' }),
+    );
+    expect(everyButtons.length).toBeGreaterThan(0);
+    everyButtons.forEach((button) => expect(button).toBeDisabled());
+  });
+
+  it('renders the day-of-month On/Every selector as a segmented toggle', async () => {
+    render(<Scheduler cron='0 0 5 * *' setCron={noop} setCronError={noop} isAdmin />);
+    const group = await screen.findByRole('group', { name: 'On/Every' });
+    expect(within(group).getByRole('button', { name: 'on' })).toBeInTheDocument();
+    expect(within(group).getByRole('button', { name: 'every' })).toBeInTheDocument();
+  });
+});

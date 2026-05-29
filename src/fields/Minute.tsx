@@ -1,10 +1,10 @@
-import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
-import clsx from 'clsx';
 import React from 'react';
 import { useAtom, useAtomValue } from 'jotai';
 import CustomSelect from '../components/CustomSelect';
+import FieldRow from '../components/FieldRow';
+import SegmentedControl from '../components/SegmentedControl';
 import {
   atEveryOptions,
   atOptionsNonAdmin,
@@ -22,29 +22,10 @@ import {
 } from '../store';
 
 const StyledBetweenTypography = styled(Typography)({
-  margin: '0 6px',
+  margin: '0 2px',
   display: 'flex',
   alignItems: 'center',
   height: '40px', // Match the height of CustomSelect components
-});
-
-const StyledGridContainer = styled(Box)({
-  display: 'grid',
-  gridTemplateColumns: '100px 1fr',
-  gap: '16px',
-  alignItems: 'center',
-  padding: '8px 16px',
-  margin: '8px 16px',
-});
-
-const StyledAtEveryTypography = styled(Typography)({
-  textAlign: 'left',
-});
-
-const StyledRightControls = styled(Box)({
-  display: 'flex',
-  alignItems: 'center',
-  gap: '6px',
 });
 
 export default function Minute() {
@@ -107,64 +88,58 @@ export default function Minute() {
   const resolvedLocale = useAtomValue(localeState);
 
   return (
-    <StyledGridContainer>
-      <CustomSelect
-        size='sm'
-        single
+    <FieldRow label={resolvedLocale.minuteLabel}>
+      <SegmentedControl
+        ariaLabel={resolvedLocale.atEveryText}
         options={
           isAdmin
             ? atEveryOptions(resolvedLocale.atOptionLabel, resolvedLocale.everyOptionLabel)
             : atOptionsNonAdmin(resolvedLocale.atOptionLabel, resolvedLocale.everyOptionLabel)
         }
-        label={resolvedLocale.atEveryText}
-        disableClearable
         value={minuteAtEvery}
         setValue={setMinuteAtEvery}
-        multiple={false}
       />
-      <StyledRightControls>
-        <CustomSelect
-          size='lg'
-          options={minuteOptions}
-          label={resolvedLocale.minuteLabel}
-          value={minute}
-          setValue={setMinute}
-          disableClearable={minuteAtEvery.value === 'every' || minute.length < 2}
-          single={minuteAtEvery.value === 'every' || !isAdmin}
-          sort
-          disableEmpty
-          disabled={minuteAtEvery.value === 'every' && !isAdmin}
-          limitTags={3}
-        />
-        {minuteAtEvery.value === 'every' && (
-          <>
-            <StyledBetweenTypography>{resolvedLocale.betweenText}</StyledBetweenTypography>
-            <CustomSelect
-              size='sm'
-              single
-              options={possibleStartTimes}
-              label={''}
-              value={startMinute}
-              setValue={setStartMinute}
-              multiple={false}
-              disableClearable
-              disabled={!isAdmin}
-            />
-            <StyledBetweenTypography>{resolvedLocale.andText}</StyledBetweenTypography>
-            <CustomSelect
-              size='sm'
-              single
-              options={possibleEndTimes}
-              label={''}
-              value={endMinute}
-              setValue={setEndMinute}
-              multiple={false}
-              disableClearable
-              disabled={!isAdmin}
-            />
-          </>
-        )}
-      </StyledRightControls>
-    </StyledGridContainer>
+      <CustomSelect
+        size='lg'
+        options={minuteOptions}
+        label={resolvedLocale.minuteLabel}
+        value={minute}
+        setValue={setMinute}
+        disableClearable={minuteAtEvery.value === 'every' || minute.length < 2}
+        single={minuteAtEvery.value === 'every' || !isAdmin}
+        sort
+        disableEmpty
+        disabled={minuteAtEvery.value === 'every' && !isAdmin}
+        limitTags={3}
+      />
+      {minuteAtEvery.value === 'every' && (
+        <>
+          <StyledBetweenTypography>{resolvedLocale.betweenText}</StyledBetweenTypography>
+          <CustomSelect
+            size='sm'
+            single
+            options={possibleStartTimes}
+            label={''}
+            value={startMinute}
+            setValue={setStartMinute}
+            multiple={false}
+            disableClearable
+            disabled={!isAdmin}
+          />
+          <StyledBetweenTypography>{resolvedLocale.andText}</StyledBetweenTypography>
+          <CustomSelect
+            size='sm'
+            single
+            options={possibleEndTimes}
+            label={''}
+            value={endMinute}
+            setValue={setEndMinute}
+            multiple={false}
+            disableClearable
+            disabled={!isAdmin}
+          />
+        </>
+      )}
+    </FieldRow>
   );
 }

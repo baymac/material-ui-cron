@@ -62,7 +62,10 @@ const Grid = styled(Box)(({ theme }) => ({
   gridTemplateColumns: '1fr 300px',
   '& > .form-col': {
     borderRight: `1px solid ${theme.palette.divider}`,
-    padding: '8px 4px',
+    // No inner padding here: CronReader (summary) and each FieldRow own their
+    // own 16px horizontal padding, so the FieldRow top-border dividers span the
+    // full column width (flush rows, matching the mock).
+    padding: '4px 0',
   },
   '&[data-layout="auto"]': {
     '@container (max-width: 720px)': {
@@ -80,13 +83,11 @@ const FormCol = styled(Box)({
   minHeight: 'min-content',
   // A grid item defaults to `min-width: auto`, so a too-wide field row (the
   // "every … between X and Y" range UI) would force the whole card past its
-  // container and spill off-page. `min-width: 0` lets the column shrink and
-  // `overflow-x: auto` scrolls the wide row inside the column instead.
-  // (Interim guard — PR2 replaces that wide row with a compact stepper.)
+  // container and spill off-page. `min-width: 0` lets the column shrink; the
+  // FieldRow controls now `flex-wrap` so the wide range row wraps instead of
+  // overflowing. `overflow-x: auto` stays as a final safety net.
   minWidth: 0,
   overflowX: 'auto',
-  '& > *': { marginBottom: '8px' },
-  '& > *:last-child': { marginBottom: 0 },
 });
 
 export default function Scheduler(props: SchedulerProps) {

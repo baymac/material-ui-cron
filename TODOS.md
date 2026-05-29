@@ -1,12 +1,16 @@
 # TODOS
 
-## PR2 — Swap field controls to pills / steppers / chips
-**What:** Replace the per-field At/Every MUI dropdowns with segmented `ToggleButtonGroup`, numeric `Stepper`, and toggle `Chip`s to match the redesign mock (uppercase labels above controls).
-**Why:** PR1 ships the new shell but keeps today's dropdown fields inside it; PR2 completes the visual redesign.
-**Pros:** Matches the approved mock; better touch ergonomics; a11y/keyboard from MUI primitives.
-**Cons:** Large diff across `src/fields/*`; the bare stepper can't express the "every N between X and Y" range — must add an "advanced range" affordance under "Every" or the stepper regresses `1-10/4` / multi-hour capability (Hour.tsx:134, DayOfMonth.tsx:143, Minute.tsx).
-**Context:** Phasing decided in eng review 2026-05-29. PR1 = shell + Next-runs. Build on MUI `ToggleButtonGroup`/`Chip`/`IconButton`. Preserve the range/multi-select capability.
-**Depends on:** PR1 merged.
+## PR2 — Swap At/Every selectors to segmented pills + uppercase rows ✅ (first cut)
+**What:** Replaced the per-field At/Every (On/Every) MUI dropdowns with a segmented `ToggleButtonGroup` (`SegmentedControl`) and restacked every row to an uppercase label above wrapping controls (`FieldRow`). Value/range dropdowns kept as-is, so zero capability loss.
+**Status:** DONE — branch `baymac/scheduler-segmented-controls`, stacked on PR1. New: `SegmentedControl.tsx`, `FieldRow.tsx`; rewrote all 6 `src/fields/*`. 3 new browser tests; `vitest.config.mts` got `resolve.dedupe` (single React) to stop a late MUI-subpath optimize chunk from pulling a 2nd React.
+**Context:** Targeted first cut chosen over the full stepper/chip rewrite (2026-05-29) to ship the mock's signature look with no range regression.
+
+## PR3 — Steppers + chip-pickers for field values
+**What:** Replace the value/range dropdowns themselves: numeric `Stepper` for "every N", chip-pickers (selected chips + add-menu) for At-mode minute/hour/day-of-month values, static toggle-`Chip` groups for week/month, and add the `Any day | On` (week) / `Every month | On` (month) segmented toggles the mock shows (no atom exists for these yet — new capability, not a swap).
+**Why:** Completes the full visual redesign; PR2 shipped the pills but kept dropdowns for values.
+**Cons:** The bare stepper can't express "every N between X and Y" — must add an "advanced range" affordance under "Every" or it regresses `1-10/4` / multi-hour capability (Hour.tsx, DayOfMonth.tsx, Minute.tsx). At-mode for 60 minutes / 24 hours / 31 days needs a real picker, not 60 static chips.
+**Context:** The hard, capability-sensitive half deliberately split out of PR2. Bundle the "DRY field internals" TODO here since it rewrites these controls anyway.
+**Depends on:** PR2 merged.
 
 ## Per-instance state (module-global atoms)
 **What:** Scope the Jotai atoms per `<Scheduler>` instance (Provider/store-per-instance) instead of module-level globals.

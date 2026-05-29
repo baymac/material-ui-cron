@@ -1,23 +1,8 @@
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import { styled } from '@mui/material/styles';
 import { useAtom, useAtomValue } from 'jotai';
 import CustomSelect from '../components/CustomSelect';
+import FieldRow from '../components/FieldRow';
 import { getPeriodOptions, getPeriodOptionsWithHourDisabled } from '../constants';
 import { isAdminState, localeState, periodState } from '../store';
-
-const StyledGridContainer = styled(Box)({
-  display: 'grid',
-  gridTemplateColumns: '100px 1fr',
-  gap: '16px',
-  alignItems: 'center',
-  padding: '8px 16px',
-  margin: '8px 16px',
-});
-
-const StyledEveryTypography = styled(Typography)({
-  textAlign: 'left',
-});
 
 export default function Period() {
   const [period, setPeriod] = useAtom(periodState);
@@ -27,8 +12,7 @@ export default function Period() {
   const resolvedLocale = useAtomValue(localeState);
 
   return (
-    <StyledGridContainer>
-      <StyledEveryTypography>{resolvedLocale.everyText}</StyledEveryTypography>
+    <FieldRow label={resolvedLocale.everyText}>
       <CustomSelect
         size='lg'
         single
@@ -43,6 +27,6 @@ export default function Period() {
         setValue={setPeriod}
         multiple={false}
       />
-    </StyledGridContainer>
+    </FieldRow>
   );
 }

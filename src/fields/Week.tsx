@@ -1,24 +1,9 @@
-import Box from '@mui/material/Box';
-import { styled } from '@mui/material/styles';
-import Typography from '@mui/material/Typography';
 import React from 'react';
 import { useAtom, useAtomValue } from 'jotai';
 import CustomSelect from '../components/CustomSelect';
+import FieldRow from '../components/FieldRow';
 import { weekOptions as defaultWeekOptions } from '../constants';
 import { localeState, weekState } from '../store';
-
-const StyledGridContainer = styled(Box)({
-  display: 'grid',
-  gridTemplateColumns: '100px 1fr',
-  gap: '16px',
-  alignItems: 'center',
-  padding: '8px 16px',
-  margin: '8px 16px',
-});
-
-const StyledOnTypography = styled(Typography)({
-  textAlign: 'left',
-});
 
 export default function Week() {
   const [week, setWeek] = useAtom(weekState);
@@ -28,8 +13,7 @@ export default function Week() {
   );
 
   return (
-    <StyledGridContainer>
-      <StyledOnTypography>{resolvedLocale.onText}</StyledOnTypography>
+    <FieldRow label={resolvedLocale.dayOfWeekLabel}>
       <CustomSelect
         size='lg'
         options={weekOptions}
@@ -42,6 +26,6 @@ export default function Week() {
         limitTags={3}
         disableClearable={week.length < 2}
       />
-    </StyledGridContainer>
+    </FieldRow>
   );
 }
