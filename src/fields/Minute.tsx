@@ -4,7 +4,7 @@ import React from 'react';
 import { useAtom, useAtomValue } from 'jotai';
 import CustomSelect from '../components/CustomSelect';
 import FieldRow from '../components/FieldRow';
-import RangeGroup from '../components/RangeGroup';
+import RangeGroup, { RangePair } from '../components/RangeGroup';
 import SegmentedControl from '../components/SegmentedControl';
 import {
   atEveryOptions,
@@ -119,29 +119,31 @@ export default function Minute() {
       {minuteAtEvery.value === 'every' && (
         <RangeGroup>
           <StyledBetweenTypography>{resolvedLocale.betweenText}</StyledBetweenTypography>
-          <CustomSelect
-            size='sm'
-            single
-            options={possibleStartTimes}
-            label={''}
-            value={startMinute}
-            setValue={setStartMinute}
-            multiple={false}
-            disableClearable
-            disabled={!isAdmin}
-          />
-          <StyledBetweenTypography>{resolvedLocale.andText}</StyledBetweenTypography>
-          <CustomSelect
-            size='sm'
-            single
-            options={possibleEndTimes}
-            label={''}
-            value={endMinute}
-            setValue={setEndMinute}
-            multiple={false}
-            disableClearable
-            disabled={!isAdmin}
-          />
+          <RangePair>
+            <CustomSelect
+              size='sm'
+              single
+              options={possibleStartTimes}
+              label={''}
+              value={startMinute}
+              setValue={setStartMinute}
+              multiple={false}
+              disableClearable
+              disabled={!isAdmin}
+            />
+            <StyledBetweenTypography>{resolvedLocale.andText}</StyledBetweenTypography>
+            <CustomSelect
+              size='sm'
+              single
+              options={possibleEndTimes}
+              label={''}
+              value={endMinute}
+              setValue={setEndMinute}
+              multiple={false}
+              disableClearable
+              disabled={!isAdmin}
+            />
+          </RangePair>
         </RangeGroup>
       )}
     </FieldRow>

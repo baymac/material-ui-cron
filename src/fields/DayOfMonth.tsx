@@ -4,7 +4,7 @@ import React from 'react';
 import { useAtom, useAtomValue } from 'jotai';
 import CustomSelect from '../components/CustomSelect';
 import FieldRow from '../components/FieldRow';
-import RangeGroup from '../components/RangeGroup';
+import RangeGroup, { RangePair } from '../components/RangeGroup';
 import SegmentedControl from '../components/SegmentedControl';
 import {
   DEFAULT_DAY_OF_MONTH_OPTS,
@@ -124,27 +124,29 @@ export default function DayOfMonth() {
       {dayOfMonthAtEvery.value === 'every' && (
         <RangeGroup>
           <StyledBetweenTypography>{resolvedLocale.betweenText}</StyledBetweenTypography>
-          <CustomSelect
-            size='sm'
-            single
-            options={possibleStartDays}
-            label={''}
-            value={startMonth}
-            setValue={setStartMonth}
-            multiple={false}
-            disableClearable
-          />
-          <StyledBetweenTypography>{resolvedLocale.andText}</StyledBetweenTypography>
-          <CustomSelect
-            size='sm'
-            single
-            options={possibleEndDays}
-            label={''}
-            value={endMonth}
-            setValue={setEndMonth}
-            multiple={false}
-            disableClearable
-          />
+          <RangePair>
+            <CustomSelect
+              size='sm'
+              single
+              options={possibleStartDays}
+              label={''}
+              value={startMonth}
+              setValue={setStartMonth}
+              multiple={false}
+              disableClearable
+            />
+            <StyledBetweenTypography>{resolvedLocale.andText}</StyledBetweenTypography>
+            <CustomSelect
+              size='sm'
+              single
+              options={possibleEndDays}
+              label={''}
+              value={endMonth}
+              setValue={setEndMonth}
+              multiple={false}
+              disableClearable
+            />
+          </RangePair>
         </RangeGroup>
       )}
     </FieldRow>
