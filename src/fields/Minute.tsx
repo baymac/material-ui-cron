@@ -25,7 +25,7 @@ const StyledBetweenTypography = styled(Typography)({
   margin: '0 2px',
   display: 'flex',
   alignItems: 'center',
-  height: '40px', // Match the height of CustomSelect components
+  height: '30px', // Match the (compact) height of CustomSelect components
 });
 
 export default function Minute() {
@@ -100,7 +100,7 @@ export default function Minute() {
         setValue={setMinuteAtEvery}
       />
       <CustomSelect
-        size='lg'
+        size={minuteAtEvery.value === 'every' || !isAdmin ? 'sm' : 'lg'}
         options={minuteOptions}
         label={resolvedLocale.minuteLabel}
         value={minute}

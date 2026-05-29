@@ -26,7 +26,7 @@ const StyledBetweenTypography = styled(Typography)({
   margin: '0 2px',
   display: 'flex',
   alignItems: 'center',
-  height: '40px', // Match the height of CustomSelect components
+  height: '30px', // Match the (compact) height of CustomSelect components
 });
 
 export default function DayOfMonth() {
@@ -108,7 +108,7 @@ export default function DayOfMonth() {
         setValue={setDayOfMonthAtEvery}
       />
       <CustomSelect
-        size='lg'
+        size={dayOfMonthAtEvery.value === 'every' ? 'sm' : 'lg'}
         options={dayOfMonthOptions}
         label={
           dayOfMonthAtEvery.value === 'on'

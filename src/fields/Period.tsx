@@ -14,7 +14,7 @@ export default function Period() {
   return (
     <FieldRow label={resolvedLocale.everyText}>
       <CustomSelect
-        size='lg'
+        size='sm'
         single
         disableClearable
         options={

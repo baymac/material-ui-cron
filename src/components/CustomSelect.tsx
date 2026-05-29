@@ -19,17 +19,19 @@ export default function CustomSelect(props: CustomSelectProps) {
     ...otherprops
   } = props;
 
-  // Map custom sizes to MUI sizes and widths
+  // Map custom sizes to MUI sizes and widths. Widths are kept tight so a select
+  // showing a short value (e.g. "week", "9") doesn't stretch across the row;
+  // multi-select sizes (lg) leave room for a few chips before wrapping.
   const getSizeConfig = (customSize: 'sm' | 'md' | 'lg') => {
     switch (customSize) {
       case 'sm':
-        return { muiSize: 'small' as const, width: '100px' };
+        return { muiSize: 'small' as const, width: '110px' };
       case 'md':
-        return { muiSize: 'small' as const, width: '160px' };
+        return { muiSize: 'small' as const, width: '140px' };
       case 'lg':
-        return { muiSize: 'small' as const, width: '300px' };
+        return { muiSize: 'small' as const, width: '190px' };
       default:
-        return { muiSize: 'small' as const, width: '100px' };
+        return { muiSize: 'small' as const, width: '110px' };
     }
   };
 
@@ -89,22 +91,25 @@ export default function CustomSelect(props: CustomSelectProps) {
         blurOnSelect={single ? true : undefined}
         sx={{
           width: sizeConfig.width,
-          '& .MuiAutocomplete-inputRoot': {
+          // Compact the input so its height matches the segmented toggle (~30px)
+          // instead of MUI's default ~40px small field. Match MUI's own
+          // selector specificity (.MuiAutocomplete-inputRoot.MuiInputBase-sizeSmall)
+          // so these padding overrides actually win.
+          '& .MuiAutocomplete-inputRoot.MuiInputBase-sizeSmall': {
             cursor: 'pointer',
+            minHeight: 30,
+            paddingTop: '1px',
+            paddingBottom: '1px',
           },
-          '& .MuiAutocomplete-input': {
+          '& .MuiAutocomplete-inputRoot.MuiInputBase-sizeSmall .MuiAutocomplete-input': {
             cursor: 'pointer',
+            paddingTop: '1.5px',
+            paddingBottom: '1.5px',
           },
-          // Keep text and label white when disabled
+          // Keep text legible (non-transparent) when disabled.
           '& .MuiInputBase-root.Mui-disabled .MuiInputBase-input': {
             color: 'white',
             WebkitTextFillColor: 'white',
-          },
-          '& .MuiInputBase-root.Mui-disabled .MuiInputLabel-root': {
-            color: 'white',
-          },
-          '& .MuiFormLabel-root.Mui-disabled': {
-            color: 'white',
           },
         }}
         renderTags={(value, getTagProps) =>

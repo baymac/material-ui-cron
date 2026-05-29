@@ -28,7 +28,7 @@ const StyledBetweenTypography = styled(Typography)({
   margin: '0 2px',
   display: 'flex',
   alignItems: 'center',
-  height: '40px', // Match the height of CustomSelect components
+  height: '30px', // Match the (compact) height of CustomSelect components
 });
 
 export default function Hour() {
@@ -96,7 +96,7 @@ export default function Hour() {
         setValue={setHourAtEvery}
       />
       <CustomSelect
-        size='lg'
+        size={hourAtEvery.value === 'every' || !isAdmin ? 'sm' : 'lg'}
         options={hourOptions}
         label={resolvedLocale.hourLabel}
         value={hour}
