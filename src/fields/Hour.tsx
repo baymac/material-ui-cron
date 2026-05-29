@@ -1,10 +1,10 @@
-import { styled } from '@mui/material/styles';
-import Typography from '@mui/material/Typography';
-import React from 'react';
 import { useAtom, useAtomValue } from 'jotai';
-import CustomSelect from '../components/CustomSelect';
+import React from 'react';
+import ChipMultiSelect from '../components/ChipMultiSelect';
 import FieldRow from '../components/FieldRow';
+import RangePicker from '../components/RangePicker';
 import SegmentedControl from '../components/SegmentedControl';
+import Stepper from '../components/Stepper';
 import {
   atEveryOptions,
   atOptionsNonAdmin,
@@ -12,6 +12,7 @@ import {
   DEFAULT_HOUR_OPTS_EVERY,
   defaultHourOptions,
 } from '../constants';
+import { localeString } from '../localization/strings';
 import {
   hourAtEveryState,
   hourRangeEndSchedulerState,
@@ -24,41 +25,12 @@ import { getTimesOfTheDay } from '../utils';
 
 const POSSIBLE_TIME_RANGES = getTimesOfTheDay();
 
-const StyledBetweenTypography = styled(Typography)({
-  margin: '0 2px',
-  display: 'flex',
-  alignItems: 'center',
-  height: '40px', // Match the height of CustomSelect components
-});
-
 export default function Hour() {
   const [hourAtEvery, setHourAtEvery] = useAtom(hourAtEveryState);
   const [startHour, setStartHour] = useAtom(hourRangeStartSchedulerState);
   const [endHour, setEndHour] = useAtom(hourRangeEndSchedulerState);
   const [hour, setHour] = useAtom(hourState);
   const [hourOptions, setHourOptions] = React.useState(defaultHourOptions);
-
-  const [possibleStartTimes, setPossibleStartTimes] = React.useState(POSSIBLE_TIME_RANGES);
-
-  const [possibleEndTimes, setPossibleEndTimes] = React.useState(POSSIBLE_TIME_RANGES);
-
-  React.useEffect(() => {
-    const startIndex = possibleStartTimes.findIndex((x) => x.value === startHour.value);
-    const limitedPossibleTimeRange = possibleEndTimes.map((possibleEndTime, index) => ({
-      ...possibleEndTime,
-      disabled: index <= startIndex,
-    }));
-    setPossibleEndTimes(limitedPossibleTimeRange);
-  }, [startHour]);
-
-  React.useEffect(() => {
-    const endIndex = possibleEndTimes.findIndex((x) => x.value === endHour.value);
-    const limitedPossibleTimeRange = possibleStartTimes.map((possibleStartTime, index) => ({
-      ...possibleStartTime,
-      disabled: index >= endIndex,
-    }));
-    setPossibleStartTimes(limitedPossibleTimeRange);
-  }, [endHour]);
 
   const isAdmin = useAtomValue(isAdminState);
 
@@ -83,6 +55,16 @@ export default function Hour() {
 
   const resolvedLocale = useAtomValue(localeState);
 
+  // Every-mode: the interval N is the single selected hour option.
+  const interval = Number(hour[0]?.value ?? '1');
+  const setInterval = (next: number) => {
+    const option = hourOptions.find((o) => o.value === String(next)) ?? {
+      value: String(next),
+      label: String(next),
+    };
+    setHour([option]);
+  };
+
   return (
     <FieldRow label={resolvedLocale.hourLabel}>
       <SegmentedControl
@@ -95,46 +77,39 @@ export default function Hour() {
         value={hourAtEvery}
         setValue={setHourAtEvery}
       />
-      <CustomSelect
-        size='lg'
-        options={hourOptions}
-        label={resolvedLocale.hourLabel}
-        value={hour}
-        setValue={setHour}
-        single={hourAtEvery.value === 'every' || !isAdmin}
-        sort
-        disableEmpty
-        limitTags={3}
-        disableClearable={hourAtEvery.value === 'every' || hour.length < 2}
-        disabled={!isAdmin && hourAtEvery.value === 'every'}
-      />
-      {hourAtEvery.value === 'every' && (
+      {hourAtEvery.value === 'every' ? (
         <>
-          <StyledBetweenTypography>{resolvedLocale.betweenText}</StyledBetweenTypography>
-          <CustomSelect
-            size='md'
-            single
-            options={possibleStartTimes}
-            label={''}
-            value={startHour}
-            setValue={setStartHour}
-            multiple={false}
-            disableClearable
+          <Stepper
+            ariaLabel={resolvedLocale.hourLabel}
+            value={interval}
+            min={1}
+            max={23}
+            onChange={setInterval}
             disabled={!isAdmin}
           />
-          <StyledBetweenTypography>{resolvedLocale.andText}</StyledBetweenTypography>
-          <CustomSelect
+          <RangePicker
+            baseOptions={POSSIBLE_TIME_RANGES}
+            start={startHour}
+            setStart={setStartHour}
+            end={endHour}
+            setEnd={setEndHour}
+            betweenText={resolvedLocale.betweenText}
+            andText={resolvedLocale.andText}
             size='md'
-            single
-            options={possibleEndTimes}
-            label={''}
-            value={endHour}
-            setValue={setEndHour}
-            multiple={false}
-            disableClearable
             disabled={!isAdmin}
           />
         </>
+      ) : (
+        <ChipMultiSelect
+          ariaLabel={resolvedLocale.hourLabel}
+          addLabel={localeString(resolvedLocale, 'addLabel')}
+          options={hourOptions}
+          value={hour}
+          onChange={setHour}
+          single={!isAdmin}
+          disableEmpty
+          sort
+        />
       )}
     </FieldRow>
   );

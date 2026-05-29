@@ -1,31 +1,52 @@
-import React from 'react';
 import { useAtom, useAtomValue } from 'jotai';
-import CustomSelect from '../components/CustomSelect';
 import FieldRow from '../components/FieldRow';
-import { weekOptions as defaultWeekOptions } from '../constants';
+import SegmentedControl from '../components/SegmentedControl';
+import ToggleChipGroup from '../components/ToggleChipGroup';
+import { weekOptions } from '../constants';
+import { localeString } from '../localization/strings';
 import { localeState, weekState } from '../store';
+import type { SelectOptions } from '../types';
 
 export default function Week() {
   const [week, setWeek] = useAtom(weekState);
   const resolvedLocale = useAtomValue(localeState);
-  const [weekOptions, setWeekOptions] = React.useState(
-    defaultWeekOptions(resolvedLocale.weekDaysOptions),
-  );
+  const allDays = weekOptions(resolvedLocale.weekDaysOptions);
+
+  // "Any day" = every weekday selected (cron `*`). "On" = a specific subset.
+  // The mode is derived from the selection, so no extra atom is needed.
+  const modeOptions: SelectOptions[] = [
+    { value: 'any', label: localeString(resolvedLocale, 'anyDayLabel') },
+    { value: 'on', label: resolvedLocale.onOptionLabel },
+  ];
+  const mode = week.length >= allDays.length ? 'any' : 'on';
+
+  const handleMode = (option: SelectOptions) => {
+    if (option.value === 'any') {
+      setWeek(allDays);
+    } else if (mode === 'any') {
+      // any -> on: collapse to a single day so it becomes a real subset.
+      setWeek([allDays[1] ?? allDays[0]]);
+    }
+  };
 
   return (
     <FieldRow label={resolvedLocale.dayOfWeekLabel}>
-      <CustomSelect
-        size='lg'
-        options={weekOptions}
-        label='Week Days'
-        value={week}
-        setValue={setWeek}
-        multiple
-        sort
-        disableEmpty
-        limitTags={3}
-        disableClearable={week.length < 2}
+      <SegmentedControl
+        ariaLabel={resolvedLocale.dayOfWeekLabel}
+        options={modeOptions}
+        value={modeOptions.find((option) => option.value === mode) ?? modeOptions[0]}
+        setValue={handleMode}
       />
+      {mode === 'on' && (
+        <ToggleChipGroup
+          ariaLabel='Week Days'
+          options={allDays}
+          value={week}
+          onChange={setWeek}
+          disableEmpty
+          sort
+        />
+      )}
     </FieldRow>
   );
 }

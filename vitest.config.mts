@@ -19,13 +19,18 @@ export default defineConfig({
         // viable here — MUI's Autocomplete triggers an infinite update loop under jsdom.
         plugins: [react()],
         // Force a single React (and ReactDOM) instance. Without this, a
-        // late-discovered MUI subpath import (e.g. ToggleButtonGroup) can be
-        // optimized into a separate dep chunk linked against a second React
-        // copy, making every hook throw "Cannot read properties of null
-        // (reading 'useContext')". Deduping keeps the dispatcher singular
-        // regardless of the optimize-cache state.
+        // late-discovered MUI subpath import (e.g. ToggleButtonGroup, or an
+        // icon) can be optimized into a separate dep chunk linked against a
+        // second React copy, making every hook throw "Cannot read properties of
+        // null (reading 'useContext')". Deduping keeps the dispatcher singular.
         resolve: {
           dedupe: ['react', 'react-dom'],
+        },
+        // Re-optimize deps every run so a warm cache that predates a newly added
+        // MUI subpath import can't serve a stale chunk with a mismatched React
+        // (the dup-React dispatcher-null failure). Costs ~1s of startup.
+        optimizeDeps: {
+          force: true,
         },
         test: {
           name: 'browser',
