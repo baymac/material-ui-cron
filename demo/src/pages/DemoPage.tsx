@@ -12,6 +12,7 @@ import {
   Link,
   MenuItem,
   Paper,
+  ScopedCssBaseline,
   Stack,
   Switch,
   TextField,
@@ -187,14 +188,15 @@ export function DemoPage() {
                 (stacked layout, wrapped header) — the page viewport is
                 unchanged. */}
             <ThemeProvider theme={schedulerTheme}>
-              <Box
-                sx={{
-                  // Match the preview's own theme so dark mode reads as a dark
-                  // surface even though the surrounding page is light. In
-                  // desktop mode the box is flush with the card (no padding), so
-                  // it's invisible; in mobile mode it's the phone-width frame.
-                  bgcolor: 'background.default',
-                  ...(isMobile
+              {/* ScopedCssBaseline gives the preview the SAME baseline a global
+                  CssBaseline would (background.default, text.primary color,
+                  color-scheme) but scoped to this wrapper — so scoped dark mode
+                  looks identical to app-wide dark mode instead of leaving
+                  inherit-color text dark-on-dark. In desktop it's flush with the
+                  card; in mobile it's the phone-width frame. */}
+              <ScopedCssBaseline
+                sx={
+                  isMobile
                     ? {
                         width: MOBILE_WIDTH,
                         maxWidth: '100%',
@@ -204,8 +206,8 @@ export function DemoPage() {
                         border: 2,
                         borderColor: 'divider',
                       }
-                    : {}),
-                }}
+                    : undefined
+                }
               >
                 <Scheduler
                   // `key` forces a clean remount when the locale changes so the field
@@ -217,7 +219,7 @@ export function DemoPage() {
                   isAdmin={isAdmin}
                   locale={locale}
                 />
-              </Box>
+              </ScopedCssBaseline>
             </ThemeProvider>
           </Paper>
 
