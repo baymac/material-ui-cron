@@ -22,7 +22,10 @@ interface SegmentedControlProps {
 const StyledGroup = styled(ToggleButtonGroup)(({ theme }) => ({
   borderRadius: 9,
   '& .MuiToggleButton-root': {
-    textTransform: 'none',
+    // Uppercase to match the uppercase section headers it sits among (the
+    // button's lowercase aria-label still drives the accessible name).
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
     fontWeight: 600,
     fontSize: 12.5,
     lineHeight: 1.2,
