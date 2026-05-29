@@ -9,7 +9,10 @@ const SectionTag = styled(Box)(({ theme }) => ({
   alignItems: 'center',
   height: 28,
   padding: '0 12px',
-  borderRadius: 9,
+  // Match the toggle buttons' corner radius (MUI ToggleButton uses
+  // theme.shape.borderRadius), so the standalone pill isn't more rounded than
+  // the 2-way toggle next to it.
+  borderRadius: theme.shape.borderRadius,
   border: `1px solid ${theme.palette.divider}`,
   backgroundColor: theme.palette.primary.main,
   color: theme.palette.primary.contrastText,
