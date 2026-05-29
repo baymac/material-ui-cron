@@ -116,7 +116,7 @@ export default function Hour() {
         <RangeGroup>
           <StyledBetweenTypography>{resolvedLocale.betweenText}</StyledBetweenTypography>
           <CustomSelect
-            size='md'
+            size='sm'
             single
             options={possibleStartTimes}
             label={''}
@@ -128,7 +128,7 @@ export default function Hour() {
           />
           <StyledBetweenTypography>{resolvedLocale.andText}</StyledBetweenTypography>
           <CustomSelect
-            size='md'
+            size='sm'
             single
             options={possibleEndTimes}
             label={''}

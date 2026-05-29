@@ -132,15 +132,15 @@ describe('Scheduler (browser)', () => {
     render(<Scheduler cron='0 */4 * * *' setCron={noop} setCronError={noop} isAdmin />);
 
     // `0 */4 * * *` puts the hour field in "every" mode, revealing the
-    // between/and time-range selects (start defaults to 12:00 AM, end 11:00 PM).
-    const startInput = await screen.findByDisplayValue('12:00 AM');
+    // between/and time-range selects (start defaults to 12 AM, end 11 PM).
+    const startInput = await screen.findByDisplayValue('12 AM');
     await user.click(startInput);
 
     const listbox = await screen.findByRole('listbox');
-    await user.click(within(listbox).getByText('02:00 AM'));
+    await user.click(within(listbox).getByText('02 AM'));
 
     await waitFor(() => expect(screen.queryByRole('listbox')).not.toBeInTheDocument());
-    expect(screen.getByDisplayValue('02:00 AM')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('02 AM')).toBeInTheDocument();
   });
 
   // #18: the linked upstream bug (mui/material-ui#27501) was a MUI 5 *beta*

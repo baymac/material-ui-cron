@@ -45,8 +45,10 @@ export function isAscending(arr: string[]) {
 export function getTimesOfTheDayList(): Array<string> {
   const hours = [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
   const periods = ['AM', 'PM'];
+  // No ":00" — the hour-range labels are on-the-hour only, so "12 AM" is enough
+  // (and lets the select be narrower than "12:00 AM").
   return periods.flatMap((period) =>
-    hours.map((hour) => (hour > 9 ? `${hour}:00 ${period}` : `0${hour}:00 ${period}`)),
+    hours.map((hour) => (hour > 9 ? `${hour} ${period}` : `0${hour} ${period}`)),
   );
 }
 
