@@ -89,11 +89,13 @@ const HeaderIconButton = styled(IconButton)(({ theme }) => ({
 
 interface SchedulerHeaderProps {
   sx?: SxProps<Theme>;
+  /** Overrides the locale's title text next to the calendar icon. */
+  title?: string;
 }
 
 const DEFAULT_CRON = '0 0 * * *';
 
-export default function SchedulerHeader({ sx }: SchedulerHeaderProps) {
+export default function SchedulerHeader({ sx, title }: SchedulerHeaderProps) {
   const isAdmin = useAtomValue(isAdminState);
   const locale = useAtomValue(localeState);
   const [cronExp, setCronExp] = useAtom(cronExpState);
@@ -129,7 +131,7 @@ export default function SchedulerHeader({ sx }: SchedulerHeaderProps) {
     <Bar sx={sx}>
       <Title variant='subtitle1'>
         <CalendarMonthIcon fontSize='small' />
-        {localeString(locale, 'scheduleTitle')}
+        {title ?? localeString(locale, 'scheduleTitle')}
       </Title>
       <Actions>
         <CronField

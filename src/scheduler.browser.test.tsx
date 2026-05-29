@@ -255,6 +255,48 @@ describe('Scheduler redesign (browser)', () => {
     expect(await screen.findByRole('button', { name: 'Reset' })).toBeEnabled();
   });
 
+  it('overrides the header title via the title prop', async () => {
+    render(
+      <Scheduler
+        cron='0 0 * * *'
+        setCron={noop}
+        setCronError={noop}
+        isAdmin
+        title='Backup schedule'
+      />,
+    );
+    expect(await screen.findByText('Backup schedule')).toBeInTheDocument();
+    expect(screen.queryByText('Schedule')).not.toBeInTheDocument();
+  });
+
+  it('title prop wins over the locale scheduleTitle', async () => {
+    render(
+      <Scheduler
+        cron='0 0 * * *'
+        setCron={noop}
+        setCronError={noop}
+        isAdmin
+        locale='zh_CN'
+        title='Custom'
+      />,
+    );
+    expect(await screen.findByText('Custom')).toBeInTheDocument();
+    expect(screen.queryByText('计划')).not.toBeInTheDocument();
+  });
+
+  it('recolors the accent (header bar) via the color prop', async () => {
+    render(
+      <Scheduler cron='0 0 * * *' setCron={noop} setCronError={noop} isAdmin color='#9c27b0' />,
+    );
+    const title = await screen.findByText('Schedule');
+    // The header Bar paints its background from palette.primary.main, which the
+    // color prop overrides. The title <h6> sits directly inside that bar div, so
+    // the nearest div ancestor is the bar itself (rgb(156, 39, 176) === #9c27b0).
+    const bar = title.closest('div') as HTMLElement;
+    expect(bar).toBeTruthy();
+    expect(getComputedStyle(bar).backgroundColor).toBe('rgb(156, 39, 176)');
+  });
+
   it('renders under a dark + RTL theme without breaking', async () => {
     const theme = createTheme({ palette: { mode: 'dark' }, direction: 'rtl' });
     render(

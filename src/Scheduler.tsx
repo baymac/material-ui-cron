@@ -1,5 +1,6 @@
 import Box from '@mui/material/Box';
-import { styled } from '@mui/material/styles';
+import { ThemeProvider, createTheme, styled } from '@mui/material/styles';
+import type { Theme } from '@mui/material/styles';
 import React from 'react';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import SchedulerHeader from './components/SchedulerHeader';
@@ -86,7 +87,7 @@ const FormCol = styled(Box)({
 
 export default function Scheduler(props: SchedulerProps) {
   const { cron, setCron, setCronError, isAdmin, locale, customLocale } = props;
-  const { timezone, layout = 'auto', slotProps } = props;
+  const { timezone, layout = 'auto', slotProps, title, color } = props;
   const period = useAtomValue(periodState);
   const [periodIndex, setPeriodIndex] = React.useState(0);
 
@@ -198,9 +199,9 @@ export default function Scheduler(props: SchedulerProps) {
     setMonth,
   ]);
 
-  return (
+  const card = (
     <Root>
-      <SchedulerHeader sx={slotProps?.header?.sx} />
+      <SchedulerHeader sx={slotProps?.header?.sx} title={title} />
       <Grid data-layout={layout}>
         <FormCol className='form-col'>
           <CronReader />
@@ -215,4 +216,25 @@ export default function Scheduler(props: SchedulerProps) {
       </Grid>
     </Root>
   );
+
+  // No accent override: render the card under the surrounding theme as-is.
+  if (!color) {
+    return card;
+  }
+
+  // Recolor everything that reads `palette.primary` (header bar, the selected
+  // segment of the toggles, the section pills) by overriding primary in a
+  // scoped theme. `augmentColor` derives light/dark/contrastText from the
+  // single color so the contrast (text) color stays legible against it — we
+  // must augment up front because createTheme's merge args are NOT re-augmented.
+  // `outer` is `{}` when no parent ThemeProvider exists, so fall back to a
+  // default theme to borrow its augmentColor (and contrast threshold).
+  const withAccent = (outer: Theme) => {
+    const base = outer.palette ? outer : createTheme();
+    return createTheme(base, {
+      palette: { primary: base.palette.augmentColor({ color: { main: color } }) },
+    });
+  };
+
+  return <ThemeProvider theme={withAccent}>{card}</ThemeProvider>;
 }
