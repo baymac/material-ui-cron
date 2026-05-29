@@ -319,3 +319,23 @@ describe('Scheduler segmented controls (browser)', () => {
     expect(within(group).getByRole('button', { name: 'every' })).toBeInTheDocument();
   });
 });
+
+// ---- Per-instance state: two schedulers on a page must not share atoms ----
+describe('Scheduler instance isolation (browser)', () => {
+  it('keeps two Scheduler instances independent', async () => {
+    render(
+      <>
+        <Scheduler cron='0 0 * * *' setCron={noop} setCronError={noop} isAdmin />
+        <Scheduler cron='30 9 * * 1' setCron={noop} setCronError={noop} isAdmin />
+      </>,
+    );
+    // With module-global atoms the two instances would stomp each other and
+    // both periods would read the same value; the per-instance Provider keeps
+    // them separate (one `day`, one `week`).
+    await waitFor(() => {
+      const periods = screen.getAllByLabelText('Period') as HTMLInputElement[];
+      expect(periods).toHaveLength(2);
+      expect(periods.map((p) => p.value).sort()).toEqual(['day', 'week']);
+    });
+  });
+});

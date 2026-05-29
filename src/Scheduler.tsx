@@ -16,13 +16,10 @@ import {
   cronExpInputState,
   cronValidationErrorMessageState,
   dayOfMonthAtEveryState,
-  dayOfMonthState,
   hourAtEveryState,
-  hourState,
   isAdminState,
   localeState,
   minuteAtEveryState,
-  minuteState,
   monthState,
   periodState,
   weekState,
@@ -31,9 +28,6 @@ import type { SchedulerProps } from './types';
 import { getPeriodIndex } from './utils';
 import {
   atEveryOptions,
-  DEFAULT_DAY_OF_MONTH_OPTS,
-  DEFAULT_HOUR_OPTS_EVERY,
-  DEFAULT_MINUTE_OPTS,
   getPeriodOptions,
   getMonthOptions,
   onEveryOptions,
@@ -103,10 +97,9 @@ export default function Scheduler(props: SchedulerProps) {
   const setResolvedLocale = useSetAtom(localeState);
   const currentLocale = useAtomValue(localeState);
 
-  // Jotai does not provide reset hooks; emulate by setting initial values on unmount
-  const setMinute = useSetAtom(minuteState);
-  const setHour = useSetAtom(hourState);
-  const setDayOfMonth = useSetAtom(dayOfMonthState);
+  // Setters used by the locale re-map effect below. (No unmount-reset setters
+  // are needed anymore: each instance has its own jotai store via the Provider
+  // in SchedulerRoot, so state is discarded with the store on unmount.)
   const setWeek = useSetAtom(weekState);
   const setMonth = useSetAtom(monthState);
   const setPeriod = useSetAtom(periodState);
@@ -161,35 +154,6 @@ export default function Scheduler(props: SchedulerProps) {
       setIsAdmin(false);
     }
   }, [isAdmin, setIsAdmin]);
-
-  // Only reset atoms on unmount. The atoms are module-level (shared) globals,
-  // so we restore their defaults when the component leaves the tree. Keep
-  // `currentLocale` out of the dependency array: with it in deps, React fires
-  // this effect's cleanup on every locale change (and re-mount via `key`),
-  // resetting the shared atoms to the *previously captured* locale's defaults.
-  // That is exactly the "period stays one language behind" bug — switch to
-  // Chinese and the period label resets to English; switch back and it shows
-  // Chinese. Read the latest locale through a ref so the cleanup runs only on
-  // a real unmount and uses the current locale.
-  const localeRef = React.useRef(currentLocale);
-  React.useEffect(() => {
-    localeRef.current = currentLocale;
-  }, [currentLocale]);
-  React.useEffect(() => {
-    return () => {
-      const loc = localeRef.current;
-      setCronExpInput('0 0 * * *');
-      setMinute([DEFAULT_MINUTE_OPTS[0]]);
-      setHour([DEFAULT_HOUR_OPTS_EVERY[0]]);
-      setDayOfMonth(DEFAULT_DAY_OF_MONTH_OPTS);
-      setWeek(weekOptions(loc.weekDaysOptions));
-      setMonth(getMonthOptions(loc.shortMonthOptions));
-      setPeriod(getPeriodOptions(loc.periodOptions)[1]);
-    };
-    // Setters from `useSetAtom` are stable; the locale is read via ref. Empty
-    // deps make this a true unmount-only cleanup.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   React.useEffect(() => {
     if (customLocale) {
