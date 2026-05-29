@@ -89,7 +89,7 @@ export default function CustomSelect(props: CustomSelectProps) {
         // selection can otherwise leave the popup open — blurOnSelect forces
         // it shut. Multi-selects keep the popup open for further picks.
         blurOnSelect={single ? true : undefined}
-        sx={{
+        sx={(theme) => ({
           width: sizeConfig.width,
           '& .MuiAutocomplete-inputRoot': {
             cursor: 'pointer',
@@ -102,12 +102,14 @@ export default function CustomSelect(props: CustomSelectProps) {
           '& .MuiAutocomplete-input': {
             cursor: 'pointer',
           },
-          // Keep text legible (non-transparent) when disabled.
+          // Keep disabled text at full contrast (not the faded default) and
+          // theme-aware: `text.primary` reads correctly on the card in both
+          // light and dark mode (a hardcoded `white` was invisible in light).
           '& .MuiInputBase-root.Mui-disabled .MuiInputBase-input': {
-            color: 'white',
-            WebkitTextFillColor: 'white',
+            color: theme.palette.text.primary,
+            WebkitTextFillColor: theme.palette.text.primary,
           },
-        }}
+        })}
         renderTags={
           // Single-value selects (e.g. the every-mode interval) show the value
           // as plain inline text — not a removable chip — so the field reads
@@ -156,12 +158,12 @@ export default function CustomSelect(props: CustomSelectProps) {
               // names the *section* by its connector word (At/Every, on, ...),
               // so this field-name label is complementary, not redundant.
               label={label}
-              sx={{
+              sx={(theme) => ({
                 '& .MuiInputBase-input.Mui-disabled': {
-                  color: 'white',
-                  WebkitTextFillColor: 'white',
+                  color: theme.palette.text.primary,
+                  WebkitTextFillColor: theme.palette.text.primary,
                 },
-              }}
+              })}
             />
           );
         }}
