@@ -25,10 +25,13 @@ import {
 const StyledBetweenTypography = styled(Typography)({
   margin: '0 2px',
   // No fixed height: the parent's alignItems centers it against the inline
-  // selects, and on a wrapped mobile line it sits at natural height so the
-  // vertical spacing between stacked rows stays even.
+  // selects. lineHeight 1 keeps the flex item the same height as the glyph so,
+  // when it wraps onto its own mobile line, it doesn't inject extra space above
+  // and below the word — keeping the gaps around "between" equal to the toggle
+  // -> select gap.
   display: 'flex',
   alignItems: 'center',
+  lineHeight: 1,
 });
 
 export default function Minute() {
