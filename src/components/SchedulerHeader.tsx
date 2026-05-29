@@ -33,6 +33,13 @@ const Title = styled(Typography)({
   gap: 8,
   fontWeight: 600,
   fontSize: 15,
+  // Grow to fill the row so the Actions group is pushed to the right on a wide
+  // card. flex-grow only distributes leftover space on a non-wrapped line, so
+  // it doesn't change where the group wraps — but it lets us drop the
+  // `marginLeft: auto` that would otherwise right-shove the group on its own
+  // wrapped (mobile) row, keeping the cron field's left edge aligned with the
+  // title's calendar icon.
+  flex: '1 1 auto',
 });
 
 // Cron expression field. Monospace, sits on the colored header, so its text
@@ -62,16 +69,16 @@ const CronField = styled(TextField)(({ theme }) => ({
   },
 }));
 
-// Cron field + copy/reset, kept together as one unit. `marginLeft: auto` pushes
-// the group to the right on a wide card; on a narrow card the whole group wraps
-// to a second row (and the cron field shrinks) so copy/reset never split off or
-// get clipped.
+// Cron field + copy/reset, kept together as one unit. The growing Title pushes
+// this group to the right on a wide card; on a narrow card the whole group
+// wraps to a second row (and the cron field shrinks) so copy/reset never split
+// off or get clipped — and with no left margin the group sits at the header's
+// left padding, aligning the cron field under the title's calendar icon.
 const Actions = styled(Box)({
   display: 'flex',
   alignItems: 'center',
   gap: 8,
   minWidth: 0,
-  marginLeft: 'auto',
 });
 
 const HeaderIconButton = styled(IconButton)(({ theme }) => ({
