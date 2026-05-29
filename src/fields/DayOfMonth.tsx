@@ -118,7 +118,6 @@ export default function DayOfMonth() {
         single={dayOfMonthAtEvery.value === 'every'}
         sort
         disableEmpty
-        limitTags={3}
         disableClearable={dayOfMonthAtEvery.value === 'every' || dayOfMonth.length < 2}
       />
       {dayOfMonthAtEvery.value === 'every' && (

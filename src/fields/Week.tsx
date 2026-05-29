@@ -24,7 +24,6 @@ export default function Week() {
         multiple
         sort
         disableEmpty
-        limitTags={3}
         disableClearable={week.length < 2}
       />
     </FieldRow>

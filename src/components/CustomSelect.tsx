@@ -93,15 +93,11 @@ export default function CustomSelect(props: CustomSelectProps) {
           width: sizeConfig.width,
           '& .MuiAutocomplete-inputRoot': {
             cursor: 'pointer',
-            ...(single
-              ? // A single-value select renders its value inline (see
-                // renderTags); keep it on one line so the field stays a normal
-                // single-line height instead of wrapping tall at a narrow width.
-                { flexWrap: 'nowrap' }
-              : // A multi-select shows chips. When many/all options are picked
-                // (e.g. every day of the month) the chip area would grow
-                // unbounded — cap it and let it scroll instead.
-                { maxHeight: 96, overflowY: 'auto' }),
+            // A single-value select renders its value inline (see renderTags);
+            // keep it on one line so the field stays a normal single-line height.
+            // (Multi-selects are bounded by capping the visible chips in
+            // renderTags, so no maxHeight/scroll is needed here.)
+            ...(single ? { flexWrap: 'nowrap' } : {}),
           },
           '& .MuiAutocomplete-input': {
             cursor: 'pointer',
@@ -122,8 +118,16 @@ export default function CustomSelect(props: CustomSelectProps) {
                   {(value as SelectOptions[]).map((option) => option.label).join(', ')}
                 </span>
               )
-            : (value, getTagProps) =>
-                value.map((option, index) => {
+            : (value, getTagProps) => {
+                // Cap the visible chips at MAX_VISIBLE (+ a "+N" indicator) even
+                // when the field is focused/open. MUI normally shows *all* tags
+                // when focused, which makes a many-selected field balloon (and,
+                // when scrolled, slide chips under the floating label). Limiting
+                // here keeps the field a bounded, stable height in every state.
+                const MAX_VISIBLE = 3;
+                const shown = value.slice(0, MAX_VISIBLE);
+                const extra = value.length - shown.length;
+                const chips = shown.map((option, index) => {
                   const disableSingleItemRemove =
                     value.length === 1 && disableEmpty ? { onDelete: undefined } : {};
                   return (
@@ -135,7 +139,12 @@ export default function CustomSelect(props: CustomSelectProps) {
                       key={(option as SelectOptions).label}
                     />
                   );
-                })
+                });
+                if (extra > 0) {
+                  chips.push(<Chip key='__more' label={`+${extra}`} size='small' />);
+                }
+                return chips;
+              }
         }
         getOptionDisabled={(option) => ((option as SelectOptions).disabled ? true : false)}
         renderInput={(params) => {

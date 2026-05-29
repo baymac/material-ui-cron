@@ -114,7 +114,6 @@ export default function Minute() {
         sort
         disableEmpty
         disabled={minuteAtEvery.value === 'every' && !isAdmin}
-        limitTags={3}
       />
       {minuteAtEvery.value === 'every' && (
         <RangeGroup>

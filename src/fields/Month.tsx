@@ -24,7 +24,6 @@ export default function Month() {
         disableClearable
         sort
         disableEmpty
-        limitTags={3}
       />
     </FieldRow>
   );

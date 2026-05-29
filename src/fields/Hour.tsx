@@ -108,7 +108,6 @@ export default function Hour() {
         single={hourAtEvery.value === 'every' || !isAdmin}
         sort
         disableEmpty
-        limitTags={3}
         disableClearable={hourAtEvery.value === 'every' || hour.length < 2}
         disabled={!isAdmin && hourAtEvery.value === 'every'}
       />
