@@ -168,4 +168,28 @@ describe('Scheduler (browser)', () => {
       timeout: 3000,
     });
   });
+
+  // Regression: switching locale left the *selected value* one language behind
+  // (period read "day" under Chinese; switching back read "天" under English)
+  // because the shared atoms kept their stale localized labels. The fix
+  // re-localizes selections onto the new locale's matching option by value.
+  // Found by /qa on 2026-05-29.
+  it('re-localizes the selected period when the locale changes (no stale lag)', async () => {
+    const periodValueZh = () =>
+      (screen.getByLabelText('时间间隔') as HTMLInputElement).value;
+
+    const { rerender } = render(
+      <Scheduler cron='0 0 1 * *' setCron={noop} setCronError={noop} isAdmin locale='en' />,
+    );
+    // Month-level cron -> period reads "month" in English.
+    await waitFor(() => expect(periodValue()).toBe('month'), { timeout: 3000 });
+
+    // Switch to Chinese: the selection is preserved and its label translates.
+    rerender(<Scheduler cron='0 0 1 * *' setCron={noop} setCronError={noop} isAdmin locale='zh_CN' />);
+    await waitFor(() => expect(periodValueZh()).toBe('月'), { timeout: 3000 });
+
+    // Switch back to English: no Chinese lag — it reads "month" again.
+    rerender(<Scheduler cron='0 0 1 * *' setCron={noop} setCronError={noop} isAdmin locale='en' />);
+    await waitFor(() => expect(periodValue()).toBe('month'), { timeout: 3000 });
+  });
 });
