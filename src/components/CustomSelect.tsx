@@ -93,6 +93,10 @@ export default function CustomSelect(props: CustomSelectProps) {
           width: sizeConfig.width,
           '& .MuiAutocomplete-inputRoot': {
             cursor: 'pointer',
+            // A single-value select renders its value inline (see renderTags);
+            // keep it on one line so the field stays a normal single-line height
+            // instead of wrapping tall at a narrow width.
+            ...(single ? { flexWrap: 'nowrap' } : {}),
           },
           '& .MuiAutocomplete-input': {
             cursor: 'pointer',
@@ -103,20 +107,30 @@ export default function CustomSelect(props: CustomSelectProps) {
             WebkitTextFillColor: 'white',
           },
         }}
-        renderTags={(value, getTagProps) =>
-          value.map((option, index) => {
-            const disableSingleItemRemove =
-              value.length === 1 && disableEmpty ? { onDelete: undefined } : {};
-            return (
-              <Chip
-                label={(option as SelectOptions).label}
-                size='small'
-                {...getTagProps({ index })}
-                {...disableSingleItemRemove}
-                key={(option as SelectOptions).label}
-              />
-            );
-          })
+        renderTags={
+          // Single-value selects (e.g. the every-mode interval) show the value
+          // as plain inline text — not a removable chip — so the field reads
+          // like a normal single select and stays a single line tall.
+          single
+            ? (value) => (
+                <span style={{ paddingLeft: 4, whiteSpace: 'nowrap' }}>
+                  {(value as SelectOptions[]).map((option) => option.label).join(', ')}
+                </span>
+              )
+            : (value, getTagProps) =>
+                value.map((option, index) => {
+                  const disableSingleItemRemove =
+                    value.length === 1 && disableEmpty ? { onDelete: undefined } : {};
+                  return (
+                    <Chip
+                      label={(option as SelectOptions).label}
+                      size='small'
+                      {...getTagProps({ index })}
+                      {...disableSingleItemRemove}
+                      key={(option as SelectOptions).label}
+                    />
+                  );
+                })
         }
         getOptionDisabled={(option) => ((option as SelectOptions).disabled ? true : false)}
         renderInput={(params) => {
