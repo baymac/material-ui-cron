@@ -189,11 +189,14 @@ export function DemoPage() {
                 unchanged. */}
             <ThemeProvider theme={schedulerTheme}>
               {/* ScopedCssBaseline gives the preview the SAME baseline a global
-                  CssBaseline would (background.default, text.primary color,
-                  color-scheme) but scoped to this wrapper — so scoped dark mode
-                  looks identical to app-wide dark mode instead of leaving
-                  inherit-color text dark-on-dark. In desktop it's flush with the
-                  card; in mobile it's the phone-width frame. */}
+                  CssBaseline would (text.primary color, color-scheme) but scoped
+                  to this wrapper — so scoped dark mode looks identical to
+                  app-wide dark mode instead of leaving inherit-color text
+                  dark-on-dark. In mobile it's the phone-width frame (its dark
+                  background.default is the frame). In desktop the wrapper is flush
+                  behind the card, so its background must be transparent —
+                  otherwise the dark square peeks through the card's rounded
+                  corners as a dark halo. */}
               <ScopedCssBaseline
                 sx={
                   isMobile
@@ -206,7 +209,7 @@ export function DemoPage() {
                         border: 2,
                         borderColor: 'divider',
                       }
-                    : undefined
+                    : { backgroundColor: 'transparent' }
                 }
               >
                 <Scheduler
