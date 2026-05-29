@@ -1,5 +1,4 @@
 /*
 !/dist
-/dist/**/stories
 !/src
-/src/**/stories
+/demo

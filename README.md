@@ -5,7 +5,15 @@
 
 A React cron editor built with [material ui](https://material-ui.com/)
 
-For **demo** and **usage** clone repo and run `yarn && yarn dev`.
+For a **live demo**, run the demo app in [`demo/`](./demo):
+
+```bash
+yarn demo:install   # one-time: install the demo app's deps
+yarn demo           # http://localhost:5173
+```
+
+The demo is a small [TanStack Router](https://tanstack.com/router) + Vite SPA that
+imports the component straight from `src/`, so it always reflects the working tree.
 
 ![material-ui-cron demo](/docs/material-ui-cron-demo.png)
 
@@ -142,6 +150,32 @@ yarn coverage       # run everything and emit a coverage report
 `.github/workflows/test.yml` runs on pushes and pull requests to `main`. It
 lints (`biome lint`), type-checks (`tsc --noEmit`), builds, installs Chromium,
 runs `yarn coverage`, and uploads the coverage report as a build artifact.
+
+## Demo & deployment
+
+The [`demo/`](./demo) app is deployed to Vercel, which builds a fresh preview for
+**every branch and pull request** and comments the live URL on the PR.
+
+The build is driven by [`vercel.json`](./vercel.json) at the repo root:
+
+| Step | Command |
+| --- | --- |
+| Install | `yarn --cwd demo install` |
+| Build | `yarn --cwd demo build` |
+| Output | `demo/dist` |
+
+### One-time Vercel setup
+
+1. Create a Vercel project and link it to this GitHub repository
+   (Vercel dashboard → *Add New… → Project*, or `npx vercel link`).
+2. Leave the **Root Directory** as the repo root — `vercel.json` already points
+   the build at `demo/`. (The demo aliases the library from `../src`, so the whole
+   repo must be present at build time.)
+3. That's it. Vercel's Git integration produces a Preview Deployment for each push
+   to a branch / PR and a Production Deployment for `main`.
+
+No secrets or GitHub Actions workflow are required — preview URLs come from
+Vercel's native Git integration.
 
 ## Acknowledgement
 

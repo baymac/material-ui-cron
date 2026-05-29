@@ -1,0 +1,33 @@
+{
+  "name": "material-ui-cron-demo",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Live demo app for the material-ui-cron library (TanStack Router + Vite).",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^7.3.4",
+    "@mui/material": "^7.3.4",
+    "@mui/system": "^7.3.3",
+    "@tanstack/react-router": "^1",
+    "cronstrue": "^3.3.0",
+    "jotai": "^2.15.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.7.1",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.1",
+    "@vitejs/plugin-react": "^5.0.4",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.9"
+  }
+}

@@ -22,8 +22,12 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# storybook
-storybook-static
-
 # cache
 .eslintcache
+.gstack/
+
+# demo app
+/demo/node_modules
+/demo/dist
+/demo/.vercel
+.vercel

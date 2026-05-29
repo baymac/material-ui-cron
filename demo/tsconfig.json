@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "baseUrl": ".",
+    // For type-checking, resolve the library against its built public types
+    // (like a real consumer). The Vite *runtime* alias still points at ../src,
+    // so the dev server and build use live source — run `yarn build` in the repo
+    // root first if dist/ is missing. This keeps `yarn typecheck` from pulling
+    // the library internals in under the demo's stricter compiler flags.
+    "paths": {
+      "material-ui-cron": ["../dist/index.d.ts"]
+    }
+  },
+  "include": ["src", "vite.config.ts"]
+}
