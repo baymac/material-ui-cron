@@ -26,7 +26,7 @@ const StyledBetweenTypography = styled(Typography)({
   margin: '0 2px',
   display: 'flex',
   alignItems: 'center',
-  height: '30px', // Match the (compact) height of CustomSelect components
+  height: '40px', // Match the height of CustomSelect components
 });
 
 export default function DayOfMonth() {
@@ -94,13 +94,7 @@ export default function DayOfMonth() {
   };
 
   return (
-    <FieldRow
-      label={
-        dayOfMonthAtEvery.value === 'on'
-          ? resolvedLocale.multiDayOfMonthLabel
-          : resolvedLocale.dayOfMonthLabel
-      }
-    >
+    <FieldRow label={resolvedLocale.onEveryText}>
       <SegmentedControl
         ariaLabel={resolvedLocale.onEveryText}
         options={onEveryOptions(resolvedLocale.onOptionLabel, resolvedLocale.everyOptionLabel)}

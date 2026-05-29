@@ -91,20 +91,11 @@ export default function CustomSelect(props: CustomSelectProps) {
         blurOnSelect={single ? true : undefined}
         sx={{
           width: sizeConfig.width,
-          // Compact the input so its height matches the segmented toggle (~30px)
-          // instead of MUI's default ~40px small field. Match MUI's own
-          // selector specificity (.MuiAutocomplete-inputRoot.MuiInputBase-sizeSmall)
-          // so these padding overrides actually win.
-          '& .MuiAutocomplete-inputRoot.MuiInputBase-sizeSmall': {
+          '& .MuiAutocomplete-inputRoot': {
             cursor: 'pointer',
-            minHeight: 30,
-            paddingTop: '1px',
-            paddingBottom: '1px',
           },
-          '& .MuiAutocomplete-inputRoot.MuiInputBase-sizeSmall .MuiAutocomplete-input': {
+          '& .MuiAutocomplete-input': {
             cursor: 'pointer',
-            paddingTop: '1.5px',
-            paddingBottom: '1.5px',
           },
           // Keep text legible (non-transparent) when disabled.
           '& .MuiInputBase-root.Mui-disabled .MuiInputBase-input': {
@@ -128,16 +119,15 @@ export default function CustomSelect(props: CustomSelectProps) {
           })
         }
         getOptionDisabled={(option) => ((option as SelectOptions).disabled ? true : false)}
-        renderInput={({ inputProps, ...params }) => {
+        renderInput={(params) => {
           return (
             <TextField
               {...params}
               variant='outlined'
-              // The field name already shows in the FieldRow's uppercase header
-              // above this control, so rendering it again as a floating label is
-              // redundant. Keep it only as the input's accessible name. (inputProps
-              // is destructured out of params so it doesn't clash with slotProps.)
-              slotProps={{ htmlInput: { ...inputProps, 'aria-label': label } }}
+              // Field-name label (Hour(s), Minute(s), ...). The FieldRow header
+              // names the *section* by its connector word (At/Every, on, ...),
+              // so this field-name label is complementary, not redundant.
+              label={label}
               sx={{
                 '& .MuiInputBase-input.Mui-disabled': {
                   color: 'white',

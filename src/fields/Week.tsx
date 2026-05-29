@@ -13,7 +13,7 @@ export default function Week() {
   );
 
   return (
-    <FieldRow label={resolvedLocale.dayOfWeekLabel}>
+    <FieldRow label={resolvedLocale.onText}>
       <CustomSelect
         size='lg'
         options={weekOptions}

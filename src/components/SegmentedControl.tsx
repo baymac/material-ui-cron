@@ -26,7 +26,9 @@ const StyledGroup = styled(ToggleButtonGroup)(({ theme }) => ({
     fontWeight: 600,
     fontSize: 13,
     lineHeight: 1.2,
-    padding: '6px 14px',
+    // 40px so the toggle lines up with the value selects in the same row.
+    height: 40,
+    padding: '0 14px',
     color: theme.palette.text.secondary,
     borderColor: theme.palette.divider,
     '&.Mui-selected': {

@@ -28,7 +28,7 @@ const StyledBetweenTypography = styled(Typography)({
   margin: '0 2px',
   display: 'flex',
   alignItems: 'center',
-  height: '30px', // Match the (compact) height of CustomSelect components
+  height: '40px', // Match the height of CustomSelect components
 });
 
 export default function Hour() {
@@ -84,7 +84,7 @@ export default function Hour() {
   const resolvedLocale = useAtomValue(localeState);
 
   return (
-    <FieldRow label={resolvedLocale.hourLabel}>
+    <FieldRow label={resolvedLocale.atEveryText}>
       <SegmentedControl
         ariaLabel={resolvedLocale.atEveryText}
         options={
