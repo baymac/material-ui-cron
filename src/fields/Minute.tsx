@@ -4,6 +4,7 @@ import React from 'react';
 import { useAtom, useAtomValue } from 'jotai';
 import CustomSelect from '../components/CustomSelect';
 import FieldRow from '../components/FieldRow';
+import RangeGroup from '../components/RangeGroup';
 import SegmentedControl from '../components/SegmentedControl';
 import {
   atEveryOptions,
@@ -116,7 +117,7 @@ export default function Minute() {
         limitTags={3}
       />
       {minuteAtEvery.value === 'every' && (
-        <>
+        <RangeGroup>
           <StyledBetweenTypography>{resolvedLocale.betweenText}</StyledBetweenTypography>
           <CustomSelect
             size='sm'
@@ -141,7 +142,7 @@ export default function Minute() {
             disableClearable
             disabled={!isAdmin}
           />
-        </>
+        </RangeGroup>
       )}
     </FieldRow>
   );

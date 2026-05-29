@@ -4,6 +4,7 @@ import React from 'react';
 import { useAtom, useAtomValue } from 'jotai';
 import CustomSelect from '../components/CustomSelect';
 import FieldRow from '../components/FieldRow';
+import RangeGroup from '../components/RangeGroup';
 import SegmentedControl from '../components/SegmentedControl';
 import {
   atEveryOptions,
@@ -112,7 +113,7 @@ export default function Hour() {
         disabled={!isAdmin && hourAtEvery.value === 'every'}
       />
       {hourAtEvery.value === 'every' && (
-        <>
+        <RangeGroup>
           <StyledBetweenTypography>{resolvedLocale.betweenText}</StyledBetweenTypography>
           <CustomSelect
             size='md'
@@ -137,7 +138,7 @@ export default function Hour() {
             disableClearable
             disabled={!isAdmin}
           />
-        </>
+        </RangeGroup>
       )}
     </FieldRow>
   );

@@ -4,6 +4,7 @@ import React from 'react';
 import { useAtom, useAtomValue } from 'jotai';
 import CustomSelect from '../components/CustomSelect';
 import FieldRow from '../components/FieldRow';
+import RangeGroup from '../components/RangeGroup';
 import SegmentedControl from '../components/SegmentedControl';
 import {
   DEFAULT_DAY_OF_MONTH_OPTS,
@@ -121,7 +122,7 @@ export default function DayOfMonth() {
         disableClearable={dayOfMonthAtEvery.value === 'every' || dayOfMonth.length < 2}
       />
       {dayOfMonthAtEvery.value === 'every' && (
-        <>
+        <RangeGroup>
           <StyledBetweenTypography>{resolvedLocale.betweenText}</StyledBetweenTypography>
           <CustomSelect
             size='md'
@@ -144,7 +145,7 @@ export default function DayOfMonth() {
             multiple={false}
             disableClearable
           />
-        </>
+        </RangeGroup>
       )}
     </FieldRow>
   );
