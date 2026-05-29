@@ -2,6 +2,7 @@ import React from 'react';
 import { useAtom, useAtomValue } from 'jotai';
 import CustomSelect from '../components/CustomSelect';
 import FieldRow from '../components/FieldRow';
+import SectionTag from '../components/SectionTag';
 import { getMonthOptions } from '../constants';
 import { localeState, monthState } from '../store';
 
@@ -13,7 +14,7 @@ export default function Month() {
   );
 
   return (
-    <FieldRow label={resolvedLocale.inText}>
+    <FieldRow headerSlot={<SectionTag>{resolvedLocale.inText}</SectionTag>}>
       <CustomSelect
         size='lg'
         options={monthOptions}

@@ -1,6 +1,7 @@
 import { useAtom, useAtomValue } from 'jotai';
 import CustomSelect from '../components/CustomSelect';
 import FieldRow from '../components/FieldRow';
+import SectionTag from '../components/SectionTag';
 import { getPeriodOptions, getPeriodOptionsWithHourDisabled } from '../constants';
 import { isAdminState, localeState, periodState } from '../store';
 
@@ -12,7 +13,7 @@ export default function Period() {
   const resolvedLocale = useAtomValue(localeState);
 
   return (
-    <FieldRow label={resolvedLocale.everyText}>
+    <FieldRow headerSlot={<SectionTag>{resolvedLocale.everyText}</SectionTag>}>
       <CustomSelect
         size='sm'
         single
