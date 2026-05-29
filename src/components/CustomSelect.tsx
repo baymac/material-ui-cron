@@ -123,19 +123,20 @@ export default function CustomSelect(props: CustomSelectProps) {
           })
         }
         getOptionDisabled={(option) => ((option as SelectOptions).disabled ? true : false)}
-        renderInput={(params) => {
+        renderInput={({ inputProps, ...params }) => {
           return (
             <TextField
               {...params}
               variant='outlined'
-              label={label}
+              // The field name already shows in the FieldRow's uppercase header
+              // above this control, so rendering it again as a floating label is
+              // redundant. Keep it only as the input's accessible name. (inputProps
+              // is destructured out of params so it doesn't clash with slotProps.)
+              slotProps={{ htmlInput: { ...inputProps, 'aria-label': label } }}
               sx={{
                 '& .MuiInputBase-input.Mui-disabled': {
                   color: 'white',
                   WebkitTextFillColor: 'white',
-                },
-                '& .MuiFormLabel-root.Mui-disabled': {
-                  color: 'white',
                 },
               }}
             />
