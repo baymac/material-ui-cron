@@ -46,7 +46,7 @@ describe('Scheduler (browser)', () => {
     // The value is parsed and normalised (1/4 -> the equivalent 1-23/4). What
     // matters for #19 is that it validates cleanly: no error surfaces.
     await waitFor(() => expect(setCronError).toHaveBeenLastCalledWith(''), { timeout: 3000 });
-    expect(screen.queryByText(/Invalid .* cron part/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Enter a valid schedule/i)).not.toBeInTheDocument();
   });
 
   it('still flags a genuinely invalid expression', async () => {
@@ -57,7 +57,10 @@ describe('Scheduler (browser)', () => {
     fireEvent.change(input, { target: { value: '60 * * * *' } });
 
     await waitFor(
-      () => expect(setCronError).toHaveBeenLastCalledWith(expect.stringMatching(/Invalid minute/i)),
+      () =>
+        expect(setCronError).toHaveBeenLastCalledWith(
+          expect.stringMatching(/Minute must be between 0 and 59/i),
+        ),
       { timeout: 3000 },
     );
   });
@@ -137,10 +140,10 @@ describe('Scheduler (browser)', () => {
     await user.click(startInput);
 
     const listbox = await screen.findByRole('listbox');
-    await user.click(within(listbox).getByText('02 AM'));
+    await user.click(within(listbox).getByText('2 AM'));
 
     await waitFor(() => expect(screen.queryByRole('listbox')).not.toBeInTheDocument());
-    expect(screen.getByDisplayValue('02 AM')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('2 AM')).toBeInTheDocument();
   });
 
   // #18: the linked upstream bug (mui/material-ui#27501) was a MUI 5 *beta*

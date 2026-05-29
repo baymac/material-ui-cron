@@ -158,7 +158,7 @@ describe('isValidStepPart (#19 step validation)', () => {
   it('rejects a descending range step', () => {
     const res = isValidStepPart('10-1/4');
     expect(res.isValid).toBe(false);
-    expect(res.message).toBe('Incorrect range');
+    expect(res.message).toBe('range must be low to high');
   });
 
   it('rejects malformed step parts', () => {
@@ -249,13 +249,13 @@ describe('validateCronExp (end-to-end)', () => {
   });
 
   const invalid: [string, string][] = [
-    ['0 1/4 * *', 'Cron should have 5 parts'],
-    ['60 * * * *', 'Invalid minute cron part: Number should be between 0 and 59'],
-    ['0 24 * * *', 'Invalid hour cron part: Number should be between 0 and 23'],
-    ['0 10-1/4 * * *', 'Invalid hour cron part: Incorrect range'],
-    ['0 0 32 * *', 'Invalid day of month cron part: Number should be between 1 and 31'],
-    ['0 0 1 13 *', 'Invalid month cron part: Number should be between 0 and 6'],
-    ['0 0 * * 7', 'Invalid day of week cron part: Number should be between 0 and 6'],
+    ['0 1/4 * *', 'A cron expression must have 5 parts'],
+    ['60 * * * *', 'Minute must be between 0 and 59'],
+    ['0 24 * * *', 'Hour must be between 0 and 23'],
+    ['0 10-1/4 * * *', 'Hour range must be low to high'],
+    ['0 0 32 * *', 'Day of month must be between 1 and 31'],
+    ['0 0 1 13 *', 'Month must be between 1 and 12'],
+    ['0 0 * * 7', 'Day of week must be between 0 and 6'],
   ];
   it.each(invalid)('rejects %s', (cron, message) => {
     const res = validateCronExp(cron);
