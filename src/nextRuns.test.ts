@@ -5,8 +5,8 @@ import { computeNextRuns, formatAbsolute, formatRelative, localeToBcp47 } from '
 const ANCHOR = new Date('2026-05-29T17:00:00Z');
 
 describe('computeNextRuns', () => {
-  it('returns the requested number of future occurrences', () => {
-    const runs = computeNextRuns('*/2 * * * 1-5', 5, { timezone: 'UTC', anchor: ANCHOR });
+  it('returns the requested number of future occurrences', async () => {
+    const runs = await computeNextRuns('*/2 * * * 1-5', 5, { timezone: 'UTC', anchor: ANCHOR });
     expect(runs).toHaveLength(5);
     expect(runs[0].toISOString()).toBe('2026-05-29T17:02:00.000Z');
     expect(runs[1].toISOString()).toBe('2026-05-29T17:04:00.000Z');
@@ -16,37 +16,40 @@ describe('computeNextRuns', () => {
     }
   });
 
-  it('handles the L (last day of month) form', () => {
-    const runs = computeNextRuns('0 0 L * *', 1, { timezone: 'UTC', anchor: ANCHOR });
+  it('handles the L (last day of month) form', async () => {
+    const runs = await computeNextRuns('0 0 L * *', 1, { timezone: 'UTC', anchor: ANCHOR });
     expect(runs).toHaveLength(1);
     // May has 31 days -> last day is the 31st.
     expect(runs[0].toISOString()).toBe('2026-05-31T00:00:00.000Z');
   });
 
-  it('returns [] for an impossible-but-syntactically-valid cron (Feb 30)', () => {
-    expect(computeNextRuns('0 0 30 2 *', 5, { timezone: 'UTC', anchor: ANCHOR })).toEqual([]);
+  it('returns [] for an impossible-but-syntactically-valid cron (Feb 30)', async () => {
+    expect(await computeNextRuns('0 0 30 2 *', 5, { timezone: 'UTC', anchor: ANCHOR })).toEqual([]);
   });
 
-  it('returns [] for unparseable input instead of throwing', () => {
+  it('returns [] for unparseable input instead of throwing', async () => {
     // cron-parser throws on these -> guard returns []. (In the component this
     // path is also gated upstream by validateCronExp.)
-    expect(computeNextRuns('not a cron', 5, { anchor: ANCHOR })).toEqual([]);
-    expect(computeNextRuns('60 * * * *', 5, { anchor: ANCHOR })).toEqual([]);
+    expect(await computeNextRuns('not a cron', 5, { anchor: ANCHOR })).toEqual([]);
+    expect(await computeNextRuns('60 * * * *', 5, { anchor: ANCHOR })).toEqual([]);
   });
 
-  it('never throws even for odd input, always returns an array', () => {
-    expect(Array.isArray(computeNextRuns('', 5, { anchor: ANCHOR }))).toBe(true);
+  it('never throws even for odd input, always returns an array', async () => {
+    expect(Array.isArray(await computeNextRuns('', 5, { anchor: ANCHOR }))).toBe(true);
   });
 
-  it('applies the timezone (same wall-clock cron resolves to different instants)', () => {
-    const utc = computeNextRuns('0 12 * * *', 1, { timezone: 'UTC', anchor: ANCHOR });
-    const ny = computeNextRuns('0 12 * * *', 1, { timezone: 'America/New_York', anchor: ANCHOR });
+  it('applies the timezone (same wall-clock cron resolves to different instants)', async () => {
+    const utc = await computeNextRuns('0 12 * * *', 1, { timezone: 'UTC', anchor: ANCHOR });
+    const ny = await computeNextRuns('0 12 * * *', 1, {
+      timezone: 'America/New_York',
+      anchor: ANCHOR,
+    });
     expect(utc[0].toISOString()).not.toBe(ny[0].toISOString());
   });
 
   // Contract test (Codex #6): every cron the library can EMIT must be
   // consumable by cron-parser or degrade cleanly to []. None may throw.
-  it('never throws on representative library-emitted crons', () => {
+  it('never throws on representative library-emitted crons', async () => {
     const emitted = [
       '*/5 * * * *',
       '0 1/4 * * *',
@@ -58,7 +61,7 @@ describe('computeNextRuns', () => {
       '0 0 1 1 *',
     ];
     for (const cron of emitted) {
-      const runs = computeNextRuns(cron, 3, { timezone: 'UTC', anchor: ANCHOR });
+      const runs = await computeNextRuns(cron, 3, { timezone: 'UTC', anchor: ANCHOR });
       expect(Array.isArray(runs)).toBe(true);
       // Either real dates or a clean empty list — never a throw.
       runs.forEach((d) => expect(d).toBeInstanceOf(Date));

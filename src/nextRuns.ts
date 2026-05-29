@@ -1,4 +1,8 @@
-import { CronExpressionParser } from 'cron-parser';
+// `cron-parser` (and its transitive `luxon`) is the heaviest dependency in the
+// bundle, yet it is only needed to compute the preview occurrences. It is
+// imported *dynamically* inside computeNextRuns so the bundler splits it into a
+// separate async chunk instead of inlining it into the main entry — the field
+// editor renders without waiting on it. Hence computeNextRuns is async.
 
 // Next-runs preview logic. Kept as PURE functions (no React, no wall-clock
 // reads except the explicit `anchor`) so they unit-test in the Node project
@@ -26,12 +30,13 @@ export interface NextRunsOptions {
  * failure it returns `[]` so the UI degrades to a "no upcoming runs" message
  * instead of crashing.
  */
-export function computeNextRuns(
+export async function computeNextRuns(
   cron: string,
   count = 5,
   opts: NextRunsOptions = {},
-): Date[] {
+): Promise<Date[]> {
   try {
+    const { CronExpressionParser } = await import('cron-parser');
     const interval = CronExpressionParser.parse(cron, {
       currentDate: opts.anchor ?? new Date(),
       tz: opts.timezone,
