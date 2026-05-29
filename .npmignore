@@ -1,4 +1,7 @@
 /*
 !/dist
 !/src
+/src/**/*.test.*
+/src/**/__screenshots__
+/src/jest-dom.d.ts
 /demo
