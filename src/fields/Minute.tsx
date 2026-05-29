@@ -88,6 +88,17 @@ export default function Minute() {
 
   const resolvedLocale = useAtomValue(localeState);
 
+  // Switch the value to a valid non-zero interval in the SAME update as the
+  // mode toggle. Otherwise the derived cron briefly becomes `*/0` (interval 0)
+  // between the mode change and the effect that fixes the value, flashing an
+  // "Invalid minute cron part" error before it self-corrects.
+  const handleAtEvery = (next: typeof minuteAtEvery) => {
+    if (next.value === 'every' && (minute.length !== 1 || minute[0].value === '0')) {
+      setMinute([DEFAULT_MINUTE_OPTS[1]]);
+    }
+    setMinuteAtEvery(next);
+  };
+
   return (
     <FieldRow
       headerSlot={
@@ -99,7 +110,7 @@ export default function Minute() {
               : atOptionsNonAdmin(resolvedLocale.atOptionLabel, resolvedLocale.everyOptionLabel)
           }
           value={minuteAtEvery}
-          setValue={setMinuteAtEvery}
+          setValue={handleAtEvery}
         />
       }
     >

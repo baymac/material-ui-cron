@@ -84,6 +84,16 @@ export default function Hour() {
 
   const resolvedLocale = useAtomValue(localeState);
 
+  // Set a valid non-zero interval in the SAME update as the mode toggle so the
+  // derived cron never briefly becomes `*/0` (which flashes an invalid-cron
+  // error before the effect corrects the value).
+  const handleAtEvery = (next: typeof hourAtEvery) => {
+    if (next.value === 'every' && (hour.length !== 1 || hour[0].value === '0')) {
+      setHour([DEFAULT_HOUR_OPTS_AT[1]]);
+    }
+    setHourAtEvery(next);
+  };
+
   return (
     <FieldRow
       headerSlot={
@@ -95,7 +105,7 @@ export default function Hour() {
               : atOptionsNonAdmin(resolvedLocale.atOptionLabel, resolvedLocale.everyOptionLabel)
           }
           value={hourAtEvery}
-          setValue={setHourAtEvery}
+          setValue={handleAtEvery}
         />
       }
     >

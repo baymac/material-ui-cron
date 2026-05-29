@@ -78,6 +78,16 @@ export default function DayOfMonth() {
     }
   }, [dayOfMonthAtEvery]);
 
+  // Set a valid single day in the SAME update as the mode toggle so the derived
+  // cron never briefly becomes `*/L` (invalid interval) when switching to
+  // "every" while "L" / multiple days are selected.
+  const handleOnEvery = (next: typeof dayOfMonthAtEvery) => {
+    if (next.value === 'every' && (dayOfMonth.length > 1 || dayOfMonth[0].value === 'L')) {
+      setDayOfMonth([DEFAULT_DAY_OF_MONTH_OPTS[0]]);
+    }
+    setDayOfMonthAtEvery(next);
+  };
+
   const handleChange = (newOptions: SelectOptions[]) => {
     if (dayOfMonthAtEvery.value === 'on') {
       if (getIndex(getLastDayOfMonthOption(resolvedLocale.lastDayOfMonthLabel), newOptions) === 0) {
@@ -101,7 +111,7 @@ export default function DayOfMonth() {
           ariaLabel={resolvedLocale.onEveryText}
           options={onEveryOptions(resolvedLocale.onOptionLabel, resolvedLocale.everyOptionLabel)}
           value={dayOfMonthAtEvery}
-          setValue={setDayOfMonthAtEvery}
+          setValue={handleOnEvery}
         />
       }
     >

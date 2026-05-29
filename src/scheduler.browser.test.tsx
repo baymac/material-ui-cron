@@ -319,6 +319,28 @@ describe('Scheduler segmented controls (browser)', () => {
     expect(within(group).getByRole('button', { name: 'on' })).toBeInTheDocument();
     expect(within(group).getByRole('button', { name: 'every' })).toBeInTheDocument();
   });
+
+  // Regression: toggling a field to "every" while its value is 0 used to derive
+  // an invalid `*/0` for one render (mode changed before the value was fixed),
+  // flashing an "Invalid ... cron part" error before self-correcting. The mode
+  // and a valid interval are now set in the same update.
+  it('switching minute to "every" never flashes an invalid cron', async () => {
+    const user = userEvent.setup();
+    const setCronError = vi.fn();
+    render(<Scheduler cron='0 0 * * *' setCron={noop} setCronError={setCronError} isAdmin />);
+    await screen.findByDisplayValue('0 0 * * *');
+
+    const groups = await screen.findAllByRole('group', { name: 'At/Every' });
+    const cronField = screen.getByLabelText('cron expression') as HTMLInputElement;
+    // Minute is the second At/Every group; its value here is "0".
+    await user.click(within(groups[1]).getByRole('button', { name: 'every' }));
+
+    // Settles directly on a valid interval, never `*/0`.
+    await waitFor(() => expect(cronField.value).toMatch(/\*\/1 0 \* \* \*/));
+    // Wait past the 500ms validation debounce: no invalid error ever surfaced.
+    await new Promise((resolve) => setTimeout(resolve, 800));
+    expect(setCronError).not.toHaveBeenCalledWith(expect.stringMatching(/invalid/i));
+  });
 });
 
 // ---- Per-instance state: two schedulers on a page must not share atoms ----
