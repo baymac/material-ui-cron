@@ -8,7 +8,10 @@ import { styled } from '@mui/material/styles';
 const RangeGroup = styled(Box)({
   display: 'flex',
   alignItems: 'center',
-  gap: '10px',
+  // 10px between inline items; 14px row spacing once "between" drops to its own
+  // line on mobile, matching the field header's vertical rhythm.
+  columnGap: '10px',
+  rowGap: '14px',
   flexWrap: 'nowrap',
   '@container (max-width: 480px)': {
     flexWrap: 'wrap',

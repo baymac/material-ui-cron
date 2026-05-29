@@ -27,9 +27,11 @@ const POSSIBLE_TIME_RANGES = getTimesOfTheDay();
 
 const StyledBetweenTypography = styled(Typography)({
   margin: '0 2px',
+  // No fixed height: the parent's alignItems centers it against the inline
+  // selects, and on a wrapped mobile line it sits at natural height so the
+  // vertical spacing between stacked rows stays even.
   display: 'flex',
   alignItems: 'center',
-  height: '40px', // Match the height of CustomSelect components
 });
 
 export default function Hour() {

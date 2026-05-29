@@ -35,7 +35,11 @@ const Header = styled(Box)({
 const Controls = styled(Box)({
   display: 'flex',
   alignItems: 'center',
-  gap: 10,
+  // Horizontal gap between inline controls; the larger rowGap is the vertical
+  // rhythm used when controls wrap onto stacked lines (mobile), kept equal to
+  // the header's marginBottom so every stacked row is evenly spaced.
+  columnGap: 10,
+  rowGap: 14,
   flexWrap: 'wrap',
 });
 
