@@ -93,10 +93,15 @@ export default function CustomSelect(props: CustomSelectProps) {
           width: sizeConfig.width,
           '& .MuiAutocomplete-inputRoot': {
             cursor: 'pointer',
-            // A single-value select renders its value inline (see renderTags);
-            // keep it on one line so the field stays a normal single-line height
-            // instead of wrapping tall at a narrow width.
-            ...(single ? { flexWrap: 'nowrap' } : {}),
+            ...(single
+              ? // A single-value select renders its value inline (see
+                // renderTags); keep it on one line so the field stays a normal
+                // single-line height instead of wrapping tall at a narrow width.
+                { flexWrap: 'nowrap' }
+              : // A multi-select shows chips. When many/all options are picked
+                // (e.g. every day of the month) the chip area would grow
+                // unbounded — cap it and let it scroll instead.
+                { maxHeight: 96, overflowY: 'auto' }),
           },
           '& .MuiAutocomplete-input': {
             cursor: 'pointer',
