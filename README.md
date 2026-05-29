@@ -103,6 +103,46 @@ We are welcoming translation contributions from the community.
 />
 ```
 
+## Testing
+
+Tests run on [Vitest](https://vitest.dev/) and are split into two projects:
+
+- **`unit`** — pure-logic tests that run in Node (cron validation in `utils.ts`,
+  the cron ⇄ field-atom derivations in `selector.ts`).
+- **`browser`** — component tests that render the real `<Scheduler />` in a
+  headless Chromium via [Playwright](https://playwright.dev/). A real browser is
+  required: MUI's `Autocomplete` triggers an infinite update loop under jsdom.
+
+Tests live next to the code they cover:
+
+| File | Project | What it covers |
+| --- | --- | --- |
+| `src/utils.test.ts` | unit | every cron-part validator + helpers |
+| `src/selector.test.ts` | unit | all cron-part derivation atoms and the writer |
+| `src/scheduler.browser.test.tsx` | browser | end-to-end `<Scheduler />` behaviour |
+
+### Commands
+
+```bash
+# Install the Chromium browser once (needed for the browser project)
+npx playwright install chromium
+
+yarn test           # run the whole suite once (unit + browser)
+yarn test:unit      # run only the Node unit project
+yarn test:browser   # run only the Chromium browser project
+yarn test:watch     # watch mode
+yarn coverage       # run everything and emit a coverage report
+```
+
+`yarn coverage` uses the V8 provider and writes a report to `coverage/`
+(`text` summary in the console, plus `html` and `json-summary`).
+
+### Continuous integration
+
+`.github/workflows/test.yml` runs on pushes and pull requests to `main`. It
+lints (`biome lint`), type-checks (`tsc --noEmit`), builds, installs Chromium,
+runs `yarn coverage`, and uploads the coverage report as a build artifact.
+
 ## Acknowledgement
 
 This library was developed as a part of [Udaan](https://udaan.com/)'s Data
