@@ -1,10 +1,10 @@
-import { useAtom, useAtomValue } from 'jotai';
+import Typography from '@mui/material/Typography';
+import { styled } from '@mui/material/styles';
 import React from 'react';
-import ChipMultiSelect from '../components/ChipMultiSelect';
+import { useAtom, useAtomValue } from 'jotai';
 import CustomSelect from '../components/CustomSelect';
 import FieldRow from '../components/FieldRow';
-import RangePicker from '../components/RangePicker';
-import Stepper from '../components/Stepper';
+import SegmentedControl from '../components/SegmentedControl';
 import {
   atEveryOptions,
   atOptionsNonAdmin,
@@ -12,7 +12,6 @@ import {
   defaultMinuteOptionsWithOrdinal,
   DEFAULT_MINUTE_OPTS,
 } from '../constants';
-import { localeString } from '../localization/strings';
 import {
   isAdminState,
   localeState,
@@ -22,12 +21,43 @@ import {
   minuteState,
 } from '../store';
 
+const StyledBetweenTypography = styled(Typography)({
+  margin: '0 2px',
+  display: 'flex',
+  alignItems: 'center',
+  height: '40px', // Match the height of CustomSelect components
+});
+
 export default function Minute() {
   const [minuteAtEvery, setMinuteAtEvery] = useAtom(minuteAtEveryState);
   const [startMinute, setStartMinute] = useAtom(minuteRangeStartSchedulerState);
   const [endMinute, setEndMinute] = useAtom(minuteRangeEndSchedulerState);
   const [minute, setMinute] = useAtom(minuteState);
   const [minuteOptions, setMinuteOptions] = React.useState(DEFAULT_MINUTE_OPTS);
+
+  const [possibleStartTimes, setPossibleStartTimes] = React.useState(
+    defaultMinuteOptionsWithOrdinal(),
+  );
+
+  const [possibleEndTimes, setPossibleEndTimes] = React.useState(defaultMinuteOptionsWithOrdinal());
+
+  React.useEffect(() => {
+    const startIndex = possibleStartTimes.findIndex((x) => x.value === startMinute.value);
+    const limitedPossibleTimeRange = possibleEndTimes.map((possibleEndTime, index) => ({
+      ...possibleEndTime,
+      disabled: index <= startIndex,
+    }));
+    setPossibleEndTimes(limitedPossibleTimeRange);
+  }, [startMinute]);
+
+  React.useEffect(() => {
+    const endIndex = possibleEndTimes.findIndex((x) => x.value === endMinute.value);
+    const limitedPossibleTimeRange = possibleStartTimes.map((possibleStartTime, index) => ({
+      ...possibleStartTime,
+      disabled: index >= endIndex,
+    }));
+    setPossibleStartTimes(limitedPossibleTimeRange);
+  }, [endMinute]);
 
   const isAdmin = useAtomValue(isAdminState);
 
@@ -57,67 +87,58 @@ export default function Minute() {
 
   const resolvedLocale = useAtomValue(localeState);
 
-  // Every-mode: the interval N is the single selected minute option; the
-  // stepper maps a number back onto that option (preserving the cron the old
-  // single-select dropdown produced).
-  const interval = Number(minute[0]?.value ?? '1');
-  const setInterval = (next: number) => {
-    const option = minuteOptions.find((o) => o.value === String(next)) ?? {
-      value: String(next),
-      label: String(next),
-    };
-    setMinute([option]);
-  };
-
   return (
     <FieldRow label={resolvedLocale.minuteLabel}>
-      <CustomSelect
-        size='sm'
-        single
+      <SegmentedControl
+        ariaLabel={resolvedLocale.atEveryText}
         options={
           isAdmin
             ? atEveryOptions(resolvedLocale.atOptionLabel, resolvedLocale.everyOptionLabel)
             : atOptionsNonAdmin(resolvedLocale.atOptionLabel, resolvedLocale.everyOptionLabel)
         }
-        label={resolvedLocale.atEveryText}
         value={minuteAtEvery}
         setValue={setMinuteAtEvery}
-        multiple={false}
-        disableClearable
       />
-      {minuteAtEvery.value === 'every' ? (
+      <CustomSelect
+        size='lg'
+        options={minuteOptions}
+        label={resolvedLocale.minuteLabel}
+        value={minute}
+        setValue={setMinute}
+        disableClearable={minuteAtEvery.value === 'every' || minute.length < 2}
+        single={minuteAtEvery.value === 'every' || !isAdmin}
+        sort
+        disableEmpty
+        disabled={minuteAtEvery.value === 'every' && !isAdmin}
+        limitTags={3}
+      />
+      {minuteAtEvery.value === 'every' && (
         <>
-          <Stepper
-            ariaLabel={resolvedLocale.minuteLabel}
-            value={interval}
-            min={1}
-            max={59}
-            onChange={setInterval}
+          <StyledBetweenTypography>{resolvedLocale.betweenText}</StyledBetweenTypography>
+          <CustomSelect
+            size='sm'
+            single
+            options={possibleStartTimes}
+            label={''}
+            value={startMinute}
+            setValue={setStartMinute}
+            multiple={false}
+            disableClearable
             disabled={!isAdmin}
           />
-          <RangePicker
-            baseOptions={defaultMinuteOptionsWithOrdinal()}
-            start={startMinute}
-            setStart={setStartMinute}
-            end={endMinute}
-            setEnd={setEndMinute}
-            betweenText={resolvedLocale.betweenText}
-            andText={resolvedLocale.andText}
+          <StyledBetweenTypography>{resolvedLocale.andText}</StyledBetweenTypography>
+          <CustomSelect
             size='sm'
+            single
+            options={possibleEndTimes}
+            label={''}
+            value={endMinute}
+            setValue={setEndMinute}
+            multiple={false}
+            disableClearable
             disabled={!isAdmin}
           />
         </>
-      ) : (
-        <ChipMultiSelect
-          ariaLabel={resolvedLocale.minuteLabel}
-          addLabel={localeString(resolvedLocale, 'addLabel')}
-          options={minuteOptions}
-          value={minute}
-          onChange={setMinute}
-          single={!isAdmin}
-          disableEmpty
-          sort
-        />
       )}
     </FieldRow>
   );

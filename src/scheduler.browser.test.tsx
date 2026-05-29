@@ -7,7 +7,8 @@ import Scheduler from './index';
 const noop = () => {};
 
 afterEach(() => {
-  // Unmounting runs Scheduler's reset effect, restoring the shared Jotai atoms.
+  // Each Scheduler owns a per-instance jotai store (Provider in SchedulerRoot),
+  // so unmounting discards its state — no shared-atom reset needed.
   cleanup();
 });
 
@@ -19,10 +20,8 @@ describe('Scheduler (browser)', () => {
 
     expect(await screen.findByDisplayValue('0 0 * * *')).toBeInTheDocument();
     await waitFor(() => expect(periodValue()).toBe('day'));
-    // Field value controls are now chips/steppers; the field name lives in the
-    // FieldRow label.
-    expect(screen.getByText('Minute(s)')).toBeInTheDocument();
-    expect(screen.getByText('Hour(s)')).toBeInTheDocument();
+    expect(screen.getByLabelText('Minute(s)')).toBeInTheDocument();
+    expect(screen.getByLabelText('Hour(s)')).toBeInTheDocument();
   });
 
   it('disables the cron input for non-admins', async () => {
@@ -90,9 +89,9 @@ describe('Scheduler (browser)', () => {
   it('renders month and day-of-month fields for a yearly expression', async () => {
     render(<Scheduler cron='30 9 5 6 *' setCron={noop} setCronError={noop} isAdmin />);
     await waitFor(() => expect(periodValue()).toBe('year'), { timeout: 3000 });
-    expect(screen.getByText('Month(s)')).toBeInTheDocument();
-    expect(screen.getByText('Day of the Month')).toBeInTheDocument();
-    expect(screen.getByText('Hour(s)')).toBeInTheDocument();
+    expect(screen.getByLabelText('Month(s)')).toBeInTheDocument();
+    expect(screen.getByLabelText('Day of the Month')).toBeInTheDocument();
+    expect(screen.getByLabelText('Hour(s)')).toBeInTheDocument();
   });
 
   it('renders a day-of-month range expression', async () => {
@@ -104,7 +103,7 @@ describe('Scheduler (browser)', () => {
   it('renders a weekday range expression', async () => {
     render(<Scheduler cron='0 9 * * 1-5' setCron={noop} setCronError={noop} isAdmin />);
     await waitFor(() => expect(periodValue()).toBe('week'), { timeout: 3000 });
-    expect(screen.getByText('Day of the week')).toBeInTheDocument();
+    expect(screen.getByLabelText('Week Days')).toBeInTheDocument();
   });
 
   // ---- #16: single-value autocompletes close after a selection ----
@@ -270,13 +269,48 @@ describe('Scheduler redesign (browser)', () => {
   });
 });
 
-// ---- Mode selectors: At/Every is the (reverted) dropdown; On/Every is a pill ----
-describe('Scheduler mode selectors (browser)', () => {
-  it('renders the At/Every selector as a dropdown for minute and hour', async () => {
+// ---- PR2: At/Every (On/Every) selectors swapped to segmented pills ----
+describe('Scheduler segmented controls (browser)', () => {
+  it('renders the At/Every selector as a segmented toggle and switches mode on click', async () => {
+    const user = userEvent.setup();
     render(<Scheduler cron='0 0 * * *' setCron={noop} setCronError={noop} isAdmin />);
+
     // A `day` cron reveals the Hour + Minute rows; each carries an At/Every
-    // dropdown (an Autocomplete labelled "At/Every"), not a pill toggle.
-    await waitFor(() => expect(screen.getAllByLabelText('At/Every')).toHaveLength(2));
+    // ToggleButtonGroup (role="group"). The first is Hour (render order).
+    const groups = await screen.findAllByRole('group', { name: 'At/Every' });
+    expect(groups).toHaveLength(2);
+
+    const hourGroup = groups[0];
+    expect(within(hourGroup).getByRole('button', { name: 'at' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+
+    // Clicking "every" flips the mode end-to-end: the segment becomes pressed
+    // and the derived cron (shown in the header field) moves off the every-hour
+    // default into an interval expression.
+    await user.click(within(hourGroup).getByRole('button', { name: 'every' }));
+    await waitFor(() =>
+      expect(within(hourGroup).getByRole('button', { name: 'every' })).toHaveAttribute(
+        'aria-pressed',
+        'true',
+      ),
+    );
+    const cronField = screen.getByLabelText('cron expression') as HTMLInputElement;
+    await waitFor(() => expect(cronField.value).not.toBe('0 0 * * *'));
+    // Every-mode hour serialises to an interval expression (e.g. `*/1` or
+    // `2-23/1`); both carry the step slash.
+    expect(cronField.value).toMatch(/\//);
+  });
+
+  it('disables the "every" segment for non-admins', async () => {
+    render(<Scheduler cron='0 0 * * *' setCron={noop} setCronError={noop} isAdmin={false} />);
+    const groups = await screen.findAllByRole('group', { name: 'At/Every' });
+    const everyButtons = groups.flatMap((group) =>
+      within(group).getAllByRole('button', { name: 'every' }),
+    );
+    expect(everyButtons.length).toBeGreaterThan(0);
+    everyButtons.forEach((button) => expect(button).toBeDisabled());
   });
 
   it('renders the day-of-month On/Every selector as a segmented toggle', async () => {
@@ -284,53 +318,6 @@ describe('Scheduler mode selectors (browser)', () => {
     const group = await screen.findByRole('group', { name: 'On/Every' });
     expect(within(group).getByRole('button', { name: 'on' })).toBeInTheDocument();
     expect(within(group).getByRole('button', { name: 'every' })).toBeInTheDocument();
-  });
-});
-
-// ---- PR3: value controls swapped to steppers + chip-pickers + toggle chips ----
-describe('Scheduler field value controls (browser)', () => {
-  const cronField = () => screen.getByLabelText('cron expression') as HTMLInputElement;
-
-  it('steps the every-hour interval up via the stepper', async () => {
-    const user = userEvent.setup();
-    render(<Scheduler cron='0 */4 * * *' setCron={noop} setCronError={noop} isAdmin />);
-    expect(await screen.findByDisplayValue('0 */4 * * *')).toBeInTheDocument();
-
-    // The prop is parsed into every-mode after the header's debounce, which is
-    // when the stepper (and its increment button) mounts — wait for it.
-    const increment = await screen.findByRole(
-      'button',
-      { name: 'Hour(s) increment' },
-      { timeout: 3000 },
-    );
-    await user.click(increment);
-
-    // Interval 4 -> 5; full-range every-mode serialises as `*/5`.
-    await waitFor(() => expect(cronField().value).toBe('0 */5 * * *'));
-  });
-
-  it('adds a minute via the chip-picker add menu', async () => {
-    const user = userEvent.setup();
-    render(<Scheduler cron='0 0 * * *' setCron={noop} setCronError={noop} isAdmin />);
-    expect(await screen.findByDisplayValue('0 0 * * *')).toBeInTheDocument();
-
-    const minuteGroup = await screen.findByRole('group', { name: 'Minute(s)' });
-    await user.click(within(minuteGroup).getByRole('button', { name: 'Add' }));
-    await user.click(await screen.findByRole('menuitem', { name: '5' }));
-
-    // Minutes {0,5} are non-contiguous -> comma list.
-    await waitFor(() => expect(cronField().value).toBe('0,5 0 * * *'));
-  });
-
-  it('toggles a weekday chip and updates the cron', async () => {
-    const user = userEvent.setup();
-    render(<Scheduler cron='0 9 * * 1-5' setCron={noop} setCronError={noop} isAdmin />);
-    await waitFor(() => expect(periodValue()).toBe('week'), { timeout: 3000 });
-
-    const weekGroup = await screen.findByRole('group', { name: 'Week Days' });
-    // Add Saturday (Mon–Fri -> Mon–Sat = 1-6 contiguous range).
-    await user.click(within(weekGroup).getByRole('button', { name: 'SATURDAY' }));
-    await waitFor(() => expect(cronField().value).toBe('0 9 * * 1-6'));
   });
 });
 

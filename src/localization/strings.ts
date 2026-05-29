@@ -11,8 +11,6 @@ export const FALLBACK_STRINGS = {
   copyLabel: 'Copy',
   copiedText: 'Copied!',
   resetLabel: 'Reset',
-  // PR3 control swap: chip-picker "add" affordance.
-  addLabel: 'Add',
 } as const;
 
 type FallbackKey = keyof typeof FALLBACK_STRINGS;

@@ -1,23 +1,30 @@
+import React from 'react';
 import { useAtom, useAtomValue } from 'jotai';
+import CustomSelect from '../components/CustomSelect';
 import FieldRow from '../components/FieldRow';
-import ToggleChipGroup from '../components/ToggleChipGroup';
-import { weekOptions } from '../constants';
+import { weekOptions as defaultWeekOptions } from '../constants';
 import { localeState, weekState } from '../store';
 
 export default function Week() {
   const [week, setWeek] = useAtom(weekState);
   const resolvedLocale = useAtomValue(localeState);
-  const allDays = weekOptions(resolvedLocale.weekDaysOptions);
+  const [weekOptions, setWeekOptions] = React.useState(
+    defaultWeekOptions(resolvedLocale.weekDaysOptions),
+  );
 
   return (
     <FieldRow label={resolvedLocale.dayOfWeekLabel}>
-      <ToggleChipGroup
-        ariaLabel='Week Days'
-        options={allDays}
+      <CustomSelect
+        size='lg'
+        options={weekOptions}
+        label='Week Days'
         value={week}
-        onChange={setWeek}
-        disableEmpty
+        setValue={setWeek}
+        multiple
         sort
+        disableEmpty
+        limitTags={3}
+        disableClearable={week.length < 2}
       />
     </FieldRow>
   );

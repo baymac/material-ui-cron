@@ -106,10 +106,6 @@ export interface Locale {
   copiedText?: string;
   /** Reset-button tooltip. Default: "Reset". */
   resetLabel?: string;
-  // --- Redesign PR3: chip-picker "add" affordance. OPTIONAL with English
-  // fallback (see localization/strings.ts). ---
-  /** Chip-picker "add value" affordance. Default: "Add". */
-  addLabel?: string;
   cronDescriptionText: // Can be among the list of locale available for construe library https://github.com/bradymholt/cronstrue#supported-locales, if more locales added to construe, add it here
     | 'en'
     | 'ca'

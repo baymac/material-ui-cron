@@ -1,10 +1,10 @@
-import { useAtom, useAtomValue } from 'jotai';
+import Typography from '@mui/material/Typography';
+import { styled } from '@mui/material/styles';
 import React from 'react';
-import ChipMultiSelect from '../components/ChipMultiSelect';
+import { useAtom, useAtomValue } from 'jotai';
+import CustomSelect from '../components/CustomSelect';
 import FieldRow from '../components/FieldRow';
-import RangePicker from '../components/RangePicker';
 import SegmentedControl from '../components/SegmentedControl';
-import Stepper from '../components/Stepper';
 import {
   DEFAULT_DAY_OF_MONTH_OPTS,
   DEFAULT_DAY_OF_MONTH_OPTS_WITH_ORD,
@@ -12,7 +12,6 @@ import {
   getLastDayOfMonthOption,
   onEveryOptions,
 } from '../constants';
-import { localeString } from '../localization/strings';
 import {
   dayOfMonthAtEveryState,
   dayOfMonthRangeEndSchedulerState,
@@ -22,6 +21,13 @@ import {
 } from '../store';
 import type { SelectOptions } from '../types';
 import { getIndex } from '../utils';
+
+const StyledBetweenTypography = styled(Typography)({
+  margin: '0 2px',
+  display: 'flex',
+  alignItems: 'center',
+  height: '40px', // Match the height of CustomSelect components
+});
 
 export default function DayOfMonth() {
   const resolvedLocale = useAtomValue(localeState);
@@ -33,6 +39,30 @@ export default function DayOfMonth() {
   const [dayOfMonthOptions, setDayOfMonthOptions] = React.useState(
     getDayOfMonthsOptionsWithL(resolvedLocale.lastDayOfMonthLabel),
   );
+
+  const [possibleStartDays, setPossibleStartDays] = React.useState(
+    DEFAULT_DAY_OF_MONTH_OPTS_WITH_ORD,
+  );
+
+  const [possibleEndDays, setPossibleEndDays] = React.useState(DEFAULT_DAY_OF_MONTH_OPTS_WITH_ORD);
+
+  React.useEffect(() => {
+    const startIndex = possibleStartDays.findIndex((x) => x.value === startMonth.value);
+    const limitedPossibleTimeRange = possibleEndDays.map((possibleEndTime, index) => ({
+      ...possibleEndTime,
+      disabled: index <= startIndex,
+    }));
+    setPossibleEndDays(limitedPossibleTimeRange);
+  }, [startMonth]);
+
+  React.useEffect(() => {
+    const endIndex = possibleEndDays.findIndex((x) => x.value === endMonth.value);
+    const limitedPossibleTimeRange = possibleStartDays.map((possibleStartTime, index) => ({
+      ...possibleStartTime,
+      disabled: index >= endIndex,
+    }));
+    setPossibleStartDays(limitedPossibleTimeRange);
+  }, [endMonth]);
 
   React.useEffect(() => {
     if (dayOfMonthAtEvery.value === 'every') {
@@ -63,16 +93,6 @@ export default function DayOfMonth() {
     }
   };
 
-  // Every-mode: the interval N is the single selected day option.
-  const interval = Number(dayOfMonth[0]?.value ?? '1');
-  const setInterval = (next: number) => {
-    const option = DEFAULT_DAY_OF_MONTH_OPTS.find((o) => o.value === String(next)) ?? {
-      value: String(next),
-      label: String(next),
-    };
-    setDayOfMonth([option]);
-  };
-
   return (
     <FieldRow
       label={
@@ -87,36 +107,47 @@ export default function DayOfMonth() {
         value={dayOfMonthAtEvery}
         setValue={setDayOfMonthAtEvery}
       />
-      {dayOfMonthAtEvery.value === 'every' ? (
+      <CustomSelect
+        size='lg'
+        options={dayOfMonthOptions}
+        label={
+          dayOfMonthAtEvery.value === 'on'
+            ? resolvedLocale.multiDayOfMonthLabel
+            : resolvedLocale.dayOfMonthLabel
+        }
+        value={dayOfMonth}
+        setValue={handleChange}
+        single={dayOfMonthAtEvery.value === 'every'}
+        sort
+        disableEmpty
+        limitTags={3}
+        disableClearable={dayOfMonthAtEvery.value === 'every' || dayOfMonth.length < 2}
+      />
+      {dayOfMonthAtEvery.value === 'every' && (
         <>
-          <Stepper
-            ariaLabel={resolvedLocale.dayOfMonthLabel}
-            value={interval}
-            min={1}
-            max={31}
-            onChange={setInterval}
-          />
-          <RangePicker
-            baseOptions={DEFAULT_DAY_OF_MONTH_OPTS_WITH_ORD}
-            start={startMonth}
-            setStart={setStartMonth}
-            end={endMonth}
-            setEnd={setEndMonth}
-            betweenText={resolvedLocale.betweenText}
-            andText={resolvedLocale.andText}
+          <StyledBetweenTypography>{resolvedLocale.betweenText}</StyledBetweenTypography>
+          <CustomSelect
             size='md'
+            single
+            options={possibleStartDays}
+            label={''}
+            value={startMonth}
+            setValue={setStartMonth}
+            multiple={false}
+            disableClearable
+          />
+          <StyledBetweenTypography>{resolvedLocale.andText}</StyledBetweenTypography>
+          <CustomSelect
+            size='md'
+            single
+            options={possibleEndDays}
+            label={''}
+            value={endMonth}
+            setValue={setEndMonth}
+            multiple={false}
+            disableClearable
           />
         </>
-      ) : (
-        <ChipMultiSelect
-          ariaLabel={resolvedLocale.multiDayOfMonthLabel}
-          addLabel={localeString(resolvedLocale, 'addLabel')}
-          options={dayOfMonthOptions}
-          value={dayOfMonth}
-          onChange={handleChange}
-          disableEmpty
-          sort
-        />
       )}
     </FieldRow>
   );
