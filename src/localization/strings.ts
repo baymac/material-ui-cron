@@ -11,10 +11,8 @@ export const FALLBACK_STRINGS = {
   copyLabel: 'Copy',
   copiedText: 'Copied!',
   resetLabel: 'Reset',
-  // PR3 control swap: chip-picker "add" affordance + week/month mode toggles.
+  // PR3 control swap: chip-picker "add" affordance.
   addLabel: 'Add',
-  anyDayLabel: 'Any day',
-  everyMonthLabel: 'Every month',
 } as const;
 
 type FallbackKey = keyof typeof FALLBACK_STRINGS;

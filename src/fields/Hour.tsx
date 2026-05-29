@@ -1,9 +1,9 @@
 import { useAtom, useAtomValue } from 'jotai';
 import React from 'react';
 import ChipMultiSelect from '../components/ChipMultiSelect';
+import CustomSelect from '../components/CustomSelect';
 import FieldRow from '../components/FieldRow';
 import RangePicker from '../components/RangePicker';
-import SegmentedControl from '../components/SegmentedControl';
 import Stepper from '../components/Stepper';
 import {
   atEveryOptions,
@@ -67,15 +67,19 @@ export default function Hour() {
 
   return (
     <FieldRow label={resolvedLocale.hourLabel}>
-      <SegmentedControl
-        ariaLabel={resolvedLocale.atEveryText}
+      <CustomSelect
+        size='sm'
+        single
         options={
           isAdmin
             ? atEveryOptions(resolvedLocale.atOptionLabel, resolvedLocale.everyOptionLabel)
             : atOptionsNonAdmin(resolvedLocale.atOptionLabel, resolvedLocale.everyOptionLabel)
         }
+        label={resolvedLocale.atEveryText}
         value={hourAtEvery}
         setValue={setHourAtEvery}
+        multiple={false}
+        disableClearable
       />
       {hourAtEvery.value === 'every' ? (
         <>

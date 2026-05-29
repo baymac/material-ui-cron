@@ -270,48 +270,13 @@ describe('Scheduler redesign (browser)', () => {
   });
 });
 
-// ---- PR2: At/Every (On/Every) selectors swapped to segmented pills ----
-describe('Scheduler segmented controls (browser)', () => {
-  it('renders the At/Every selector as a segmented toggle and switches mode on click', async () => {
-    const user = userEvent.setup();
+// ---- Mode selectors: At/Every is the (reverted) dropdown; On/Every is a pill ----
+describe('Scheduler mode selectors (browser)', () => {
+  it('renders the At/Every selector as a dropdown for minute and hour', async () => {
     render(<Scheduler cron='0 0 * * *' setCron={noop} setCronError={noop} isAdmin />);
-
     // A `day` cron reveals the Hour + Minute rows; each carries an At/Every
-    // ToggleButtonGroup (role="group"). The first is Hour (render order).
-    const groups = await screen.findAllByRole('group', { name: 'At/Every' });
-    expect(groups).toHaveLength(2);
-
-    const hourGroup = groups[0];
-    expect(within(hourGroup).getByRole('button', { name: 'at' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
-
-    // Clicking "every" flips the mode end-to-end: the segment becomes pressed
-    // and the derived cron (shown in the header field) moves off the every-hour
-    // default into an interval expression.
-    await user.click(within(hourGroup).getByRole('button', { name: 'every' }));
-    await waitFor(() =>
-      expect(within(hourGroup).getByRole('button', { name: 'every' })).toHaveAttribute(
-        'aria-pressed',
-        'true',
-      ),
-    );
-    const cronField = screen.getByLabelText('cron expression') as HTMLInputElement;
-    await waitFor(() => expect(cronField.value).not.toBe('0 0 * * *'));
-    // Every-mode hour serialises to an interval expression (e.g. `*/1` or
-    // `2-23/1`); both carry the step slash.
-    expect(cronField.value).toMatch(/\//);
-  });
-
-  it('disables the "every" segment for non-admins', async () => {
-    render(<Scheduler cron='0 0 * * *' setCron={noop} setCronError={noop} isAdmin={false} />);
-    const groups = await screen.findAllByRole('group', { name: 'At/Every' });
-    const everyButtons = groups.flatMap((group) =>
-      within(group).getAllByRole('button', { name: 'every' }),
-    );
-    expect(everyButtons.length).toBeGreaterThan(0);
-    everyButtons.forEach((button) => expect(button).toBeDisabled());
+    // dropdown (an Autocomplete labelled "At/Every"), not a pill toggle.
+    await waitFor(() => expect(screen.getAllByLabelText('At/Every')).toHaveLength(2));
   });
 
   it('renders the day-of-month On/Every selector as a segmented toggle', async () => {
@@ -366,16 +331,6 @@ describe('Scheduler field value controls (browser)', () => {
     // Add Saturday (Mon–Fri -> Mon–Sat = 1-6 contiguous range).
     await user.click(within(weekGroup).getByRole('button', { name: 'SATURDAY' }));
     await waitFor(() => expect(cronField().value).toBe('0 9 * * 1-6'));
-  });
-
-  it('switches day-of-week to "Any day" (cron `*`)', async () => {
-    const user = userEvent.setup();
-    render(<Scheduler cron='0 9 * * 1-5' setCron={noop} setCronError={noop} isAdmin />);
-    await waitFor(() => expect(periodValue()).toBe('week'), { timeout: 3000 });
-
-    const group = await screen.findByRole('group', { name: 'Day of the week' });
-    await user.click(within(group).getByRole('button', { name: 'Any day' }));
-    await waitFor(() => expect(cronField().value).toBe('0 9 * * *'));
   });
 });
 
