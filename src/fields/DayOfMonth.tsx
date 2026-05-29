@@ -125,7 +125,7 @@ export default function DayOfMonth() {
         <RangeGroup>
           <StyledBetweenTypography>{resolvedLocale.betweenText}</StyledBetweenTypography>
           <CustomSelect
-            size='md'
+            size='sm'
             single
             options={possibleStartDays}
             label={''}
@@ -136,7 +136,7 @@ export default function DayOfMonth() {
           />
           <StyledBetweenTypography>{resolvedLocale.andText}</StyledBetweenTypography>
           <CustomSelect
-            size='md'
+            size='sm'
             single
             options={possibleEndDays}
             label={''}
