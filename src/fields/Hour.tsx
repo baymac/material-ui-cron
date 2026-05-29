@@ -84,17 +84,20 @@ export default function Hour() {
   const resolvedLocale = useAtomValue(localeState);
 
   return (
-    <FieldRow label={resolvedLocale.atEveryText}>
-      <SegmentedControl
-        ariaLabel={resolvedLocale.atEveryText}
-        options={
-          isAdmin
-            ? atEveryOptions(resolvedLocale.atOptionLabel, resolvedLocale.everyOptionLabel)
-            : atOptionsNonAdmin(resolvedLocale.atOptionLabel, resolvedLocale.everyOptionLabel)
-        }
-        value={hourAtEvery}
-        setValue={setHourAtEvery}
-      />
+    <FieldRow
+      headerSlot={
+        <SegmentedControl
+          ariaLabel={resolvedLocale.atEveryText}
+          options={
+            isAdmin
+              ? atEveryOptions(resolvedLocale.atOptionLabel, resolvedLocale.everyOptionLabel)
+              : atOptionsNonAdmin(resolvedLocale.atOptionLabel, resolvedLocale.everyOptionLabel)
+          }
+          value={hourAtEvery}
+          setValue={setHourAtEvery}
+        />
+      }
+    >
       <CustomSelect
         size={hourAtEvery.value === 'every' || !isAdmin ? 'sm' : 'lg'}
         options={hourOptions}

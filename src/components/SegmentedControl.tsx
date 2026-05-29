@@ -24,11 +24,12 @@ const StyledGroup = styled(ToggleButtonGroup)(({ theme }) => ({
   '& .MuiToggleButton-root': {
     textTransform: 'none',
     fontWeight: 600,
-    fontSize: 13,
+    fontSize: 12.5,
     lineHeight: 1.2,
-    // 40px so the toggle lines up with the value selects in the same row.
-    height: 40,
-    padding: '0 14px',
+    // Compact: the toggle now lives in the section header, not next to the
+    // value select, so it doesn't need to match the select's height.
+    height: 28,
+    padding: '0 12px',
     color: theme.palette.text.secondary,
     borderColor: theme.palette.divider,
     '&.Mui-selected': {

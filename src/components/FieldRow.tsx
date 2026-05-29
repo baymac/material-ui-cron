@@ -3,9 +3,10 @@ import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
 import type React from 'react';
 
-// Stacked field row: an uppercase label above a wrapping row of controls. This
-// replaces the old fixed `100px 1fr` two-column grid so the controls (segmented
-// pills + value dropdowns) read top-to-bottom and wrap cleanly on narrow cards.
+// Stacked field row: a header above a wrapping row of controls. The header is
+// either the connector word (EVERY, IN, ON) or, for fields with a mode toggle,
+// the segmented toggle itself (AT/EVERY, ON/EVERY) — moved up here instead of
+// sitting in the controls row.
 const Row = styled(Box)(({ theme }) => ({
   padding: '12px 16px',
   borderTop: `1px solid ${theme.palette.divider}`,
@@ -20,8 +21,16 @@ const Label = styled(Typography)(({ theme }) => ({
   textTransform: 'uppercase',
   fontWeight: 600,
   color: theme.palette.text.secondary,
-  marginBottom: 8,
 }));
+
+// Header slot. The bottom margin gives the select below some breathing room
+// from the header / the select's own floating label.
+const Header = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
+  minHeight: 20,
+  marginBottom: 14,
+});
 
 const Controls = styled(Box)({
   display: 'flex',
@@ -31,15 +40,18 @@ const Controls = styled(Box)({
 });
 
 interface FieldRowProps {
-  label: string;
+  /** Connector-word header (used when there is no mode toggle). */
+  label?: string;
+  /** Custom header content (e.g. the segmented toggle), replaces `label`. */
+  headerSlot?: React.ReactNode;
   children: React.ReactNode;
 }
 
 export default function FieldRow(props: FieldRowProps) {
-  const { label, children } = props;
+  const { label, headerSlot, children } = props;
   return (
     <Row>
-      <Label>{label}</Label>
+      <Header>{headerSlot ?? <Label>{label}</Label>}</Header>
       <Controls>{children}</Controls>
     </Row>
   );

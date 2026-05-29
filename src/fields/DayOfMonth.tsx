@@ -94,13 +94,16 @@ export default function DayOfMonth() {
   };
 
   return (
-    <FieldRow label={resolvedLocale.onEveryText}>
-      <SegmentedControl
-        ariaLabel={resolvedLocale.onEveryText}
-        options={onEveryOptions(resolvedLocale.onOptionLabel, resolvedLocale.everyOptionLabel)}
-        value={dayOfMonthAtEvery}
-        setValue={setDayOfMonthAtEvery}
-      />
+    <FieldRow
+      headerSlot={
+        <SegmentedControl
+          ariaLabel={resolvedLocale.onEveryText}
+          options={onEveryOptions(resolvedLocale.onOptionLabel, resolvedLocale.everyOptionLabel)}
+          value={dayOfMonthAtEvery}
+          setValue={setDayOfMonthAtEvery}
+        />
+      }
+    >
       <CustomSelect
         size={dayOfMonthAtEvery.value === 'every' ? 'sm' : 'lg'}
         options={dayOfMonthOptions}

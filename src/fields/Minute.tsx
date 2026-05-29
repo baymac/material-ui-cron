@@ -88,17 +88,20 @@ export default function Minute() {
   const resolvedLocale = useAtomValue(localeState);
 
   return (
-    <FieldRow label={resolvedLocale.atEveryText}>
-      <SegmentedControl
-        ariaLabel={resolvedLocale.atEveryText}
-        options={
-          isAdmin
-            ? atEveryOptions(resolvedLocale.atOptionLabel, resolvedLocale.everyOptionLabel)
-            : atOptionsNonAdmin(resolvedLocale.atOptionLabel, resolvedLocale.everyOptionLabel)
-        }
-        value={minuteAtEvery}
-        setValue={setMinuteAtEvery}
-      />
+    <FieldRow
+      headerSlot={
+        <SegmentedControl
+          ariaLabel={resolvedLocale.atEveryText}
+          options={
+            isAdmin
+              ? atEveryOptions(resolvedLocale.atOptionLabel, resolvedLocale.everyOptionLabel)
+              : atOptionsNonAdmin(resolvedLocale.atOptionLabel, resolvedLocale.everyOptionLabel)
+          }
+          value={minuteAtEvery}
+          setValue={setMinuteAtEvery}
+        />
+      }
+    >
       <CustomSelect
         size={minuteAtEvery.value === 'every' || !isAdmin ? 'sm' : 'lg'}
         options={minuteOptions}
