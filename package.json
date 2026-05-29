@@ -73,6 +73,7 @@
     "@mui/icons-material": "^7.3.4",
     "@mui/material": "^7.3.4",
     "@mui/system": "^7.3.3",
+    "cron-parser": "^5.5.0",
     "cronstrue": "^3.3.0",
     "jotai": "^2.15.0"
   },

@@ -2,7 +2,8 @@ import Box from '@mui/material/Box';
 import { styled } from '@mui/material/styles';
 import React from 'react';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
-import CronExp from './components/CronExp';
+import SchedulerHeader from './components/SchedulerHeader';
+import NextRuns from './components/NextRuns';
 import CronReader from './components/CronReader';
 import DayOfMonth from './fields/DayOfMonth';
 import Hour from './fields/Hour';
@@ -40,18 +41,57 @@ import {
 } from './constants';
 import type { SelectOptions } from './types';
 
-const StyledBox = styled(Box)({
+// Card root establishes the container-query context so the layout responds to
+// its OWN width, not the viewport (this is a library card that can live in any
+// container). The Grid below queries `@container`.
+const Root = styled(Box)(({ theme }) => ({
+  containerType: 'inline-size',
+  border: `1px solid ${theme.palette.divider}`,
+  borderRadius: 12,
+  overflow: 'hidden',
+  backgroundColor: theme.palette.background.paper,
+}));
+
+// Two-zone layout: form (left) + Next-runs (right). `data-layout` controls the
+// responsive posture:
+//   auto    -> container query stacks it under 720px (default)
+//   split   -> always two columns
+//   stacked -> always one column (Next-runs last)
+const Grid = styled(Box)(({ theme }) => ({
+  display: 'grid',
+  gridTemplateColumns: '1fr 300px',
+  '& > .form-col': {
+    borderRight: `1px solid ${theme.palette.divider}`,
+    padding: '8px 4px',
+  },
+  '&[data-layout="auto"]': {
+    '@container (max-width: 720px)': {
+      gridTemplateColumns: '1fr',
+      '& > .form-col': { borderRight: 'none' },
+    },
+  },
+  '&[data-layout="stacked"]': {
+    gridTemplateColumns: '1fr',
+    '& > .form-col': { borderRight: 'none' },
+  },
+}));
+
+const FormCol = styled(Box)({
   minHeight: 'min-content',
-  '& > *': {
-    marginBottom: '16px',
-  },
-  '& > *:last-child': {
-    marginBottom: 0,
-  },
+  // A grid item defaults to `min-width: auto`, so a too-wide field row (the
+  // "every … between X and Y" range UI) would force the whole card past its
+  // container and spill off-page. `min-width: 0` lets the column shrink and
+  // `overflow-x: auto` scrolls the wide row inside the column instead.
+  // (Interim guard — PR2 replaces that wide row with a compact stepper.)
+  minWidth: 0,
+  overflowX: 'auto',
+  '& > *': { marginBottom: '8px' },
+  '& > *:last-child': { marginBottom: 0 },
 });
 
 export default function Scheduler(props: SchedulerProps) {
   const { cron, setCron, setCronError, isAdmin, locale, customLocale } = props;
+  const { timezone, layout = 'auto', slotProps } = props;
   const period = useAtomValue(periodState);
   const [periodIndex, setPeriodIndex] = React.useState(0);
 
@@ -194,17 +234,20 @@ export default function Scheduler(props: SchedulerProps) {
   ]);
 
   return (
-    <>
-      <StyledBox display='flex' flexDirection='column'>
-        <Period />
-        {periodIndex > 3 && <Month />}
-        {periodIndex > 2 && <DayOfMonth />}
-        {periodIndex > 1 && <Week />}
-        {periodIndex > 0 && <Hour />}
-        <Minute />
-        <CronExp />
-        <CronReader />
-      </StyledBox>
-    </>
+    <Root>
+      <SchedulerHeader sx={slotProps?.header?.sx} />
+      <Grid data-layout={layout}>
+        <FormCol className='form-col'>
+          <CronReader />
+          <Period />
+          {periodIndex > 3 && <Month />}
+          {periodIndex > 2 && <DayOfMonth />}
+          {periodIndex > 1 && <Week />}
+          {periodIndex > 0 && <Hour />}
+          <Minute />
+        </FormCol>
+        <NextRuns timezone={timezone} />
+      </Grid>
+    </Root>
   );
 }

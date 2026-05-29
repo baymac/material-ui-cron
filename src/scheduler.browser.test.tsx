@@ -1,5 +1,6 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import Scheduler from './index';
 
@@ -145,12 +146,17 @@ describe('Scheduler (browser)', () => {
   // regression. On MUI v7 it does not reproduce; these assertions lock in the
   // two styling behaviours the library actually maintains so a future MUI bump
   // can't silently regress them.
-  it('keeps disabled cron-input text legible on the dark field (#18)', async () => {
+  it('keeps the disabled cron-input text legible (#18)', async () => {
     render(<Scheduler cron='0 0 * * *' setCron={noop} setCronError={noop} isAdmin={false} />);
     const input = (await screen.findByDisplayValue('0 0 * * *')) as HTMLInputElement;
     expect(input).toBeDisabled();
-    // The component forces white text-fill on the disabled (read-only) input.
-    expect(getComputedStyle(input).webkitTextFillColor).toBe('rgb(255, 255, 255)');
+    // Theme-aware redesign: the field no longer hardcodes white. The #18
+    // guarantee is *legibility* — the disabled read-only text must not render
+    // transparent (which is how MUI greys out disabled inputs by default).
+    const fill = getComputedStyle(input).webkitTextFillColor;
+    expect(fill).not.toBe('rgba(0, 0, 0, 0)');
+    expect(fill).not.toBe('transparent');
+    expect(fill).toBeTruthy();
   });
 
   it('renders multi-select values as chips (#18)', async () => {
@@ -191,5 +197,73 @@ describe('Scheduler (browser)', () => {
     // Switch back to English: no Chinese lag — it reads "month" again.
     rerender(<Scheduler cron='0 0 1 * *' setCron={noop} setCronError={noop} isAdmin locale='en' />);
     await waitFor(() => expect(periodValue()).toBe('month'), { timeout: 3000 });
+  });
+});
+
+// ---- Redesign PR1: header + Next-runs panel + layout ----
+describe('Scheduler redesign (browser)', () => {
+  it('renders the Schedule header with the cron expression', async () => {
+    render(<Scheduler cron='0 0 * * *' setCron={noop} setCronError={noop} isAdmin />);
+    expect(await screen.findByText('Schedule')).toBeInTheDocument();
+    expect(await screen.findByDisplayValue('0 0 * * *')).toBeInTheDocument();
+  });
+
+  it('renders 5 occurrence rows in the Next-runs panel for a valid cron', async () => {
+    render(<Scheduler cron='*/2 * * * *' setCron={noop} setCronError={noop} isAdmin />);
+    const list = await screen.findByRole('list', { name: 'Next runs' }, { timeout: 3000 });
+    // Always renders 5 in the DOM; the container query CSS-hides rows 4-5 at
+    // narrow widths (querySelectorAll counts hidden nodes, unlike role queries).
+    await waitFor(() => expect(list.querySelectorAll('li')).toHaveLength(5));
+  });
+
+  it('shows the invalid-schedule message when the cron becomes invalid', async () => {
+    render(<Scheduler cron='0 0 * * *' setCron={noop} setCronError={noop} isAdmin />);
+    const input = await screen.findByDisplayValue('0 0 * * *');
+    // Typed invalid input persists the error (an initial *invalid* prop would be
+    // bounced back to the field-derived value by the two-way sync).
+    fireEvent.change(input, { target: { value: '60 * * * *' } });
+    await waitFor(
+      () => expect(screen.getByText(/Enter a valid schedule to preview runs/i)).toBeInTheDocument(),
+      { timeout: 3000 },
+    );
+    expect(screen.queryByRole('list', { name: 'Next runs' })).not.toBeInTheDocument();
+  });
+
+  it('shows "No upcoming runs" for a valid cron that never fires (Feb 30)', async () => {
+    render(<Scheduler cron='0 0 30 2 *' setCron={noop} setCronError={noop} isAdmin />);
+    await waitFor(() => expect(screen.getByText(/No upcoming runs/i)).toBeInTheDocument(), {
+      timeout: 3000,
+    });
+  });
+
+  it('localizes the Next-runs label (zh_CN)', async () => {
+    render(<Scheduler cron='*/2 * * * *' setCron={noop} setCronError={noop} isAdmin locale='zh_CN' />);
+    expect(await screen.findByText('接下来的运行')).toBeInTheDocument();
+  });
+
+  it('keeps copy available to everyone but reset admin-gated (non-admin)', async () => {
+    render(<Scheduler cron='0 0 * * *' setCron={noop} setCronError={noop} isAdmin={false} />);
+    // Copy is read-only/safe -> enabled for non-admins.
+    expect(await screen.findByRole('button', { name: 'Copy' })).toBeEnabled();
+    // Reset mutates the schedule -> disabled for non-admins.
+    expect(screen.getByRole('button', { name: 'Reset' })).toBeDisabled();
+  });
+
+  it('enables reset for admins', async () => {
+    render(<Scheduler cron='0 0 * * *' setCron={noop} setCronError={noop} isAdmin />);
+    expect(await screen.findByRole('button', { name: 'Reset' })).toBeEnabled();
+  });
+
+  it('renders under a dark + RTL theme without breaking', async () => {
+    const theme = createTheme({ palette: { mode: 'dark' }, direction: 'rtl' });
+    render(
+      <ThemeProvider theme={theme}>
+        <Scheduler cron='*/2 * * * *' setCron={noop} setCronError={noop} isAdmin />
+      </ThemeProvider>,
+    );
+    expect(await screen.findByDisplayValue('*/2 * * * *')).toBeInTheDocument();
+    expect(await screen.findByText('Schedule')).toBeInTheDocument();
+    const list = await screen.findByRole('list', { name: 'Next runs' }, { timeout: 3000 });
+    expect(within(list).getAllByRole('listitem').length).toBeGreaterThan(0);
   });
 });

@@ -35,6 +35,13 @@ const enLocale: Locale = {
   ],
   onOptionLabel: 'on',
   lastDayOfMonthLabel: 'Last day of month',
+  scheduleTitle: 'Schedule',
+  nextRunsLabel: 'Next runs',
+  noUpcomingRunsText: 'No upcoming runs',
+  invalidScheduleText: 'Enter a valid schedule to preview runs',
+  copyLabel: 'Copy',
+  copiedText: 'Copied!',
+  resetLabel: 'Reset',
   cronDescriptionText: 'en',
 };
 

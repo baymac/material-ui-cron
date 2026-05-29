@@ -7,14 +7,20 @@ import { useAtomValue } from 'jotai';
 import { cronExpState } from '../selector';
 import { cronValidationErrorMessageState, localeState } from '../store';
 
-const ErrorTypography = styled(Typography)({
-  color: 'red',
-});
+const ErrorTypography = styled(Typography)(({ theme }) => ({
+  color: theme.palette.error.main,
+}));
+
+const SummaryTypography = styled(Typography)(({ theme }) => ({
+  color: theme.palette.primary.main,
+  fontWeight: 600,
+}));
 
 const StyledBox = styled(Box)({
   display: 'flex',
+  alignItems: 'center',
   padding: '8px 16px',
-  margin: '8px 16px',
+  minHeight: 28,
 });
 
 export default function CronReader() {
@@ -40,9 +46,7 @@ export default function CronReader() {
   return (
     <StyledBox>
       {cronValidationErrorMessage.length === 0 && (
-        <Typography variant='h6' style={{ color: '#382B5F' }}>
-          {cronHr}
-        </Typography>
+        <SummaryTypography variant='subtitle1'>{cronHr}</SummaryTypography>
       )}
       {cronValidationErrorMessage.length > 0 && (
         <ErrorTypography>{cronValidationErrorMessage}</ErrorTypography>
