@@ -78,9 +78,9 @@ export default function CronExp() {
 
   React.useEffect(() => {
     if (debouncedCronExpInput) {
-      setCronExp(cronExpInput);
+      setCronExp(debouncedCronExpInput);
     }
-  }, [debouncedCronExpInput, setCronExp, cronExpInput]);
+  }, [debouncedCronExpInput, setCronExp]);
 
   return (
     <StyledBox>

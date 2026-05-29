@@ -120,4 +120,52 @@ describe('Scheduler (browser)', () => {
     await waitFor(() => expect(screen.queryByRole('listbox')).not.toBeInTheDocument());
     expect(periodValue()).toBe('week');
   });
+
+  // #16 deeper audit: the issue specifically named the *time-range* selects.
+  // Unlike Period, these recompute their option arrays on every selection
+  // (Hour.tsx / Minute.tsx effects) — the re-render churn that used to keep the
+  // popup mounted. This guards that blurOnSelect closes them despite that churn.
+  it('closes a time-range autocomplete after selecting an option (#16)', async () => {
+    const user = userEvent.setup();
+    render(<Scheduler cron='0 */4 * * *' setCron={noop} setCronError={noop} isAdmin />);
+
+    // `0 */4 * * *` puts the hour field in "every" mode, revealing the
+    // between/and time-range selects (start defaults to 12:00 AM, end 11:00 PM).
+    const startInput = await screen.findByDisplayValue('12:00 AM');
+    await user.click(startInput);
+
+    const listbox = await screen.findByRole('listbox');
+    await user.click(within(listbox).getByText('02:00 AM'));
+
+    await waitFor(() => expect(screen.queryByRole('listbox')).not.toBeInTheDocument());
+    expect(screen.getByDisplayValue('02:00 AM')).toBeInTheDocument();
+  });
+
+  // #18: the linked upstream bug (mui/material-ui#27501) was a MUI 5 *beta*
+  // regression. On MUI v7 it does not reproduce; these assertions lock in the
+  // two styling behaviours the library actually maintains so a future MUI bump
+  // can't silently regress them.
+  it('keeps disabled cron-input text legible on the dark field (#18)', async () => {
+    render(<Scheduler cron='0 0 * * *' setCron={noop} setCronError={noop} isAdmin={false} />);
+    const input = (await screen.findByDisplayValue('0 0 * * *')) as HTMLInputElement;
+    expect(input).toBeDisabled();
+    // The component forces white text-fill on the disabled (read-only) input.
+    expect(getComputedStyle(input).webkitTextFillColor).toBe('rgb(255, 255, 255)');
+  });
+
+  it('renders multi-select values as chips (#18)', async () => {
+    render(<Scheduler cron='0 9 * * 1-5' setCron={noop} setCronError={noop} isAdmin />);
+    await waitFor(() => expect(periodValue()).toBe('week'), { timeout: 3000 });
+    // Mon–Fri render as MUI chips inside the Week Days field.
+    expect(document.querySelectorAll('.MuiChip-root').length).toBeGreaterThan(0);
+  });
+
+  // #17 kitchen-sink coverage: a provided locale localizes the field labels.
+  it('renders localized labels for a provided locale (zh_CN)', async () => {
+    render(<Scheduler cron='0 0 * * *' setCron={noop} setCronError={noop} isAdmin locale='zh_CN' />);
+    // Period label in zh_CN.
+    await waitFor(() => expect(screen.getByLabelText('时间间隔')).toBeInTheDocument(), {
+      timeout: 3000,
+    });
+  });
 });

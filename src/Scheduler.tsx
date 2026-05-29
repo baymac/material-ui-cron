@@ -72,9 +72,37 @@ export default function Scheduler(props: SchedulerProps) {
     setPeriodIndex(getPeriodIndex(period));
   }, [period]);
 
+  // Two-way binding between the controlled `cron` prop and the internal
+  // `cronExpInput` atom. Splitting this into two opposing effects causes them
+  // to swap stale values on a single commit and ping-pong forever whenever the
+  // initial prop differs from the atom default (-> "Maximum update depth
+  // exceeded"). A single effect that propagates only the side that actually
+  // changed converges in one render.
+  const prevSync = React.useRef<{ cron: string; input: string } | null>(null);
   React.useEffect(() => {
-    setCron(cronExpInput);
-  }, [cronExpInput, setCron]);
+    if (prevSync.current === null) {
+      // Initial mount: adopt a non-default prop, otherwise report the current
+      // expression back up so the parent always receives the (normalized)
+      // value at least once.
+      if (cron !== cronExpInput) {
+        setCronExpInput(cron);
+      } else {
+        setCron(cronExpInput);
+      }
+      prevSync.current = { cron, input: cronExpInput };
+      return;
+    }
+    const cronChanged = cron !== prevSync.current.cron;
+    const inputChanged = cronExpInput !== prevSync.current.input;
+    if (cronChanged && cron !== cronExpInput) {
+      // Parent pushed a new value down -> ingest it.
+      setCronExpInput(cron);
+    } else if (inputChanged && cronExpInput !== cron) {
+      // Internal value changed (user edit / field change) -> notify parent.
+      setCron(cronExpInput);
+    }
+    prevSync.current = { cron, input: cronExpInput };
+  }, [cron, cronExpInput, setCron, setCronExpInput]);
 
   React.useEffect(() => {
     if (isAdmin) {
@@ -83,10 +111,6 @@ export default function Scheduler(props: SchedulerProps) {
       setIsAdmin(false);
     }
   }, [isAdmin, setIsAdmin]);
-
-  React.useEffect(() => {
-    setCronExpInput(cron);
-  }, [cron, setCronExpInput]);
 
   // Only reset atoms on unmount.
   React.useEffect(() => {
