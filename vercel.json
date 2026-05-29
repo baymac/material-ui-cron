@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "vite",
-  "installCommand": "yarn --cwd demo install",
+  "installCommand": "yarn install --frozen-lockfile && yarn --cwd demo install",
   "buildCommand": "yarn --cwd demo build",
   "outputDirectory": "demo/dist",
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
