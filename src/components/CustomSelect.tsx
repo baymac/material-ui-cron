@@ -82,6 +82,11 @@ export default function CustomSelect(props: CustomSelectProps) {
         disableClearable={disableClearable}
         autoComplete
         disableCloseOnSelect={!single}
+        // Single-value selects must close on selection. Because these are
+        // rendered as `multiple` Autocompletes, re-render churn after a
+        // selection can otherwise leave the popup open — blurOnSelect forces
+        // it shut. Multi-selects keep the popup open for further picks.
+        blurOnSelect={single ? true : undefined}
         sx={{
           width: sizeConfig.width,
           '& .MuiAutocomplete-inputRoot': {

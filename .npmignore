@@ -1,5 +1,7 @@
 /*
 !/dist
-/dist/**/stories
 !/src
-/src/**/stories
+/src/**/*.test.*
+/src/**/__screenshots__
+/src/jest-dom.d.ts
+/demo

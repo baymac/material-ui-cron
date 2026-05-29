@@ -126,6 +126,24 @@ export const CRON_VALIDATION = (isValid: boolean, message: string): CronValidati
   };
 };
 
+// Validates a step part (`a/b`) by branching on what comes before the slash:
+//   `*`      -> `*/n`        (REGEX_ALL,         e.g. */4)
+//   `x-y`    -> `x-y/n`      (REGEX_EVERY_HYPEN, e.g. 1-10/4)  when ascending
+//   `n`      -> `n/m`        (REGEX_EVERY,       e.g. 1/4)
+// The minute/hour/day-of-month parts share identical step semantics.
+export const isValidStepPart = (part: string): CronValidation => {
+  const beforeSlash = part.split('/')[0];
+  if (beforeSlash === '*') {
+    return CRON_VALIDATION(REGEX_ALL.test(part), 'Incorrect syntax');
+  } else if (beforeSlash.indexOf('-') > 0) {
+    if (isAscending(beforeSlash.split('-'))) {
+      return CRON_VALIDATION(REGEX_EVERY_HYPEN.test(part), 'Incorrect syntax hypen');
+    }
+    return CRON_VALIDATION(false, 'Incorrect range');
+  }
+  return CRON_VALIDATION(REGEX_EVERY.test(part), 'Incorrect syntax');
+};
+
 export const isValidMinutePart = (cronExp: string) => {
   const part = cronExp.split(' ')[0];
   if (doesNumberStartWithZero(part)) {
@@ -135,13 +153,7 @@ export const isValidMinutePart = (cronExp: string) => {
   } else if (!hasNoDuplicates(part)) {
     return CRON_VALIDATION(false, 'Duplicate numbers not allowed');
   } else if (part.indexOf('/') > 0) {
-    if (part.split('/')[0] !== '*' && isAscending(part.split('/')[0].split('-'))) {
-      return CRON_VALIDATION(REGEX_EVERY_HYPEN.test(part), 'Incorrect syntax hypen');
-    } else if (part.indexOf('-') > 0) {
-      return CRON_VALIDATION(false, 'Incorrect range');
-    } else {
-      return CRON_VALIDATION(REGEX_ALL.test(part), 'Incorrect syntax');
-    }
+    return isValidStepPart(part);
   } else if (part.indexOf(',') > 0) {
     return CRON_VALIDATION(REGEX_COMMA.test(part), 'Invalid syntax');
   } else if (part.indexOf('-') > 0) {
@@ -165,13 +177,7 @@ export const isValidHourPart = (cronExp: string) => {
   } else if (!hasNoDuplicates(part)) {
     return CRON_VALIDATION(false, 'Duplicate numbers not allowed');
   } else if (part.indexOf('/') > 0) {
-    if (part.split('/')[0] !== '*' && isAscending(part.split('/')[0].split('-'))) {
-      return CRON_VALIDATION(REGEX_EVERY_HYPEN.test(part), 'Incorrect syntax hypen');
-    } else if (part.indexOf('-') > 0) {
-      return CRON_VALIDATION(false, 'Incorrect range');
-    } else {
-      return CRON_VALIDATION(REGEX_ALL.test(part), 'Incorrect syntax');
-    }
+    return isValidStepPart(part);
   } else if (part.indexOf(',') > 0) {
     return CRON_VALIDATION(REGEX_COMMA.test(part), 'Invalid syntax');
   } else if (part.indexOf('-') > 0) {
@@ -195,13 +201,7 @@ export const isValidDayOfMonthPart = (cronExp: string) => {
   } else if (!hasNoDuplicates(part)) {
     return CRON_VALIDATION(false, 'Duplicate numbers not allowed');
   } else if (part.indexOf('/') > 0) {
-    if (part.split('/')[0] !== '*' && isAscending(part.split('/')[0].split('-'))) {
-      return CRON_VALIDATION(REGEX_EVERY_HYPEN.test(part), 'Incorrect syntax hypen');
-    } else if (part.indexOf('-') > 0) {
-      return CRON_VALIDATION(false, 'Incorrect range');
-    } else {
-      return CRON_VALIDATION(REGEX_ALL.test(part), 'Incorrect syntax');
-    }
+    return isValidStepPart(part);
   } else if (part.indexOf(',') > 0) {
     return CRON_VALIDATION(REGEX_COMMA.test(part), 'Invalid syntax');
   } else if (part.indexOf('-') > 0) {

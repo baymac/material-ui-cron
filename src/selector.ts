@@ -68,7 +68,7 @@ export const hourCronState = atom((get) => {
   if (
     getPeriodIndex(get(periodState)) < 1 ||
     hours.map((hour) => hour.value).join('') ===
-    DEFAULT_HOUR_OPTS_EVERY.map((hour) => hour.value).join('')
+      DEFAULT_HOUR_OPTS_EVERY.map((hour) => hour.value).join('')
   ) {
     return '*';
   } else if (get(hourAtEveryState).value === 'every') {
@@ -90,7 +90,7 @@ export const dayOfMonthCronState = atom((get) => {
   if (
     getPeriodIndex(get(periodState)) < 3 ||
     dayOfMonth.map((dayOfMonth) => dayOfMonth.value).join('') ===
-    DEFAULT_DAY_OF_MONTH_OPTS.map((day) => day.value).join('')
+      DEFAULT_DAY_OF_MONTH_OPTS.map((day) => day.value).join('')
   ) {
     return '*';
   } else if (get(dayOfMonthAtEveryState).value === 'every') {
@@ -99,9 +99,7 @@ export const dayOfMonthCronState = atom((get) => {
     if (Number(endIndex) - Number(startIndex) === 30) {
       return `*/${dayOfMonth.map((dayOfMonth) => dayOfMonth.value).join('')}`;
     }
-    return `${startIndex}-${endIndex}/${dayOfMonth
-      .map((dayOfMonth) => dayOfMonth.value)
-      .join('')}`;
+    return `${startIndex}-${endIndex}/${dayOfMonth.map((dayOfMonth) => dayOfMonth.value).join('')}`;
   } else if (dayOfMonth[0].value === 'L') {
     return 'L';
   } else if (isIncreasingSequence(dayOfMonth) && dayOfMonth.length !== 1) {
@@ -118,9 +116,9 @@ export const monthCronState = atom((get) => {
     get(monthState)
       .map((month) => month.value)
       .join('') ===
-    getMonthOptions(get(localeState).shortMonthOptions)
-      .map((month) => month.value)
-      .join('')
+      getMonthOptions(get(localeState).shortMonthOptions)
+        .map((month) => month.value)
+        .join('')
   ) {
     return '*';
   } else if (isIncreasingSequence(months) && months.length !== 1) {
@@ -162,22 +160,34 @@ export const cronExpState = atom(
     const res = validateCronExp(next);
     set(cronValidationErrorMessageState, res.hasError ? res.message : '');
     if (!res.hasError) {
+      // Snapshot the cron currently implied by the field/period atoms *before*
+      // regenerating them. If the incoming value matches, this is a round-trip
+      // from a manual field/period edit and we must not re-derive the period
+      // (otherwise selecting a broad period on default fields would snap back).
+      const currentDerived = get(cronExpState);
       const cronParts = next.split(' ');
       generateMinute(cronParts[0], get(localeState), set as Setter);
       generateHour(cronParts[1], get(localeState), set as Setter);
       generateDayOfMonth(cronParts[2], get(localeState), set as Setter);
       generateMonth(cronParts[3], get(localeState), set as Setter);
       generateWeek(cronParts[4], get(localeState), set as Setter);
-      const period = get(periodState);
-      const periodOptions = getPeriodOptions(get(localeState).periodOptions);
-      if (cronParts[3] !== '*' && getPeriodIndex(period) < 4) {
-        set(periodState, periodOptions[4]);
-      } else if (cronParts[2] !== '*' && getPeriodIndex(period) < 3) {
-        set(periodState, periodOptions[3]);
-      } else if (cronParts[4] !== '*' && getPeriodIndex(period) < 2) {
-        set(periodState, periodOptions[2]);
-      } else if (cronParts[1] !== '*' && getPeriodIndex(period) < 1) {
-        set(periodState, periodOptions[1]);
+      if (next !== currentDerived) {
+        // External (prop/text) change: derive the period from the highest
+        // non-`*` segment and set it unconditionally so going from a narrow cron
+        // (e.g. `30 9 * * 1`) to a broad one (`* * * * *`) resets it instead of
+        // staying stuck on the old, now-stale period.
+        const periodOptions = getPeriodOptions(get(localeState).periodOptions);
+        let periodIndex = 0;
+        if (cronParts[3] !== '*') {
+          periodIndex = 4;
+        } else if (cronParts[2] !== '*') {
+          periodIndex = 3;
+        } else if (cronParts[4] !== '*') {
+          periodIndex = 2;
+        } else if (cronParts[1] !== '*') {
+          periodIndex = 1;
+        }
+        set(periodState, periodOptions[periodIndex]);
       }
     }
   },
@@ -196,6 +206,10 @@ const generateMinute = (part: string, locale: Locale, set: Setter) => {
       set(minuteRangeEndSchedulerState, defaultMinuteOptionsWithOrdinal()[Number(subsubparts[1])]);
     } else if (subparts[0] === '*') {
       set(minuteRangeStartSchedulerState, defaultMinuteOptionsWithOrdinal()[0]);
+      set(minuteRangeEndSchedulerState, defaultMinuteOptionsWithOrdinal()[59]);
+    } else {
+      // Plain `n/m` (e.g. 1/4): start at n, end at the max.
+      set(minuteRangeStartSchedulerState, defaultMinuteOptionsWithOrdinal()[Number(subparts[0])]);
       set(minuteRangeEndSchedulerState, defaultMinuteOptionsWithOrdinal()[59]);
     }
     set(minuteState, [DEFAULT_MINUTE_OPTS[Number(subparts[1])]]);
@@ -231,6 +245,10 @@ const generateHour = (part: string, locale: Locale, set: Setter) => {
       set(hourRangeEndSchedulerState, getTimesOfTheDay()[Number(subsubparts[1])]);
     } else if (subparts[0] === '*') {
       set(hourRangeStartSchedulerState, getTimesOfTheDay()[0]);
+      set(hourRangeEndSchedulerState, getTimesOfTheDay()[23]);
+    } else {
+      // Plain `n/m` (e.g. 1/4): start at n, end at the max.
+      set(hourRangeStartSchedulerState, getTimesOfTheDay()[Number(subparts[0])]);
       set(hourRangeEndSchedulerState, getTimesOfTheDay()[23]);
     }
     set(hourState, [DEFAULT_HOUR_OPTS_EVERY[Number(subparts[1])]]);
@@ -272,6 +290,13 @@ const generateDayOfMonth = (part: string, locale: Locale, set: Setter) => {
       );
     } else if (subparts[0] === '*') {
       set(dayOfMonthRangeStartSchedulerState, DEFAULT_DAY_OF_MONTH_OPTS_WITH_ORD[0]);
+      set(dayOfMonthRangeEndSchedulerState, DEFAULT_DAY_OF_MONTH_OPTS_WITH_ORD[30]);
+    } else {
+      // Plain `n/m` (e.g. 1/4): start at n, end at the max.
+      set(
+        dayOfMonthRangeStartSchedulerState,
+        DEFAULT_DAY_OF_MONTH_OPTS_WITH_ORD[Number(subparts[0]) - 1],
+      );
       set(dayOfMonthRangeEndSchedulerState, DEFAULT_DAY_OF_MONTH_OPTS_WITH_ORD[30]);
     }
     set(dayOfMonthState, [DEFAULT_DAY_OF_MONTH_OPTS[Number(subparts[1]) - 1]]);

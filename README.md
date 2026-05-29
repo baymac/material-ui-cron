@@ -5,7 +5,15 @@
 
 A React cron editor built with [material ui](https://material-ui.com/)
 
-For **demo** and **usage** clone repo and run `yarn && yarn dev`.
+For a **live demo**, run the demo app in [`demo/`](./demo):
+
+```bash
+yarn demo:install   # one-time: install the demo app's deps
+yarn demo           # http://localhost:5173
+```
+
+The demo is a small [TanStack Router](https://tanstack.com/router) + Vite SPA that
+imports the component straight from `src/`, so it always reflects the working tree.
 
 ![material-ui-cron demo](/docs/material-ui-cron-demo.png)
 
@@ -102,6 +110,72 @@ We are welcoming translation contributions from the community.
   customLocale={{...your translations}} // should be a valid object of type Locale, overrides value supplied to locale prop
 />
 ```
+
+## Testing
+
+Tests run on [Vitest](https://vitest.dev/) and are split into two projects:
+
+- **`unit`** — pure-logic tests that run in Node (cron validation in `utils.ts`,
+  the cron ⇄ field-atom derivations in `selector.ts`).
+- **`browser`** — component tests that render the real `<Scheduler />` in a
+  headless Chromium via [Playwright](https://playwright.dev/). A real browser is
+  required: MUI's `Autocomplete` triggers an infinite update loop under jsdom.
+
+Tests live next to the code they cover:
+
+| File | Project | What it covers |
+| --- | --- | --- |
+| `src/utils.test.ts` | unit | every cron-part validator + helpers |
+| `src/selector.test.ts` | unit | all cron-part derivation atoms and the writer |
+| `src/scheduler.browser.test.tsx` | browser | end-to-end `<Scheduler />` behaviour |
+
+### Commands
+
+```bash
+# Install the Chromium browser once (needed for the browser project)
+npx playwright install chromium
+
+yarn test           # run the whole suite once (unit + browser)
+yarn test:unit      # run only the Node unit project
+yarn test:browser   # run only the Chromium browser project
+yarn test:watch     # watch mode
+yarn coverage       # run everything and emit a coverage report
+```
+
+`yarn coverage` uses the V8 provider and writes a report to `coverage/`
+(`text` summary in the console, plus `html` and `json-summary`).
+
+### Continuous integration
+
+`.github/workflows/test.yml` runs on pushes and pull requests to `main`. It
+lints (`biome lint`), type-checks (`tsc --noEmit`), builds, installs Chromium,
+runs `yarn coverage`, and uploads the coverage report as a build artifact.
+
+## Demo & deployment
+
+The [`demo/`](./demo) app is deployed to Vercel, which builds a fresh preview for
+**every branch and pull request** and comments the live URL on the PR.
+
+The build is driven by [`vercel.json`](./vercel.json) at the repo root:
+
+| Step | Command |
+| --- | --- |
+| Install | `yarn --cwd demo install` |
+| Build | `yarn --cwd demo build` |
+| Output | `demo/dist` |
+
+### One-time Vercel setup
+
+1. Create a Vercel project and link it to this GitHub repository
+   (Vercel dashboard → *Add New… → Project*, or `npx vercel link`).
+2. Leave the **Root Directory** as the repo root — `vercel.json` already points
+   the build at `demo/`. (The demo aliases the library from `../src`, so the whole
+   repo must be present at build time.)
+3. That's it. Vercel's Git integration produces a Preview Deployment for each push
+   to a branch / PR and a Production Deployment for `main`.
+
+No secrets or GitHub Actions workflow are required — preview URLs come from
+Vercel's native Git integration.
 
 ## Acknowledgement
 

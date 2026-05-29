@@ -1,0 +1,185 @@
+import GitHubIcon from '@mui/icons-material/GitHub';
+import {
+  Alert,
+  AppBar,
+  Box,
+  Chip,
+  Container,
+  FormControlLabel,
+  Link,
+  MenuItem,
+  Paper,
+  Stack,
+  Switch,
+  TextField,
+  Toolbar,
+  Typography,
+} from '@mui/material';
+import cronstrue from 'cronstrue';
+import 'cronstrue/locales/zh_CN';
+import { useState } from 'react';
+import Scheduler, { type definedLocales } from 'material-ui-cron';
+
+const PRESETS: { label: string; cron: string }[] = [
+  { label: 'Every minute', cron: '* * * * *' },
+  { label: 'Every 15 minutes', cron: '*/15 * * * *' },
+  { label: 'Hourly', cron: '0 * * * *' },
+  { label: 'Daily at 09:00', cron: '0 9 * * *' },
+  { label: 'Weekdays at 18:30', cron: '30 18 * * 1-5' },
+  { label: 'Monthly (1st)', cron: '0 0 1 * *' },
+  { label: 'Yearly (Jan 1)', cron: '0 0 1 1 *' },
+];
+
+const LOCALES: { value: definedLocales; label: string }[] = [
+  { value: 'en', label: 'English (en)' },
+  { value: 'zh_CN', label: '中文 (zh_CN)' },
+];
+
+function describe(cron: string, locale: definedLocales): string {
+  try {
+    return cronstrue.toString(cron, {
+      locale: locale === 'zh_CN' ? 'zh_CN' : 'en',
+      throwExceptionOnParseError: true,
+    });
+  } catch {
+    return '—';
+  }
+}
+
+export function DemoPage() {
+  const [cron, setCron] = useState('0 9 * * *');
+  const [cronError, setCronError] = useState('');
+  const [isAdmin, setIsAdmin] = useState(true);
+  const [locale, setLocale] = useState<definedLocales>('en');
+
+  return (
+    <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50' }}>
+      <AppBar position="static" color="default" elevation={0} sx={{ borderBottom: 1, borderColor: 'divider' }}>
+        <Toolbar>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontWeight: 700 }}>
+            material-ui-cron
+          </Typography>
+          <Link
+            href="https://www.npmjs.com/package/material-ui-cron"
+            target="_blank"
+            rel="noopener"
+            underline="hover"
+            sx={{ mr: 2 }}
+          >
+            npm
+          </Link>
+          <Link
+            href="https://github.com/baymac/material-ui-cron"
+            target="_blank"
+            rel="noopener"
+            sx={{ display: 'inline-flex', alignItems: 'center', color: 'text.primary' }}
+          >
+            <GitHubIcon />
+          </Link>
+        </Toolbar>
+      </AppBar>
+
+      <Container maxWidth="md" sx={{ py: 5 }}>
+        <Stack spacing={1} sx={{ mb: 4 }}>
+          <Typography variant="h4" sx={{ fontWeight: 800 }}>
+            A React cron editor, built with Material UI
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Edit the schedule below, try a preset, toggle admin mode, or switch the locale. The
+            component is rendered straight from this repository's <code>src/</code>.
+          </Typography>
+        </Stack>
+
+        <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 }, mb: 3 }}>
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={2}
+            sx={{ mb: 3 }}
+            alignItems={{ sm: 'center' }}
+          >
+            <FormControlLabel
+              control={<Switch checked={isAdmin} onChange={(e) => setIsAdmin(e.target.checked)} />}
+              label="Admin (allow sub-daily frequency)"
+            />
+            <TextField
+              select
+              size="small"
+              label="Locale"
+              value={locale}
+              onChange={(e) => setLocale(e.target.value as definedLocales)}
+              sx={{ minWidth: 180 }}
+            >
+              {LOCALES.map((l) => (
+                <MenuItem key={l.value} value={l.value}>
+                  {l.label}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Stack>
+
+          <Scheduler
+            // `key` forces a clean remount when the locale changes so the field
+            // labels re-render in the new language.
+            key={locale}
+            cron={cron}
+            setCron={setCron}
+            setCronError={setCronError}
+            isAdmin={isAdmin}
+            locale={locale}
+          />
+        </Paper>
+
+        <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 }, mb: 3 }}>
+          <Typography variant="overline" color="text.secondary">
+            Presets
+          </Typography>
+          <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mt: 1 }}>
+            {PRESETS.map((p) => (
+              <Chip
+                key={p.cron}
+                label={p.label}
+                onClick={() => setCron(p.cron)}
+                color={cron === p.cron ? 'primary' : 'default'}
+                variant={cron === p.cron ? 'filled' : 'outlined'}
+              />
+            ))}
+          </Stack>
+        </Paper>
+
+        <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 } }}>
+          <Typography variant="overline" color="text.secondary">
+            Current value
+          </Typography>
+          <Box
+            component="pre"
+            sx={{
+              m: 0,
+              mt: 1,
+              p: 1.5,
+              borderRadius: 1,
+              bgcolor: 'grey.100',
+              fontFamily: 'monospace',
+              fontSize: '1.1rem',
+            }}
+          >
+            {cron}
+          </Box>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1.5 }}>
+            {describe(cron, locale)}
+          </Typography>
+          {cronError ? (
+            <Alert severity="error" sx={{ mt: 2 }}>
+              {cronError}
+            </Alert>
+          ) : null}
+        </Paper>
+
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 4, textAlign: 'center' }}>
+          <Link href="https://github.com/baymac/material-ui-cron#usage" target="_blank" rel="noopener">
+            Read the usage docs →
+          </Link>
+        </Typography>
+      </Container>
+    </Box>
+  );
+}
