@@ -21,7 +21,7 @@ import {
   localeState,
 } from '../store';
 import type { SelectOptions } from '../types';
-import { getIndex } from '../utils';
+import { capIntervalOptionsToSpan, getIndex } from '../utils';
 
 const StyledBetweenTypography = styled(Typography)({
   margin: '0 2px',
@@ -109,6 +109,31 @@ export default function DayOfMonth() {
     }
   };
 
+  // In `every` mode the cron is `start-end/N`; the interval N must not exceed the
+  // window span or the step lands outside the range and the schedule collapses to
+  // a single run. Cap the selectable interval at the span (no cap in `on` mode,
+  // where this same select picks the actual days).
+  const intervalSpan =
+    dayOfMonthAtEvery.value === 'every'
+      ? Number(endMonth.value) - Number(startMonth.value)
+      : Number.POSITIVE_INFINITY;
+  const intervalOptions = React.useMemo(
+    () => capIntervalOptionsToSpan(dayOfMonthOptions, intervalSpan),
+    [dayOfMonthOptions, intervalSpan],
+  );
+
+  // If the range narrows below the current interval, clamp the interval down to
+  // the span so the selection never sits on a now-disabled (collapsing) value.
+  React.useEffect(() => {
+    if (dayOfMonthAtEvery.value !== 'every' || dayOfMonth.length !== 1) {
+      return;
+    }
+    const span = Number(endMonth.value) - Number(startMonth.value);
+    if (Number(dayOfMonth[0].value) > span) {
+      setDayOfMonth([DEFAULT_DAY_OF_MONTH_OPTS[span - 1]]);
+    }
+  }, [startMonth, endMonth, dayOfMonthAtEvery]);
+
   return (
     <FieldRow
       headerSlot={
@@ -122,7 +147,7 @@ export default function DayOfMonth() {
     >
       <CustomSelect
         size={dayOfMonthAtEvery.value === 'every' ? 'sm' : 'lg'}
-        options={dayOfMonthOptions}
+        options={intervalOptions}
         label={
           dayOfMonthAtEvery.value === 'on'
             ? resolvedLocale.multiDayOfMonthLabel

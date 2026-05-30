@@ -19,6 +19,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `Cannot read properties of undefined (reading 'recentlyCreatedOwnerStacks')`.
   `react` / `react-dom` subpaths (e.g. `react/jsx-runtime`) are now externalized,
   so the JSX runtime resolves from the consumer's own React at runtime.
+- **`every N between X and Y` could silently collapse to a single run.** When the
+  interval `N` exceeded the window span (e.g. `every 5 between :55 and :59` →
+  `55-59/5`), the cron step landed outside the range after the first hit, so it
+  only ever fired at `:55`. The selectable interval is now capped at the range
+  span across the Minute / Hour / Day-of-month fields (options above the span are
+  disabled, and a narrowing range clamps the interval down), so a window can no
+  longer be made degenerate.
 
 ### Changed
 

@@ -38,6 +38,22 @@ export const isIncreasingSequence = (options: SelectOptions[]) =>
     (option, i) => i === 0 || Number(options[i - 1].value) + 1 === Number(option.value),
   );
 
+// In `every` mode a field emits `start-end/N`. A cron range step begins at
+// `start` and increments by `N`, so once `N` exceeds the span (`end - start`)
+// only `start` ever matches and the schedule silently collapses to a single run
+// per cycle ("could only run it once" — the step lands outside the range).
+// Disable every interval option whose numeric value exceeds the span so a narrow
+// window can never be made degenerate. Options at/below the span are left as-is
+// (preserving any existing `disabled`, e.g. the `0` interval). Derive this fresh
+// from the base options each render so widening the range re-enables them.
+export const capIntervalOptionsToSpan = (
+  options: SelectOptions[],
+  span: number,
+): SelectOptions[] =>
+  options.map((option) =>
+    Number(option.value) > span ? { ...option, disabled: true } : option,
+  );
+
 export function isAscending(arr: string[]) {
   return arr.every((x, i) => i === 0 || Number(x) >= Number(arr[i - 1]));
 }

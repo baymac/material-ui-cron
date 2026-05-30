@@ -388,6 +388,46 @@ describe('Scheduler segmented controls (browser)', () => {
   });
 });
 
+// ---- Range/interval bug: `every N between X and Y` with N > span collapsed to
+// a single run per cycle ("could only run it once" — the step lands outside the
+// window). The interval is now capped at the span. ----
+describe('Scheduler every-interval is capped to the range span (browser)', () => {
+  it('auto-corrects an incoming collapsing minute cron (55-59/5 -> 55-59/4)', async () => {
+    const setCron = vi.fn();
+    render(<Scheduler cron='55-59/5 * * * *' setCron={setCron} setCronError={noop} isAdmin />);
+    // span = 59-55 = 4, so interval 5 would only ever fire at :55 (once/hour).
+    // It clamps down to the largest non-collapsing interval, 4 (fires :55 and :59).
+    await waitFor(() => expect(setCron).toHaveBeenLastCalledWith('55-59/4 * * * *'), {
+      timeout: 3000,
+    });
+    expect(await screen.findByDisplayValue('55-59/4 * * * *')).toBeInTheDocument();
+  });
+
+  it('disables out-of-span interval options in the minute every-select', async () => {
+    const user = userEvent.setup();
+    // span = 58-55 = 3; interval 2 is within span so the cron is left untouched.
+    render(<Scheduler cron='55-58/2 * * * *' setCron={noop} setCronError={noop} isAdmin />);
+    // Wait for the debounced parse to put the field in every-mode with the range
+    // applied (the range start/end selects read 55 / 58) before opening the
+    // interval list — otherwise the cap hasn't been computed yet.
+    await screen.findByDisplayValue('55', undefined, { timeout: 3000 });
+    await screen.findByDisplayValue('58', undefined, { timeout: 3000 });
+
+    await user.click(await screen.findByLabelText('Minute(s)'));
+    const listbox = await screen.findByRole('listbox');
+    // Within the span -> selectable.
+    expect(within(listbox).getByText('3').closest('[role="option"]')).not.toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+    // Beyond the span -> disabled, so the schedule can't be made to collapse.
+    expect(within(listbox).getByText('5').closest('[role="option"]')).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+  });
+});
+
 // ---- Per-instance state: two schedulers on a page must not share atoms ----
 describe('Scheduler instance isolation (browser)', () => {
   it('keeps two Scheduler instances independent', async () => {
