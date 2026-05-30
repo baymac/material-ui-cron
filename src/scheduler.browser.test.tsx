@@ -3,6 +3,7 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-li
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import Scheduler from './index';
+import { addMonths } from './nextRuns';
 
 const noop = () => {};
 
@@ -491,7 +492,12 @@ describe('Scheduler run calendar (browser)', () => {
   });
 
   it('pages across the current + next eleven months, bounded at both ends', async () => {
-    const user = userEvent.setup();
+    // pointerEventsCheck disabled: the panel re-anchors its cursor asynchronously
+    // (the cron is re-parsed and the soonest-run day re-selected just after mount),
+    // which can flip an arrow to `disabled` mid-click. We tolerate that — a hop
+    // that lands on a disabled arrow is simply a no-op the walk detects and stops
+    // on — instead of letting the stray pointer event throw.
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
     render(<Scheduler cron='0 12 * * *' setCron={noop} setCronError={noop} isAdmin />);
     // Re-query each hop: MUI re-renders the arrow buttons as their disabled state
     // flips, so a reference captured once can go stale mid-walk.
@@ -501,41 +507,57 @@ describe('Scheduler run calendar (browser)', () => {
     // The calendar grid's aria-label is the shown month ("May 2026"): the single
     // source of truth for where the cursor sits, regardless of click timing.
     const shownMonth = () => screen.getByRole('grid').getAttribute('aria-label');
+
+    // The twelve month labels the strip should expose: the current local month
+    // (how the component anchors its window) plus the next eleven, formatted the
+    // same way the panel does (UTC parts, long month + year).
+    const now = new Date();
+    const startYm = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const label = (ym: string) => {
+      const [y, m] = ym.split('-').map(Number);
+      return new Intl.DateTimeFormat('en', {
+        month: 'long',
+        year: 'numeric',
+        timeZone: 'UTC',
+      }).format(new Date(Date.UTC(y, m - 1, 1)));
+    };
+    const expectedMonths = Array.from({ length: 12 }, (_, i) => label(addMonths(startYm, i)));
+
     await screen.findByRole('button', { name: 'Next month' });
     // Wait for the async run enumeration to resolve first: it pre-selects the
     // soonest run's month (which need not be the current one — today's run may
-    // already have elapsed), and that one-time cursor reset would otherwise race
-    // the walk below.
+    // already have elapsed). The pre-selection can land mid-strip, so the walk
+    // below collects months toward BOTH ends rather than counting hops.
     await waitFor(() => expect(screen.getAllByRole('listitem').length).toBeGreaterThan(0), {
       timeout: 3000,
     });
-    // Each hop waits for the shown month to actually change (a click can outrun
-    // React's cursor flush).
+    // One hop in `btn`'s direction. Returns false when the month doesn't move —
+    // i.e. the arrow is at (or asynchronously flipped to) its bound — so the walk
+    // knows to stop. The short timeout makes a no-op cheap rather than a 1s hang.
     const hop = async (btn: () => HTMLButtonElement) => {
       const before = shownMonth();
       await user.click(btn());
-      await waitFor(() => expect(shownMonth()).not.toBe(before));
+      try {
+        await waitFor(() => expect(shownMonth()).not.toBe(before), { timeout: 800 });
+        return true;
+      } catch {
+        return false;
+      }
     };
-    // Rewind to the current month so the span is measured from a known end
-    // regardless of where the pre-selection landed.
-    let guard = 0;
-    while (!prevBtn().disabled && guard++ < 30) {
-      await hop(prevBtn);
-    }
-    // Now parked on the current month; walk forward to the far end, collecting
-    // every distinct month reachable.
+    // Collect every reachable month by walking to the far end, then back to the
+    // near end. Robust to a stray re-anchor bounce: whichever month the cursor
+    // jumps to is still on the strip and still gets collected.
     const reachable = new Set<string>([shownMonth()!]);
-    let forwardSteps = 0;
-    guard = 0;
-    while (!nextBtn().disabled && guard++ < 30) {
-      await hop(nextBtn);
+    for (let guard = 0; guard < 40 && (await hop(nextBtn)); guard++) {
       reachable.add(shownMonth()!);
-      forwardSteps++;
     }
-    // Twelve-month window => twelve distinct months, eleven hops from the current
-    // month to the far end, and no paging before the current month.
-    expect(reachable.size).toBe(12);
-    expect(forwardSteps).toBe(11);
+    for (let guard = 0; guard < 40 && (await hop(prevBtn)); guard++) {
+      reachable.add(shownMonth()!);
+    }
+    // Twelve-month window: exactly the current month through the next eleven — set
+    // equality also pins the near end to the current month (no earlier paging) and
+    // the far end to +11 (no overrun).
+    expect([...reachable].sort()).toEqual([...expectedMonths].sort());
   });
 
   it('shows the invalid-schedule message for an invalid cron', async () => {
