@@ -5,7 +5,9 @@ import type React from 'react';
 import type { CustomSelectProps, SelectOptions } from '../types';
 import { getSortedOptions } from '../utils';
 
-export default function CustomSelect(props: CustomSelectProps) {
+export default function CustomSelect<V extends SelectOptions | SelectOptions[]>(
+  props: CustomSelectProps<V>,
+) {
   const {
     options,
     value,
@@ -47,23 +49,28 @@ export default function CustomSelect(props: CustomSelectProps) {
       return;
     }
 
+    // Each branch hands MUI's `newValue` (or a derived array/single) back to the
+    // caller. The component is generic over `V`, but internally produces both
+    // single and array shapes depending on `single`/`multiple`, so the value is
+    // cast to `V` at the boundary — the field that owns the atom enforces the
+    // real shape.
     if (reason === 'clear') {
-      setValue([options[0]]);
+      setValue([options[0]] as V);
     } else if (reason === 'selectOption' && single && props.multiple !== false) {
       const target = event.target as HTMLElement;
       const val = (newValue as unknown as SelectOptions[]).filter(
         (val) => val.label === target.textContent,
       );
-      setValue(val);
+      setValue(val as V);
     } else if (sort && reason === 'selectOption') {
-      setValue(getSortedOptions(newValue as unknown as SelectOptions[]));
+      setValue(getSortedOptions(newValue as unknown as SelectOptions[]) as V);
     } else if (reason !== 'removeOption') {
       if (newValue !== null) {
-        setValue(newValue);
+        setValue(newValue as V);
       }
     } else if (reason === 'removeOption' && disableEmpty) {
       if (newValue && (newValue as SelectOptions[]).length !== 0) {
-        setValue(newValue);
+        setValue(newValue as V);
       }
     }
   };

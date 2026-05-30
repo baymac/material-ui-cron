@@ -1,5 +1,5 @@
+import type { AutocompleteClasses } from '@mui/material/Autocomplete';
 import type { SxProps, Theme } from '@mui/material/styles';
-// Replaced Recoil setter type with a generic setter signature
 
 export type PeriodType = 'year' | 'month' | 'week' | 'day' | 'hour' | 'minute';
 
@@ -11,10 +11,16 @@ export interface SchedulerSlotProps {
   header?: { sx?: SxProps<Theme> };
 }
 
-export interface CustomSelectProps {
+/**
+ * Props for the internal `CustomSelect`. Generic over the selected value type
+ * `V` so the single-value selects (`SelectOptions`) and the multi-selects
+ * (`SelectOptions[]`) both stay precisely typed — `value` and `setValue` share
+ * the same `V`, inferred from whatever the caller passes to `value`.
+ */
+export interface CustomSelectProps<V extends SelectOptions | SelectOptions[] = SelectOptions[]> {
   options: Array<SelectOptions>;
-  value: SelectOptions | SelectOptions[];
-  setValue: (value: any) => void;
+  value: V;
+  setValue: (value: V) => void;
   noOptionsText?: string;
   label: string;
   size?: 'sm' | 'md' | 'lg';
@@ -24,7 +30,7 @@ export interface CustomSelectProps {
   multiple?: boolean;
   filterSelectedOptions?: boolean;
   className?: string;
-  classes?: any;
+  classes?: Partial<AutocompleteClasses>;
   single?: boolean;
   sort?: boolean;
   disableEmpty?: boolean;
