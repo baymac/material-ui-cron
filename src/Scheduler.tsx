@@ -1,6 +1,5 @@
 import Box from '@mui/material/Box';
-import { ThemeProvider, createTheme, styled } from '@mui/material/styles';
-import type { Theme } from '@mui/material/styles';
+import { ThemeProvider, createTheme, styled, useTheme } from '@mui/material/styles';
 import React from 'react';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import SchedulerHeader from './components/SchedulerHeader';
@@ -90,6 +89,24 @@ export default function Scheduler(props: SchedulerProps) {
   const { timezone, layout = 'auto', slotProps, title, color } = props;
   const period = useAtomValue(periodState);
   const [periodIndex, setPeriodIndex] = React.useState(0);
+
+  // Recolor everything that reads `palette.primary` (header bar, the selected
+  // segment of the toggles, the section pills) by overriding primary in a
+  // scoped theme. `augmentColor` derives light/dark/contrastText from the
+  // single color so the contrast (text) color stays legible against it — we
+  // must augment up front because createTheme's merge args are NOT re-augmented.
+  // `useTheme()` always yields a theme (the default one when there is no parent
+  // ThemeProvider), so we merge onto it directly instead of the function form,
+  // which warns under MUI when no outer theme is present.
+  const outerTheme = useTheme();
+  const accentTheme = React.useMemo(() => {
+    if (!color) {
+      return undefined;
+    }
+    return createTheme(outerTheme, {
+      palette: { primary: outerTheme.palette.augmentColor({ color: { main: color } }) },
+    });
+  }, [outerTheme, color]);
 
   const cronError = useAtomValue(cronValidationErrorMessageState);
   const setIsAdmin = useSetAtom(isAdminState);
@@ -218,23 +235,9 @@ export default function Scheduler(props: SchedulerProps) {
   );
 
   // No accent override: render the card under the surrounding theme as-is.
-  if (!color) {
+  if (!accentTheme) {
     return card;
   }
 
-  // Recolor everything that reads `palette.primary` (header bar, the selected
-  // segment of the toggles, the section pills) by overriding primary in a
-  // scoped theme. `augmentColor` derives light/dark/contrastText from the
-  // single color so the contrast (text) color stays legible against it — we
-  // must augment up front because createTheme's merge args are NOT re-augmented.
-  // `outer` is `{}` when no parent ThemeProvider exists, so fall back to a
-  // default theme to borrow its augmentColor (and contrast threshold).
-  const withAccent = (outer: Theme) => {
-    const base = outer.palette ? outer : createTheme();
-    return createTheme(base, {
-      palette: { primary: base.palette.augmentColor({ color: { main: color } }) },
-    });
-  };
-
-  return <ThemeProvider theme={withAccent}>{card}</ThemeProvider>;
+  return <ThemeProvider theme={accentTheme}>{card}</ThemeProvider>;
 }

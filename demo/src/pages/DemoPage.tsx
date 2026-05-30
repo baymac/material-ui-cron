@@ -131,14 +131,12 @@ export function DemoPage() {
             <Stack
               direction={{ xs: 'column', sm: 'row' }}
               spacing={2}
-              sx={{ mb: 3 }}
-              alignItems={{ sm: 'center' }}
+              sx={{ mb: 3, alignItems: { sm: 'center' }, flexWrap: 'wrap' }}
               useFlexGap
-              flexWrap="wrap"
             >
               <FormControlLabel
                 control={<Switch checked={isAdmin} onChange={(e) => setIsAdmin(e.target.checked)} />}
-                label="Admin (allow sub-daily frequency)"
+                label="Admin (allow sub-daily)"
               />
               <FormControlLabel
                 control={
@@ -147,7 +145,7 @@ export function DemoPage() {
                     onChange={(e) => setMode(e.target.checked ? 'dark' : 'light')}
                   />
                 }
-                label="Dark mode (scheduler only)"
+                label="Dark mode"
               />
               <TextField
                 select
@@ -230,7 +228,7 @@ export function DemoPage() {
             <Typography variant="overline" color="text.secondary">
               Presets
             </Typography>
-            <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mt: 1 }}>
+            <Stack direction="row" spacing={1} useFlexGap sx={{ mt: 1, flexWrap: 'wrap' }}>
               {PRESETS.map((p) => (
                 <Chip
                   key={p.cron}

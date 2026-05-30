@@ -30,6 +30,16 @@ const Header = styled(Box)({
   alignItems: 'center',
   minHeight: 20,
   marginBottom: 14,
+  // A segmented-toggle header (AT/EVERY, ON/EVERY) has a hard bottom edge, and
+  // the labeled select directly below it floats its outlined label up ~7px into
+  // the gap — so on a stacked (mobile) card the whitespace under the toggle
+  // reads tighter than the 14px rowGap between the rows further down. Add that
+  // back here so every stacked gap looks even.
+  '&[data-toggle="true"]': {
+    '@container (max-width: 480px)': {
+      marginBottom: 23,
+    },
+  },
 });
 
 const Controls = styled(Box)({
@@ -55,7 +65,9 @@ export default function FieldRow(props: FieldRowProps) {
   const { label, headerSlot, children } = props;
   return (
     <Row>
-      <Header>{headerSlot ?? <Label>{label}</Label>}</Header>
+      <Header data-toggle={headerSlot ? 'true' : undefined}>
+        {headerSlot ?? <Label>{label}</Label>}
+      </Header>
       <Controls>{children}</Controls>
     </Row>
   );

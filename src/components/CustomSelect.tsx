@@ -101,6 +101,16 @@ export default function CustomSelect(props: CustomSelectProps) {
           },
           '& .MuiAutocomplete-input': {
             cursor: 'pointer',
+            // Pin the input's box-sizing so the field height is deterministic
+            // across theme toggles. MUI's input relies on `content-box` + its
+            // `height: 1.4375em` to render at full height; a surrounding
+            // ScopedCssBaseline emits `.MuiScopedCssBaseline-root * { box-sizing:
+            // inherit }` (→ border-box) at *equal specificity*, so which one wins
+            // depends on emotion's injection order — and toggling dark mode
+            // re-injects styles and flips it, collapsing the input and making the
+            // select visibly jump up. Asserting it here wins on specificity and
+            // keeps the height stable in every theme.
+            boxSizing: 'content-box',
           },
           // Keep disabled text at full contrast (not the faded default) and
           // theme-aware: `text.primary` reads correctly on the card in both
@@ -110,33 +120,42 @@ export default function CustomSelect(props: CustomSelectProps) {
             WebkitTextFillColor: theme.palette.text.primary,
           },
         })}
-        renderTags={
-          // Single-value selects (e.g. the every-mode interval) show the value
-          // as plain inline text — not a removable chip — so the field reads
-          // like a normal single select and stays a single line tall.
-          single
-            ? (value) => (
-                <span style={{ paddingLeft: 4, whiteSpace: 'nowrap' }}>
-                  {(value as SelectOptions[]).map((option) => option.label).join(', ')}
-                </span>
-              )
-            : (value, getTagProps) => {
+        renderValue={
+          // A true single-select (`multiple={false}`) renders its value as
+          // normal input text via getOptionLabel — leave renderValue unset so
+          // the field behaves like a plain select (and exposes input.value).
+          props.multiple === false
+            ? undefined
+            : // Otherwise this is a `multiple` Autocomplete (value is an array).
+              // `single` ones show the value as plain inline text — not removable
+              // chips — so the field reads like a single select on one line.
+              single
+              ? (value) => {
+                  const items = value as SelectOptions[];
+                  return (
+                    <span style={{ paddingLeft: 4, whiteSpace: 'nowrap' }}>
+                      {items.map((option) => option.label).join(', ')}
+                    </span>
+                  );
+                }
+              : (value, getItemProps) => {
                 // Cap the visible chips at MAX_VISIBLE (+ a "+N" indicator) even
                 // when the field is focused/open. MUI normally shows *all* tags
                 // when focused, which makes a many-selected field balloon (and,
                 // when scrolled, slide chips under the floating label). Limiting
                 // here keeps the field a bounded, stable height in every state.
                 const MAX_VISIBLE = 3;
-                const shown = value.slice(0, MAX_VISIBLE);
-                const extra = value.length - shown.length;
+                const items = value as SelectOptions[];
+                const shown = items.slice(0, MAX_VISIBLE);
+                const extra = items.length - shown.length;
                 const chips = shown.map((option, index) => {
                   const disableSingleItemRemove =
-                    value.length === 1 && disableEmpty ? { onDelete: undefined } : {};
+                    items.length === 1 && disableEmpty ? { onDelete: undefined } : {};
                   return (
                     <Chip
                       label={(option as SelectOptions).label}
                       size='small'
-                      {...getTagProps({ index })}
+                      {...getItemProps({ index })}
                       {...disableSingleItemRemove}
                       key={(option as SelectOptions).label}
                     />

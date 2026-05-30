@@ -1,4 +1,3 @@
-import type { AutocompleteRenderGetTagProps } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material/styles';
 // Replaced Recoil setter type with a generic setter signature
 
@@ -13,10 +12,6 @@ export interface SchedulerSlotProps {
 }
 
 export interface CustomSelectProps {
-  renderTags?: (
-    value: SelectOptions[],
-    getTagProps: AutocompleteRenderGetTagProps,
-  ) => React.ReactNode;
   options: Array<SelectOptions>;
   value: SelectOptions | SelectOptions[];
   setValue: (value: any) => void;

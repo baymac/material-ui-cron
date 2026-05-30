@@ -54,12 +54,23 @@ const CronField = styled(TextField)(({ theme }) => ({
   '& .MuiOutlinedInput-root': {
     backgroundColor: 'rgba(255, 255, 255, 0.14)',
     borderRadius: 8,
+    // Pin the field to a fixed 40px height in every theme and viewport. The
+    // input's natural height depends on box-sizing (MUI uses content-box; a
+    // surrounding ScopedCssBaseline emits `* { box-sizing: inherit }` →
+    // border-box), and which rule wins depends on emotion's injection order — so
+    // without a fixed height, toggling dark mode flips the input (and header)
+    // height. A fixed height on the container (which has no padding of its own)
+    // is box-sizing-independent, so the field is exactly 40px everywhere.
+    height: 40,
+    boxSizing: 'border-box',
     '& input': {
       fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
       fontSize: 13,
       letterSpacing: '0.5px',
       color: theme.palette.primary.contrastText,
-      padding: '8px 10px',
+      // Horizontal inset only; the input is vertically centered within the
+      // fixed-height container above.
+      padding: '0 10px',
     },
     '& input.Mui-disabled': {
       color: theme.palette.primary.contrastText,
