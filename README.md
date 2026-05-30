@@ -58,7 +58,8 @@ export default function SchedulerDemo() {
 📖 **See [USAGE.md](./USAGE.md) for the full guide** — every prop with examples:
 [theming & dark mode](./USAGE.md#theming-the-color), [admin mode](./USAGE.md#admin-mode-sub-daily-frequencies),
 [layout](./USAGE.md#layout), [title & header](./USAGE.md#title-and-header),
-[timezone](./USAGE.md#timezone), and [localization](./USAGE.md#localization).
+[timezone](./USAGE.md#timezone), [calendar](./USAGE.md#calendar), and
+[localization](./USAGE.md#localization).
 
 `material-ui-cron` is written in TypeScript and ships complete type definitions.
 

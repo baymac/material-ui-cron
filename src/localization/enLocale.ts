@@ -42,6 +42,7 @@ const enLocale: Locale = {
   copyLabel: 'Copy',
   copiedText: 'Copied!',
   resetLabel: 'Reset',
+  calendarLabel: 'Upcoming',
   cronDescriptionText: 'en',
 };
 

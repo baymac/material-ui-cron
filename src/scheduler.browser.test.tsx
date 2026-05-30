@@ -428,6 +428,53 @@ describe('Scheduler every-interval is capped to the range span (browser)', () =>
   });
 });
 
+// ---- Calendar visualization (opt-in via showCalendar) ----
+describe('Scheduler run calendar (browser)', () => {
+  it('is hidden by default', async () => {
+    render(<Scheduler cron='*/15 * * * *' setCron={noop} setCronError={noop} isAdmin />);
+    await screen.findByDisplayValue('*/15 * * * *');
+    expect(screen.queryByText('Upcoming')).not.toBeInTheDocument();
+  });
+
+  it('renders a month grid marking the days that have runs when showCalendar is set', async () => {
+    render(<Scheduler cron='*/15 * * * *' setCron={noop} setCronError={noop} isAdmin showCalendar />);
+    expect(await screen.findByText('Upcoming')).toBeInTheDocument();
+    // `*/15` fires every 15 min, so the next 50 runs all fall on the next day or
+    // two — at least one day cell must be marked.
+    await waitFor(() =>
+      expect(document.querySelectorAll('[data-has-runs="true"]').length).toBeGreaterThan(0),
+      { timeout: 3000 },
+    );
+  });
+
+  it('shows the invalid-schedule message in the calendar for an invalid cron', async () => {
+    render(<Scheduler cron='0 0 * * *' setCron={noop} setCronError={noop} isAdmin showCalendar />);
+    const input = await screen.findByDisplayValue('0 0 * * *');
+    fireEvent.change(input, { target: { value: '60 * * * *' } });
+    await waitFor(
+      () =>
+        expect(screen.getAllByText(/Enter a valid schedule to preview runs/i).length).toBeGreaterThan(
+          0,
+        ),
+      { timeout: 3000 },
+    );
+  });
+
+  it('localizes the calendar label (zh_CN)', async () => {
+    render(
+      <Scheduler
+        cron='*/15 * * * *'
+        setCron={noop}
+        setCronError={noop}
+        isAdmin
+        showCalendar
+        locale='zh_CN'
+      />,
+    );
+    expect(await screen.findByText('即将运行')).toBeInTheDocument();
+  });
+});
+
 // ---- Per-instance state: two schedulers on a page must not share atoms ----
 describe('Scheduler instance isolation (browser)', () => {
   it('keeps two Scheduler instances independent', async () => {

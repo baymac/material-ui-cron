@@ -42,6 +42,7 @@ const enLocale: Locale = {
   copyLabel: '复制',
   copiedText: '已复制！',
   resetLabel: '重置',
+  calendarLabel: '即将运行',
   cronDescriptionText: 'zh_CN',
 };
 

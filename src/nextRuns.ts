@@ -59,6 +59,42 @@ export function localeToBcp47(localeCode: string): string {
   return localeCode.replace('_', '-');
 }
 
+/**
+ * Group occurrences by their calendar day in the given timezone, keyed by an
+ * ISO `YYYY-MM-DD` string. Used by the calendar view to mark which days have
+ * runs. `en-CA` is a stable way to get a zero-padded `YYYY-MM-DD` out of
+ * `Intl`; the key is a plain string so it matches a day cell rendered from the
+ * same `year-month-day` parts without re-crossing a Date (no timezone drift).
+ */
+export function bucketRunsByDay(runs: Date[], timezone?: string): Map<string, Date[]> {
+  const fmt = new Intl.DateTimeFormat('en-CA', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    timeZone: timezone,
+  });
+  const buckets = new Map<string, Date[]>();
+  for (const run of runs) {
+    const key = fmt.format(run);
+    const existing = buckets.get(key);
+    if (existing) {
+      existing.push(run);
+    } else {
+      buckets.set(key, [run]);
+    }
+  }
+  return buckets;
+}
+
+/** "6:00 PM" — time-only, locale + timezone aware (calendar day tooltips). */
+export function formatTime(date: Date, localeTag: string, timezone?: string): string {
+  return new Intl.DateTimeFormat(localeTag, {
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZone: timezone,
+  }).format(date);
+}
+
 /** "Fri, May 29, 6:00 PM" — locale + timezone aware, no date library. */
 export function formatAbsolute(date: Date, localeTag: string, timezone?: string): string {
   return new Intl.DateTimeFormat(localeTag, {

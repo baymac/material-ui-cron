@@ -11,6 +11,7 @@ export const FALLBACK_STRINGS = {
   copyLabel: 'Copy',
   copiedText: 'Copied!',
   resetLabel: 'Reset',
+  calendarLabel: 'Upcoming',
 } as const;
 
 type FallbackKey = keyof typeof FALLBACK_STRINGS;

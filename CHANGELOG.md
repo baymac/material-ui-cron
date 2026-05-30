@@ -11,6 +11,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **React 18 support.** The `react` / `react-dom` peer dependency range is now
   `^18.0.0 || ^19.0.0` (previously pinned to `^19.2.0`). The component uses only
   standard hooks and works on both majors.
+- **Opt-in run calendar (`showCalendar`).** Renders a month calendar of upcoming
+  runs beneath the Next-runs list, highlighting days that have runs (with the
+  times on hover) and paging between months that contain runs. Helps read sparse
+  schedules at a glance. Off by default; label localizable via the new optional
+  `calendarLabel` locale key (default `"Upcoming"`).
 
 ### Fixed
 

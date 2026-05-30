@@ -15,6 +15,7 @@ each variation. For installation and a quick start, see the
 - [Layout](#layout)
 - [Title and header](#title-and-header)
 - [Timezone](#timezone)
+- [Calendar](#calendar)
 - [Localization](#localization)
   - [Predefined locale](#predefined-locale)
   - [Custom locale](#custom-locale)
@@ -49,6 +50,7 @@ page without them stomping on each other — no provider or setup required.
 | `locale` | `'en' \| 'zh_CN'` | `'en'` | A built-in translation. See [Localization](#localization). |
 | `customLocale` | `Locale` | — | A full custom translation object. Overrides `locale`. |
 | `slotProps` | `{ header?: { sx?: SxProps<Theme> } }` | — | Per-slot style overrides. See [Title and header](#title-and-header). |
+| `showCalendar` | `boolean` | `false` | Show a month calendar of upcoming runs beneath the Next-runs list. See [Calendar](#calendar). |
 
 ## The controlled value
 
@@ -213,6 +215,26 @@ viewer's local zone; pass an IANA timezone to preview against a specific one:
   cron={cron}
   setCron={setCron}
   setCronError={setCronError}
+  timezone="America/New_York"
+/>
+```
+
+## Calendar
+
+Set `showCalendar` to add a month calendar of upcoming runs beneath the Next-runs
+list. Days that have at least one run are highlighted; hovering a day shows that
+day's run times. It's handy for **sparse or hard-to-read schedules** — e.g. an
+interval over a narrow window — where a flat list is harder to reason about. When
+a schedule spans multiple months, arrows let you page between the months that
+contain runs. It respects the same `timezone` as the Next-runs list, and its
+label is localizable via the `calendarLabel` locale key (default `"Upcoming"`).
+
+```tsx
+<Scheduler
+  cron={cron}
+  setCron={setCron}
+  setCronError={setCronError}
+  showCalendar
   timezone="America/New_York"
 />
 ```

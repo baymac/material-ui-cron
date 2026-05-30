@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { computeNextRuns, formatAbsolute, formatRelative, localeToBcp47 } from './nextRuns';
+import {
+  bucketRunsByDay,
+  computeNextRuns,
+  formatAbsolute,
+  formatRelative,
+  formatTime,
+  localeToBcp47,
+} from './nextRuns';
 
 // Fixed anchor so occurrence math is deterministic (Fri 2026-05-29 17:00 UTC).
 const ANCHOR = new Date('2026-05-29T17:00:00Z');
@@ -66,6 +73,39 @@ describe('computeNextRuns', () => {
       // Either real dates or a clean empty list — never a throw.
       runs.forEach((d) => expect(d).toBeInstanceOf(Date));
     }
+  });
+});
+
+describe('bucketRunsByDay', () => {
+  it('groups occurrences by their calendar day, keyed YYYY-MM-DD', () => {
+    const runs = [
+      new Date('2026-05-29T17:00:00Z'),
+      new Date('2026-05-29T18:00:00Z'),
+      new Date('2026-05-30T09:00:00Z'),
+    ];
+    const buckets = bucketRunsByDay(runs, 'UTC');
+    expect([...buckets.keys()]).toEqual(['2026-05-29', '2026-05-30']);
+    expect(buckets.get('2026-05-29')).toHaveLength(2);
+    expect(buckets.get('2026-05-30')).toHaveLength(1);
+  });
+
+  it('buckets in the given timezone (a late-UTC run lands on the previous local day)', () => {
+    // 02:00 UTC on the 30th is 22:00 on the 29th in New York (EDT, UTC-4).
+    const run = [new Date('2026-05-30T02:00:00Z')];
+    expect([...bucketRunsByDay(run, 'UTC').keys()]).toEqual(['2026-05-30']);
+    expect([...bucketRunsByDay(run, 'America/New_York').keys()]).toEqual(['2026-05-29']);
+  });
+
+  it('returns an empty map for no runs', () => {
+    expect(bucketRunsByDay([], 'UTC').size).toBe(0);
+  });
+});
+
+describe('formatTime', () => {
+  it('formats time-only, locale + timezone aware', () => {
+    expect(formatTime(new Date('2026-05-29T18:00:00Z'), 'en', 'UTC')).toMatch(/6:00/);
+    // 18:00 UTC is 2:00 PM in New York (EDT).
+    expect(formatTime(new Date('2026-05-29T18:00:00Z'), 'en', 'America/New_York')).toMatch(/2:00/);
   });
 });
 
