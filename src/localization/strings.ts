@@ -7,11 +7,11 @@ export const FALLBACK_STRINGS = {
   scheduleTitle: 'Schedule',
   nextRunsLabel: 'Next runs',
   noUpcomingRunsText: 'No upcoming runs',
+  noRunsOnDayText: 'No runs on this day',
   invalidScheduleText: 'Enter a valid schedule to preview runs',
   copyLabel: 'Copy',
   copiedText: 'Copied!',
   resetLabel: 'Reset',
-  calendarLabel: 'Upcoming',
 } as const;
 
 type FallbackKey = keyof typeof FALLBACK_STRINGS;

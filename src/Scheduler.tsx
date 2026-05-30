@@ -4,7 +4,6 @@ import React from 'react';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import SchedulerHeader from './components/SchedulerHeader';
 import NextRuns from './components/NextRuns';
-import RunCalendar from './components/RunCalendar';
 import CronReader from './components/CronReader';
 import DayOfMonth from './fields/DayOfMonth';
 import Hour from './fields/Hour';
@@ -74,8 +73,8 @@ const Grid = styled(Box)(({ theme }) => ({
   },
 }));
 
-// Right zone: the Next-runs list plus (optionally) the calendar, stacked within
-// the fixed-width column. `min-width: 0` lets it shrink when the layout stacks.
+// Right zone: the Next-runs calendar panel, in the fixed-width column.
+// `min-width: 0` lets it shrink when the layout stacks.
 const SideCol = styled(Box)({ minWidth: 0 });
 
 const FormCol = styled(Box)({
@@ -91,7 +90,7 @@ const FormCol = styled(Box)({
 
 export default function Scheduler(props: SchedulerProps) {
   const { cron, setCron, setCronError, isAdmin, locale, customLocale } = props;
-  const { timezone, layout = 'auto', slotProps, title, color, showCalendar } = props;
+  const { timezone, layout = 'auto', slotProps, title, color } = props;
   const period = useAtomValue(periodState);
   const [periodIndex, setPeriodIndex] = React.useState(0);
 
@@ -236,7 +235,6 @@ export default function Scheduler(props: SchedulerProps) {
         </FormCol>
         <SideCol>
           <NextRuns timezone={timezone} />
-          {showCalendar && <RunCalendar timezone={timezone} />}
         </SideCol>
       </Grid>
     </Root>

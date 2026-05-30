@@ -11,11 +11,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **React 18 support.** The `react` / `react-dom` peer dependency range is now
   `^18.0.0 || ^19.0.0` (previously pinned to `^19.2.0`). The component uses only
   standard hooks and works on both majors.
-- **Opt-in run calendar (`showCalendar`).** Renders a month calendar of upcoming
-  runs beneath the Next-runs list, highlighting days that have runs (with the
-  times on hover) and paging between months that contain runs. Helps read sparse
-  schedules at a glance. Off by default; label localizable via the new optional
-  `calendarLabel` locale key (default `"Upcoming"`).
+- **Calendar-based "Next runs" panel.** The preview is now a month calendar:
+  days that have runs are highlighted, and selecting a day lists its run times
+  (selecting an empty day shows "No runs on this day", localizable via the new
+  optional `noRunsOnDayText` locale key). It enumerates **every** occurrence
+  across the current month and the next two — not just the first handful — so
+  sparse schedules are visible at a glance, and pages from the current month up
+  to two months ahead. It opens to the soonest run's month with that day
+  pre-selected.
 
 ### Fixed
 

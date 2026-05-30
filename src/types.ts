@@ -79,11 +79,6 @@ export interface SchedulerProps {
   color?: string;
   /** Per-slot style overrides. */
   slotProps?: SchedulerSlotProps;
-  /**
-   * Show a month calendar of upcoming runs beneath the Next-runs list, so sparse
-   * or hard-to-read schedules are visible at a glance. Defaults to `false`.
-   */
-  showCalendar?: boolean;
 }
 
 export interface Locale {
@@ -117,6 +112,8 @@ export interface Locale {
   nextRunsLabel?: string;
   /** Shown when the cron is valid but produces no future runs. Default: "No upcoming runs". */
   noUpcomingRunsText?: string;
+  /** Shown when a day with no runs is selected on the calendar. Default: "No runs on this day". */
+  noRunsOnDayText?: string;
   /** Shown when the cron is invalid. Default: "Enter a valid schedule to preview runs". */
   invalidScheduleText?: string;
   /** Copy-button tooltip. Default: "Copy". */
@@ -125,8 +122,6 @@ export interface Locale {
   copiedText?: string;
   /** Reset-button tooltip. Default: "Reset". */
   resetLabel?: string;
-  /** Calendar-panel label (shown when `showCalendar` is set). Default: "Upcoming". */
-  calendarLabel?: string;
   cronDescriptionText: // Can be among the list of locale available for construe library https://github.com/bradymholt/cronstrue#supported-locales, if more locales added to construe, add it here
     | 'en'
     | 'ca'

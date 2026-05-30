@@ -212,12 +212,13 @@ describe('Scheduler redesign (browser)', () => {
     expect(await screen.findByDisplayValue('0 0 * * *')).toBeInTheDocument();
   });
 
-  it('renders 5 occurrence rows in the Next-runs panel for a valid cron', async () => {
+  it("renders the selected day's run times in the Next-runs panel for a valid cron", async () => {
     render(<Scheduler cron='*/2 * * * *' setCron={noop} setCronError={noop} isAdmin />);
-    const list = await screen.findByRole('list', { name: 'Next runs' }, { timeout: 3000 });
-    // Always renders 5 in the DOM; the container query CSS-hides rows 4-5 at
-    // narrow widths (querySelectorAll counts hidden nodes, unlike role queries).
-    await waitFor(() => expect(list.querySelectorAll('li')).toHaveLength(5));
+    // The panel is a calendar that pre-selects the soonest run day; that day's
+    // times render as a list (here "today", which fires every 2 min).
+    await waitFor(() => expect(screen.getAllByRole('listitem').length).toBeGreaterThan(0), {
+      timeout: 3000,
+    });
   });
 
   it('shows the invalid-schedule message when the cron becomes invalid', async () => {
@@ -230,7 +231,8 @@ describe('Scheduler redesign (browser)', () => {
       () => expect(screen.getByText(/Enter a valid schedule to preview runs/i)).toBeInTheDocument(),
       { timeout: 3000 },
     );
-    expect(screen.queryByRole('list', { name: 'Next runs' })).not.toBeInTheDocument();
+    // The invalid message replaces the calendar grid + run list entirely.
+    expect(screen.queryAllByRole('listitem')).toHaveLength(0);
   });
 
   it('shows "No upcoming runs" for a valid cron that never fires (Feb 30)', async () => {
@@ -309,8 +311,9 @@ describe('Scheduler redesign (browser)', () => {
     );
     expect(await screen.findByDisplayValue('*/2 * * * *')).toBeInTheDocument();
     expect(await screen.findByText('Schedule')).toBeInTheDocument();
-    const list = await screen.findByRole('list', { name: 'Next runs' }, { timeout: 3000 });
-    expect(within(list).getAllByRole('listitem').length).toBeGreaterThan(0);
+    await waitFor(() => expect(screen.getAllByRole('listitem').length).toBeGreaterThan(0), {
+      timeout: 3000,
+    });
   });
 });
 
@@ -428,50 +431,100 @@ describe('Scheduler every-interval is capped to the range span (browser)', () =>
   });
 });
 
-// ---- Calendar visualization (opt-in via showCalendar) ----
+// ---- Calendar visualization (always-on Next-runs panel) ----
 describe('Scheduler run calendar (browser)', () => {
-  it('is hidden by default', async () => {
+  it('always renders a month calendar marking the days that have runs', async () => {
     render(<Scheduler cron='*/15 * * * *' setCron={noop} setCronError={noop} isAdmin />);
-    await screen.findByDisplayValue('*/15 * * * *');
-    expect(screen.queryByText('Upcoming')).not.toBeInTheDocument();
-  });
-
-  it('renders a month grid marking the days that have runs when showCalendar is set', async () => {
-    render(<Scheduler cron='*/15 * * * *' setCron={noop} setCronError={noop} isAdmin showCalendar />);
-    expect(await screen.findByText('Upcoming')).toBeInTheDocument();
-    // `*/15` fires every 15 min, so the next 50 runs all fall on the next day or
-    // two — at least one day cell must be marked.
-    await waitFor(() =>
-      expect(document.querySelectorAll('[data-has-runs="true"]').length).toBeGreaterThan(0),
+    // The Next-runs panel is a calendar now; `*/15` fires constantly, so at least
+    // one day cell is marked.
+    await waitFor(
+      () => expect(document.querySelectorAll('[data-has-runs="true"]').length).toBeGreaterThan(0),
       { timeout: 3000 },
     );
   });
 
-  it('shows the invalid-schedule message in the calendar for an invalid cron', async () => {
-    render(<Scheduler cron='0 0 * * *' setCron={noop} setCronError={noop} isAdmin showCalendar />);
+  it("shows a day's run times when a highlighted day is selected", async () => {
+    const user = userEvent.setup();
+    render(<Scheduler cron='0 12 * * *' setCron={noop} setCronError={noop} isAdmin />);
+    // Daily-at-noon marks every day; click the first marked cell and its time
+    // appears in the list below.
+    const marked = await waitFor(
+      () => {
+        const els = document.querySelectorAll<HTMLElement>('[data-has-runs="true"]');
+        expect(els.length).toBeGreaterThan(0);
+        return els[0];
+      },
+      { timeout: 3000 },
+    );
+    await user.click(marked);
+    await waitFor(() => expect(screen.getAllByRole('listitem').length).toBeGreaterThan(0));
+  });
+
+  it('shows "No runs on this day" when an empty day is selected', async () => {
+    const user = userEvent.setup();
+    render(<Scheduler cron='0 12 1 * *' setCron={noop} setCronError={noop} isAdmin />);
+    await screen.findByDisplayValue('0 12 1 * *');
+    // Two phases race here: the transient default `0 0 * * *` (every day fires →
+    // all cells "has runs", none "no runs") and the parsed monthly cron. Wait for
+    // BOTH "no runs" cells to exist (monthly parsed) AND a "has runs" cell to be
+    // selected (the auto-select effect has run on the monthly set) — only then is
+    // the firing-day set final, so clicking an empty day won't be stomped.
+    await waitFor(
+      () => {
+        expect(
+          document.querySelector('[aria-label$="has runs"][aria-pressed="true"]'),
+        ).toBeTruthy();
+        expect(document.querySelectorAll('[aria-label$="no runs"]').length).toBeGreaterThan(0);
+      },
+      { timeout: 4000 },
+    );
+    const emptyDay = document.querySelector<HTMLElement>('[aria-label$="no runs"]');
+    await user.click(emptyDay as HTMLElement);
+    expect(
+      await screen.findByText(/No runs on this day/i, undefined, { timeout: 3000 }),
+    ).toBeInTheDocument();
+  });
+
+  it('pages across the current + next two months, bounded at both ends', async () => {
+    const user = userEvent.setup();
+    render(<Scheduler cron='0 12 * * *' setCron={noop} setCronError={noop} isAdmin />);
+    const prev = (await screen.findByRole('button', {
+      name: 'Previous month',
+    })) as HTMLButtonElement;
+    const next = (await screen.findByRole('button', { name: 'Next month' })) as HTMLButtonElement;
+    // Walk forward to the cap (never clicking a disabled button).
+    let forwardSteps = 0;
+    while (!next.disabled && forwardSteps < 5) {
+      await user.click(next);
+      forwardSteps++;
+    }
+    // Then walk all the way back from the last month to the current one.
+    let backSteps = 0;
+    while (!prev.disabled && backSteps < 5) {
+      await user.click(prev);
+      backSteps++;
+    }
+    // Three-month window => exactly two hops from the far end to the current month.
+    expect(forwardSteps).toBeLessThanOrEqual(2);
+    expect(backSteps).toBe(2);
+  });
+
+  it('shows the invalid-schedule message for an invalid cron', async () => {
+    render(<Scheduler cron='0 0 * * *' setCron={noop} setCronError={noop} isAdmin />);
     const input = await screen.findByDisplayValue('0 0 * * *');
     fireEvent.change(input, { target: { value: '60 * * * *' } });
     await waitFor(
       () =>
-        expect(screen.getAllByText(/Enter a valid schedule to preview runs/i).length).toBeGreaterThan(
-          0,
-        ),
+        expect(
+          screen.getAllByText(/Enter a valid schedule to preview runs/i).length,
+        ).toBeGreaterThan(0),
       { timeout: 3000 },
     );
   });
 
-  it('localizes the calendar label (zh_CN)', async () => {
-    render(
-      <Scheduler
-        cron='*/15 * * * *'
-        setCron={noop}
-        setCronError={noop}
-        isAdmin
-        showCalendar
-        locale='zh_CN'
-      />,
-    );
-    expect(await screen.findByText('即将运行')).toBeInTheDocument();
+  it('localizes the panel label (zh_CN)', async () => {
+    render(<Scheduler cron='*/15 * * * *' setCron={noop} setCronError={noop} isAdmin locale='zh_CN' />);
+    expect(await screen.findByText('接下来的运行')).toBeInTheDocument();
   });
 });
 

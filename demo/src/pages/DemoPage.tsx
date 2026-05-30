@@ -71,7 +71,6 @@ export function DemoPage() {
   const [locale, setLocale] = useState<definedLocales>('en');
   const [mode, setMode] = useState<'light' | 'dark'>('light');
   const [view, setView] = useState<ViewMode>('desktop');
-  const [showCalendar, setShowCalendar] = useState(true);
 
   // Theme applied ONLY to the Scheduler preview (nested ThemeProvider below).
   // The page keeps PAGE_THEME (light) regardless of this toggle.
@@ -148,15 +147,6 @@ export function DemoPage() {
                 }
                 label="Dark mode"
               />
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={showCalendar}
-                    onChange={(e) => setShowCalendar(e.target.checked)}
-                  />
-                }
-                label="Calendar"
-              />
               <TextField
                 select
                 size="small"
@@ -229,7 +219,6 @@ export function DemoPage() {
                   setCronError={setCronError}
                   isAdmin={isAdmin}
                   locale={locale}
-                  showCalendar={showCalendar}
                 />
               </ScopedCssBaseline>
             </ThemeProvider>

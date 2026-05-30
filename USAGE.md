@@ -50,7 +50,6 @@ page without them stomping on each other — no provider or setup required.
 | `locale` | `'en' \| 'zh_CN'` | `'en'` | A built-in translation. See [Localization](#localization). |
 | `customLocale` | `Locale` | — | A full custom translation object. Overrides `locale`. |
 | `slotProps` | `{ header?: { sx?: SxProps<Theme> } }` | — | Per-slot style overrides. See [Title and header](#title-and-header). |
-| `showCalendar` | `boolean` | `false` | Show a month calendar of upcoming runs beneath the Next-runs list. See [Calendar](#calendar). |
 
 ## The controlled value
 
@@ -221,23 +220,17 @@ viewer's local zone; pass an IANA timezone to preview against a specific one:
 
 ## Calendar
 
-Set `showCalendar` to add a month calendar of upcoming runs beneath the Next-runs
-list. Days that have at least one run are highlighted; hovering a day shows that
-day's run times. It's handy for **sparse or hard-to-read schedules** — e.g. an
-interval over a narrow window — where a flat list is harder to reason about. When
-a schedule spans multiple months, arrows let you page between the months that
-contain runs. It respects the same `timezone` as the Next-runs list, and its
-label is localizable via the `calendarLabel` locale key (default `"Upcoming"`).
+The "Next runs" panel **is** a month calendar. Days that have at least one run
+are highlighted; selecting a day lists its run times underneath. Selecting a day
+with no runs shows a "No runs on this day" message (localizable via the
+`noRunsOnDayText` locale key). On load it opens to the month of the soonest run
+and pre-selects that day, so the panel shows the next fire times immediately.
 
-```tsx
-<Scheduler
-  cron={cron}
-  setCron={setCron}
-  setCronError={setCronError}
-  showCalendar
-  timezone="America/New_York"
-/>
-```
+The calendar enumerates **every** occurrence across the current month and the
+next two, so even sparse or hard-to-read schedules — e.g. an interval over a
+narrow window — are visible at a glance. Arrows page from the current month up to
+two months ahead (never before the current month). It respects the same
+`timezone` as the rest of the preview.
 
 ## Localization
 

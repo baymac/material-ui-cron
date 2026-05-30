@@ -1,11 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import {
+  addDays,
+  addMonths,
   bucketRunsByDay,
   computeNextRuns,
+  computeRunDays,
+  computeRunsOnDay,
+  computeRunsUntil,
+  dayKeyInTz,
   formatAbsolute,
+  formatDayKey,
   formatRelative,
   formatTime,
   localeToBcp47,
+  monthKeyInTz,
+  startOfDayInTz,
 } from './nextRuns';
 
 // Fixed anchor so occurrence math is deterministic (Fri 2026-05-29 17:00 UTC).
@@ -73,6 +82,185 @@ describe('computeNextRuns', () => {
       // Either real dates or a clean empty list — never a throw.
       runs.forEach((d) => expect(d).toBeInstanceOf(Date));
     }
+  });
+});
+
+describe('computeRunsUntil', () => {
+  it('enumerates every run within the window (not a fixed count)', async () => {
+    // Hourly, 24h window from the anchor.
+    const end = new Date('2026-05-30T17:00:00Z');
+    const runs = await computeRunsUntil('0 * * * *', end, { timezone: 'UTC', anchor: ANCHOR });
+    // 18:00 on the 29th through 17:00 on the 30th, inclusive.
+    expect(runs.length).toBeGreaterThanOrEqual(23);
+    runs.forEach((d) => expect(d.getTime()).toBeLessThanOrEqual(end.getTime()));
+    for (let i = 1; i < runs.length; i++) {
+      expect(runs[i].getTime()).toBeGreaterThan(runs[i - 1].getTime());
+    }
+  });
+
+  it('caps the list at maxRuns for a dense schedule', async () => {
+    const end = new Date('2027-05-29T17:00:00Z'); // a year out
+    const runs = await computeRunsUntil('* * * * *', end, { timezone: 'UTC', anchor: ANCHOR }, 10);
+    expect(runs).toHaveLength(10);
+  });
+
+  it('returns [] when the window contains no runs', async () => {
+    // Monthly on the 1st -> nothing in a 30-minute window.
+    const end = new Date('2026-05-29T17:30:00Z');
+    expect(await computeRunsUntil('0 0 1 * *', end, { timezone: 'UTC', anchor: ANCHOR })).toEqual(
+      [],
+    );
+  });
+
+  it('returns [] for an impossible-but-valid cron (Feb 30)', async () => {
+    const end = new Date('2027-01-01T00:00:00Z');
+    expect(await computeRunsUntil('0 0 30 2 *', end, { timezone: 'UTC', anchor: ANCHOR })).toEqual(
+      [],
+    );
+  });
+});
+
+describe('computeRunDays', () => {
+  // The window the calendar enumerates: ~3 months out from the anchor.
+  const HORIZON = new Date('2026-08-02T00:00:00Z');
+
+  it('marks EVERY firing day of a dense cron across the whole window', async () => {
+    // The regression: an every-minute cron used to stop being enumerated after
+    // ~1000 runs (~16h), leaving June/July unmarked. Day-probing covers it all.
+    const days = await computeRunDays('* * * * *', HORIZON, { timezone: 'UTC', anchor: ANCHOR });
+    // Anchor is May 29; the window runs through Aug 1 inclusive — every day fires.
+    expect(days[0]).toBe('2026-05-29');
+    expect(days).toContain('2026-06-01');
+    expect(days).toContain('2026-06-30');
+    expect(days).toContain('2026-07-15');
+    expect(days).toContain('2026-08-01');
+    // ~65 consecutive days, strictly ascending and unique.
+    expect(days.length).toBeGreaterThan(60);
+    expect(new Set(days).size).toBe(days.length);
+    for (let i = 1; i < days.length; i++) {
+      expect(days[i] > days[i - 1]).toBe(true);
+    }
+  });
+
+  it('marks only the firing days of a sparse cron', async () => {
+    // Monthly on the 1st -> just the three 1st-of-month days in the window.
+    const days = await computeRunDays('0 0 1 * *', HORIZON, { timezone: 'UTC', anchor: ANCHOR });
+    expect(days).toEqual(['2026-06-01', '2026-07-01', '2026-08-01']);
+  });
+
+  it('keys firing days in the given timezone (a late-UTC run rolls back a day)', async () => {
+    // Daily at 02:00 UTC is the previous day at 22:00 in New York (EDT).
+    const utc = await computeRunDays('0 2 * * *', HORIZON, { timezone: 'UTC', anchor: ANCHOR });
+    const ny = await computeRunDays('0 2 * * *', HORIZON, {
+      timezone: 'America/New_York',
+      anchor: ANCHOR,
+    });
+    expect(utc).toContain('2026-06-01');
+    // Same instants land on May 31 .. July 31 in New York.
+    expect(ny).toContain('2026-05-31');
+  });
+
+  it('returns [] when nothing fires in the window', async () => {
+    // Feb 30 never happens.
+    expect(await computeRunDays('0 0 30 2 *', HORIZON, { timezone: 'UTC', anchor: ANCHOR })).toEqual(
+      [],
+    );
+  });
+});
+
+describe('computeRunsOnDay', () => {
+  it('returns every run on the day (full 1440 for an every-minute cron)', async () => {
+    const runs = await computeRunsOnDay('* * * * *', '2026-06-15', { timezone: 'UTC' });
+    expect(runs).toHaveLength(1440);
+    expect(runs[0].toISOString()).toBe('2026-06-15T00:00:00.000Z');
+    expect(runs[1439].toISOString()).toBe('2026-06-15T23:59:00.000Z');
+    runs.forEach((d) => expect(dayKeyInTz(d, 'UTC')).toBe('2026-06-15'));
+  });
+
+  it('includes a run sitting exactly on local midnight', async () => {
+    // Daily at midnight: the 00:00 run must not be lost to the exclusive anchor.
+    const runs = await computeRunsOnDay('0 0 * * *', '2026-06-15', { timezone: 'UTC' });
+    expect(runs).toHaveLength(1);
+    expect(runs[0].toISOString()).toBe('2026-06-15T00:00:00.000Z');
+  });
+
+  it('returns [] for a day with no runs', async () => {
+    expect(await computeRunsOnDay('0 0 1 * *', '2026-06-15', { timezone: 'UTC' })).toEqual([]);
+  });
+
+  it('scopes runs to the day in the given timezone', async () => {
+    const runs = await computeRunsOnDay('0 12 * * *', '2026-06-15', { timezone: 'America/New_York' });
+    expect(runs).toHaveLength(1);
+    // Noon in New York (EDT) is 16:00 UTC.
+    expect(runs[0].toISOString()).toBe('2026-06-15T16:00:00.000Z');
+  });
+});
+
+describe('addDays', () => {
+  it('adds days, rolling month and year boundaries', () => {
+    expect(addDays('2026-06-15', 1)).toBe('2026-06-16');
+    expect(addDays('2026-06-30', 1)).toBe('2026-07-01');
+    expect(addDays('2026-12-31', 1)).toBe('2027-01-01');
+    expect(addDays('2026-03-01', -1)).toBe('2026-02-28');
+  });
+});
+
+describe('startOfDayInTz', () => {
+  it('returns the instant of local midnight for the key', () => {
+    expect(startOfDayInTz('2026-06-15', 'UTC').toISOString()).toBe('2026-06-15T00:00:00.000Z');
+    // New York is UTC-4 in June (EDT): local midnight is 04:00 UTC.
+    expect(startOfDayInTz('2026-06-15', 'America/New_York').toISOString()).toBe(
+      '2026-06-15T04:00:00.000Z',
+    );
+    // Kolkata is UTC+5:30: local midnight is 18:30 the previous UTC day.
+    expect(startOfDayInTz('2026-06-15', 'Asia/Kolkata').toISOString()).toBe(
+      '2026-06-14T18:30:00.000Z',
+    );
+  });
+
+  it('round-trips through dayKeyInTz, even on DST transition days', () => {
+    for (const [key, tz] of [
+      ['2026-06-15', 'UTC'],
+      ['2026-06-15', 'America/New_York'],
+      ['2026-03-08', 'America/New_York'], // spring forward
+      ['2026-11-01', 'America/New_York'], // fall back
+    ] as const) {
+      expect(dayKeyInTz(startOfDayInTz(key, tz), tz)).toBe(key);
+    }
+  });
+});
+
+describe('monthKeyInTz', () => {
+  it('returns YYYY-MM in the given timezone', () => {
+    expect(monthKeyInTz(new Date('2026-05-29T17:00:00Z'), 'UTC')).toBe('2026-05');
+    // 02:00 UTC on June 1 is still May 31 in New York.
+    expect(monthKeyInTz(new Date('2026-06-01T02:00:00Z'), 'America/New_York')).toBe('2026-05');
+  });
+});
+
+describe('addMonths', () => {
+  it('adds whole months, rolling the year over', () => {
+    expect(addMonths('2026-05', 0)).toBe('2026-05');
+    expect(addMonths('2026-05', 2)).toBe('2026-07');
+    expect(addMonths('2026-11', 3)).toBe('2027-02');
+  });
+});
+
+describe('dayKeyInTz', () => {
+  it('keys the calendar day in the given timezone', () => {
+    expect(dayKeyInTz(new Date('2026-05-30T02:00:00Z'), 'UTC')).toBe('2026-05-30');
+    // 02:00 UTC on the 30th is 22:00 on the 29th in New York.
+    expect(dayKeyInTz(new Date('2026-05-30T02:00:00Z'), 'America/New_York')).toBe('2026-05-29');
+  });
+});
+
+describe('formatDayKey', () => {
+  it('formats a YYYY-MM-DD key as a short weekday/month/day heading', () => {
+    const out = formatDayKey('2026-05-29', 'en');
+    expect(out).toContain('May');
+    expect(out).toContain('29');
+    // 2026-05-29 is a Friday.
+    expect(out).toMatch(/Fri/);
   });
 });
 
