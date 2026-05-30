@@ -14,11 +14,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Calendar-based "Next runs" panel.** The preview is now a month calendar:
   days that have runs are highlighted, and selecting a day lists its run times
   (selecting an empty day shows "No runs on this day", localizable via the new
-  optional `noRunsOnDayText` locale key). It enumerates **every** occurrence
-  across the current month and the next two — not just the first handful — so
-  sparse schedules are visible at a glance, and pages from the current month up
-  to two months ahead. It opens to the soonest run's month with that day
-  pre-selected.
+  optional `noRunsOnDayText` locale key). It marks **every** day that has a run
+  across a rolling twelve-month window (the current month and the next eleven) —
+  not just the first handful — so sparse schedules are visible at a glance, and
+  pages across those twelve months (never before the current one). It opens to
+  the soonest run's month with that day pre-selected.
 
 ### Fixed
 

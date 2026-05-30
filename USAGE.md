@@ -226,10 +226,10 @@ with no runs shows a "No runs on this day" message (localizable via the
 `noRunsOnDayText` locale key). On load it opens to the month of the soonest run
 and pre-selects that day, so the panel shows the next fire times immediately.
 
-The calendar enumerates **every** occurrence across the current month and the
-next two, so even sparse or hard-to-read schedules — e.g. an interval over a
-narrow window — are visible at a glance. Arrows page from the current month up to
-two months ahead (never before the current month). It respects the same
+The calendar marks **every** day that fires across a rolling twelve-month window
+(the current month and the next eleven), so even sparse or hard-to-read schedules
+— e.g. an interval over a narrow window — are visible at a glance. Arrows page
+across those twelve months (never before the current month). It respects the same
 `timezone` as the rest of the preview.
 
 ## Localization
