@@ -1,9 +1,11 @@
-import Box from '@mui/material/Box';
 import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import React from 'react';
 import { useAtom, useAtomValue } from 'jotai';
 import CustomSelect from '../components/CustomSelect';
+import FieldRow from '../components/FieldRow';
+import RangeGroup, { RangePair } from '../components/RangeGroup';
+import SegmentedControl from '../components/SegmentedControl';
 import {
   atEveryOptions,
   atOptionsNonAdmin,
@@ -24,29 +26,15 @@ import { getTimesOfTheDay } from '../utils';
 const POSSIBLE_TIME_RANGES = getTimesOfTheDay();
 
 const StyledBetweenTypography = styled(Typography)({
-  margin: '0 6px',
+  margin: '0 2px',
+  // No fixed height: the parent's alignItems centers it against the inline
+  // selects. lineHeight 1 keeps the flex item the same height as the glyph so,
+  // when it wraps onto its own mobile line, it doesn't inject extra space above
+  // and below the word — keeping the gaps around "between" equal to the toggle
+  // -> select gap.
   display: 'flex',
   alignItems: 'center',
-  height: '40px', // Match the height of CustomSelect components
-});
-
-const StyledGridContainer = styled(Box)({
-  display: 'grid',
-  gridTemplateColumns: '100px 1fr',
-  gap: '16px',
-  alignItems: 'center',
-  padding: '8px 16px',
-  margin: '8px 16px',
-});
-
-const StyledAtEveryTypography = styled(Typography)({
-  textAlign: 'left',
-});
-
-const StyledRightControls = styled(Box)({
-  display: 'flex',
-  alignItems: 'center',
-  gap: '6px',
+  lineHeight: 1,
 });
 
 export default function Hour() {
@@ -101,41 +89,49 @@ export default function Hour() {
 
   const resolvedLocale = useAtomValue(localeState);
 
+  // Set a valid non-zero interval in the SAME update as the mode toggle so the
+  // derived cron never briefly becomes `*/0` (which flashes an invalid-cron
+  // error before the effect corrects the value).
+  const handleAtEvery = (next: typeof hourAtEvery) => {
+    if (next.value === 'every' && (hour.length !== 1 || hour[0].value === '0')) {
+      setHour([DEFAULT_HOUR_OPTS_AT[1]]);
+    }
+    setHourAtEvery(next);
+  };
+
   return (
-    <StyledGridContainer>
-      <CustomSelect
-        size='sm'
-        single
-        options={
-          isAdmin
-            ? atEveryOptions(resolvedLocale.atOptionLabel, resolvedLocale.everyOptionLabel)
-            : atOptionsNonAdmin(resolvedLocale.atOptionLabel, resolvedLocale.everyOptionLabel)
-        }
-        label={resolvedLocale.atEveryText}
-        value={hourAtEvery}
-        setValue={setHourAtEvery}
-        multiple={false}
-        disableClearable
-      />
-      <StyledRightControls>
-        <CustomSelect
-          size='lg'
-          options={hourOptions}
-          label={resolvedLocale.hourLabel}
-          value={hour}
-          setValue={setHour}
-          single={hourAtEvery.value === 'every' || !isAdmin}
-          sort
-          disableEmpty
-          limitTags={3}
-          disableClearable={hourAtEvery.value === 'every' || hour.length < 2}
-          disabled={!isAdmin && hourAtEvery.value === 'every'}
+    <FieldRow
+      headerSlot={
+        <SegmentedControl
+          ariaLabel={resolvedLocale.atEveryText}
+          options={
+            isAdmin
+              ? atEveryOptions(resolvedLocale.atOptionLabel, resolvedLocale.everyOptionLabel)
+              : atOptionsNonAdmin(resolvedLocale.atOptionLabel, resolvedLocale.everyOptionLabel)
+          }
+          value={hourAtEvery}
+          setValue={handleAtEvery}
         />
-        {hourAtEvery.value === 'every' && (
-          <>
-            <StyledBetweenTypography>{resolvedLocale.betweenText}</StyledBetweenTypography>
+      }
+    >
+      <CustomSelect
+        size={hourAtEvery.value === 'every' || !isAdmin ? 'sm' : 'lg'}
+        options={hourOptions}
+        label={resolvedLocale.hourLabel}
+        value={hour}
+        setValue={setHour}
+        single={hourAtEvery.value === 'every' || !isAdmin}
+        sort
+        disableEmpty
+        disableClearable={hourAtEvery.value === 'every' || hour.length < 2}
+        disabled={!isAdmin && hourAtEvery.value === 'every'}
+      />
+      {hourAtEvery.value === 'every' && (
+        <RangeGroup>
+          <StyledBetweenTypography>{resolvedLocale.betweenText}</StyledBetweenTypography>
+          <RangePair>
             <CustomSelect
-              size='md'
+              size='sm'
               single
               options={possibleStartTimes}
               label={''}
@@ -147,7 +143,7 @@ export default function Hour() {
             />
             <StyledBetweenTypography>{resolvedLocale.andText}</StyledBetweenTypography>
             <CustomSelect
-              size='md'
+              size='sm'
               single
               options={possibleEndTimes}
               label={''}
@@ -157,9 +153,9 @@ export default function Hour() {
               disableClearable
               disabled={!isAdmin}
             />
-          </>
-        )}
-      </StyledRightControls>
-    </StyledGridContainer>
+          </RangePair>
+        </RangeGroup>
+      )}
+    </FieldRow>
   );
 }

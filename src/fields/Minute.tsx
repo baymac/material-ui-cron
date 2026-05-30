@@ -1,10 +1,11 @@
-import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
-import clsx from 'clsx';
 import React from 'react';
 import { useAtom, useAtomValue } from 'jotai';
 import CustomSelect from '../components/CustomSelect';
+import FieldRow from '../components/FieldRow';
+import RangeGroup, { RangePair } from '../components/RangeGroup';
+import SegmentedControl from '../components/SegmentedControl';
 import {
   atEveryOptions,
   atOptionsNonAdmin,
@@ -22,29 +23,15 @@ import {
 } from '../store';
 
 const StyledBetweenTypography = styled(Typography)({
-  margin: '0 6px',
+  margin: '0 2px',
+  // No fixed height: the parent's alignItems centers it against the inline
+  // selects. lineHeight 1 keeps the flex item the same height as the glyph so,
+  // when it wraps onto its own mobile line, it doesn't inject extra space above
+  // and below the word — keeping the gaps around "between" equal to the toggle
+  // -> select gap.
   display: 'flex',
   alignItems: 'center',
-  height: '40px', // Match the height of CustomSelect components
-});
-
-const StyledGridContainer = styled(Box)({
-  display: 'grid',
-  gridTemplateColumns: '100px 1fr',
-  gap: '16px',
-  alignItems: 'center',
-  padding: '8px 16px',
-  margin: '8px 16px',
-});
-
-const StyledAtEveryTypography = styled(Typography)({
-  textAlign: 'left',
-});
-
-const StyledRightControls = styled(Box)({
-  display: 'flex',
-  alignItems: 'center',
-  gap: '6px',
+  lineHeight: 1,
 });
 
 export default function Minute() {
@@ -106,39 +93,48 @@ export default function Minute() {
 
   const resolvedLocale = useAtomValue(localeState);
 
+  // Switch the value to a valid non-zero interval in the SAME update as the
+  // mode toggle. Otherwise the derived cron briefly becomes `*/0` (interval 0)
+  // between the mode change and the effect that fixes the value, flashing an
+  // "Invalid minute cron part" error before it self-corrects.
+  const handleAtEvery = (next: typeof minuteAtEvery) => {
+    if (next.value === 'every' && (minute.length !== 1 || minute[0].value === '0')) {
+      setMinute([DEFAULT_MINUTE_OPTS[1]]);
+    }
+    setMinuteAtEvery(next);
+  };
+
   return (
-    <StyledGridContainer>
-      <CustomSelect
-        size='sm'
-        single
-        options={
-          isAdmin
-            ? atEveryOptions(resolvedLocale.atOptionLabel, resolvedLocale.everyOptionLabel)
-            : atOptionsNonAdmin(resolvedLocale.atOptionLabel, resolvedLocale.everyOptionLabel)
-        }
-        label={resolvedLocale.atEveryText}
-        disableClearable
-        value={minuteAtEvery}
-        setValue={setMinuteAtEvery}
-        multiple={false}
-      />
-      <StyledRightControls>
-        <CustomSelect
-          size='lg'
-          options={minuteOptions}
-          label={resolvedLocale.minuteLabel}
-          value={minute}
-          setValue={setMinute}
-          disableClearable={minuteAtEvery.value === 'every' || minute.length < 2}
-          single={minuteAtEvery.value === 'every' || !isAdmin}
-          sort
-          disableEmpty
-          disabled={minuteAtEvery.value === 'every' && !isAdmin}
-          limitTags={3}
+    <FieldRow
+      headerSlot={
+        <SegmentedControl
+          ariaLabel={resolvedLocale.atEveryText}
+          options={
+            isAdmin
+              ? atEveryOptions(resolvedLocale.atOptionLabel, resolvedLocale.everyOptionLabel)
+              : atOptionsNonAdmin(resolvedLocale.atOptionLabel, resolvedLocale.everyOptionLabel)
+          }
+          value={minuteAtEvery}
+          setValue={handleAtEvery}
         />
-        {minuteAtEvery.value === 'every' && (
-          <>
-            <StyledBetweenTypography>{resolvedLocale.betweenText}</StyledBetweenTypography>
+      }
+    >
+      <CustomSelect
+        size={minuteAtEvery.value === 'every' || !isAdmin ? 'sm' : 'lg'}
+        options={minuteOptions}
+        label={resolvedLocale.minuteLabel}
+        value={minute}
+        setValue={setMinute}
+        disableClearable={minuteAtEvery.value === 'every' || minute.length < 2}
+        single={minuteAtEvery.value === 'every' || !isAdmin}
+        sort
+        disableEmpty
+        disabled={minuteAtEvery.value === 'every' && !isAdmin}
+      />
+      {minuteAtEvery.value === 'every' && (
+        <RangeGroup>
+          <StyledBetweenTypography>{resolvedLocale.betweenText}</StyledBetweenTypography>
+          <RangePair>
             <CustomSelect
               size='sm'
               single
@@ -162,9 +158,9 @@ export default function Minute() {
               disableClearable
               disabled={!isAdmin}
             />
-          </>
-        )}
-      </StyledRightControls>
-    </StyledGridContainer>
+          </RangePair>
+        </RangeGroup>
+      )}
+    </FieldRow>
   );
 }
