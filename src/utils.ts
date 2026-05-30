@@ -45,9 +45,9 @@ export function isAscending(arr: string[]) {
 export function getTimesOfTheDayList(): Array<string> {
   const hours = [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
   const periods = ['AM', 'PM'];
-  return periods.flatMap((period) =>
-    hours.map((hour) => (hour > 9 ? `${hour}:00 ${period}` : `0${hour}:00 ${period}`)),
-  );
+  // On-the-hour only and no leading zero — "6 AM", not "06:00 AM" — so the
+  // labels read naturally and the select stays narrow.
+  return periods.flatMap((period) => hours.map((hour) => `${hour} ${period}`));
 }
 
 export function getTimesOfTheDay(): Array<SelectOptions> {
@@ -134,132 +134,136 @@ export const CRON_VALIDATION = (isValid: boolean, message: string): CronValidati
 export const isValidStepPart = (part: string): CronValidation => {
   const beforeSlash = part.split('/')[0];
   if (beforeSlash === '*') {
-    return CRON_VALIDATION(REGEX_ALL.test(part), 'Incorrect syntax');
+    return CRON_VALIDATION(REGEX_ALL.test(part), 'has an invalid step');
   } else if (beforeSlash.indexOf('-') > 0) {
     if (isAscending(beforeSlash.split('-'))) {
-      return CRON_VALIDATION(REGEX_EVERY_HYPEN.test(part), 'Incorrect syntax hypen');
+      return CRON_VALIDATION(REGEX_EVERY_HYPEN.test(part), 'has an invalid step');
     }
-    return CRON_VALIDATION(false, 'Incorrect range');
+    return CRON_VALIDATION(false, 'range must be low to high');
   }
-  return CRON_VALIDATION(REGEX_EVERY.test(part), 'Incorrect syntax');
+  return CRON_VALIDATION(REGEX_EVERY.test(part), 'has an invalid step');
 };
 
+// Each validator returns a lowercase *reason clause* (e.g. "must be between 0
+// and 59"); validateCronExp prepends the field name ("Minute", "Hour", ...) so
+// the surfaced message reads as a plain sentence. Reasons are empty on the
+// valid branches since they are never shown.
 export const isValidMinutePart = (cronExp: string) => {
   const part = cronExp.split(' ')[0];
   if (doesNumberStartWithZero(part)) {
-    return CRON_VALIDATION(false, 'Number starts with zero');
+    return CRON_VALIDATION(false, 'has a leading zero');
   } else if (!hasValidNumbersInCronPart(part, (num: number) => num >= 0 && num <= 59)) {
-    return CRON_VALIDATION(false, 'Number should be between 0 and 59');
+    return CRON_VALIDATION(false, 'must be between 0 and 59');
   } else if (!hasNoDuplicates(part)) {
-    return CRON_VALIDATION(false, 'Duplicate numbers not allowed');
+    return CRON_VALIDATION(false, 'has duplicate values');
   } else if (part.indexOf('/') > 0) {
     return isValidStepPart(part);
   } else if (part.indexOf(',') > 0) {
-    return CRON_VALIDATION(REGEX_COMMA.test(part), 'Invalid syntax');
+    return CRON_VALIDATION(REGEX_COMMA.test(part), 'has an invalid list');
   } else if (part.indexOf('-') > 0) {
     if (isAscending(part.split('-'))) {
-      return CRON_VALIDATION(REGEX_HYPHEN.test(part), 'Invalid range');
+      return CRON_VALIDATION(REGEX_HYPHEN.test(part), 'has an invalid range');
     } else {
-      return CRON_VALIDATION(false, 'Invalid range');
+      return CRON_VALIDATION(false, 'range must be low to high');
     }
   } else if (REGEX_SINGLE_DIGIT.test(part)) {
-    return CRON_VALIDATION(true, 'Invalid single digit');
+    return CRON_VALIDATION(true, '');
   }
-  return CRON_VALIDATION(REGEX_SINGLE_ALL.test(part), 'Invalid single all');
+  return CRON_VALIDATION(REGEX_SINGLE_ALL.test(part), 'is invalid');
 };
 
 export const isValidHourPart = (cronExp: string) => {
   const part = cronExp.split(' ')[1];
   if (doesNumberStartWithZero(part)) {
-    return CRON_VALIDATION(false, 'Number starts with zero');
+    return CRON_VALIDATION(false, 'has a leading zero');
   } else if (!hasValidNumbersInCronPart(part, (num: number) => num >= 0 && num <= 23)) {
-    return CRON_VALIDATION(false, 'Number should be between 0 and 23');
+    return CRON_VALIDATION(false, 'must be between 0 and 23');
   } else if (!hasNoDuplicates(part)) {
-    return CRON_VALIDATION(false, 'Duplicate numbers not allowed');
+    return CRON_VALIDATION(false, 'has duplicate values');
   } else if (part.indexOf('/') > 0) {
     return isValidStepPart(part);
   } else if (part.indexOf(',') > 0) {
-    return CRON_VALIDATION(REGEX_COMMA.test(part), 'Invalid syntax');
+    return CRON_VALIDATION(REGEX_COMMA.test(part), 'has an invalid list');
   } else if (part.indexOf('-') > 0) {
     if (isAscending(part.split('-'))) {
-      return CRON_VALIDATION(REGEX_HYPHEN.test(part), 'Invalid range');
+      return CRON_VALIDATION(REGEX_HYPHEN.test(part), 'has an invalid range');
     } else {
-      return CRON_VALIDATION(false, 'Invalid range');
+      return CRON_VALIDATION(false, 'range must be low to high');
     }
   } else if (REGEX_SINGLE_DIGIT.test(part)) {
-    return CRON_VALIDATION(true, 'Invalid single digit');
+    return CRON_VALIDATION(true, '');
   }
-  return CRON_VALIDATION(REGEX_SINGLE_ALL.test(part), 'Invalid single all');
+  return CRON_VALIDATION(REGEX_SINGLE_ALL.test(part), 'is invalid');
 };
 
 export const isValidDayOfMonthPart = (cronExp: string) => {
   const part = cronExp.split(' ')[2];
   if (doesNumberStartWithZero(part)) {
-    return CRON_VALIDATION(false, 'Number starts with zero');
+    return CRON_VALIDATION(false, 'has a leading zero');
   } else if (!hasValidNumbersInCronPart(part, (num: number) => num >= 1 && num <= 31)) {
-    return CRON_VALIDATION(false, 'Number should be between 1 and 31');
+    return CRON_VALIDATION(false, 'must be between 1 and 31');
   } else if (!hasNoDuplicates(part)) {
-    return CRON_VALIDATION(false, 'Duplicate numbers not allowed');
+    return CRON_VALIDATION(false, 'has duplicate values');
   } else if (part.indexOf('/') > 0) {
     return isValidStepPart(part);
   } else if (part.indexOf(',') > 0) {
-    return CRON_VALIDATION(REGEX_COMMA.test(part), 'Invalid syntax');
+    return CRON_VALIDATION(REGEX_COMMA.test(part), 'has an invalid list');
   } else if (part.indexOf('-') > 0) {
     if (isAscending(part.split('-'))) {
-      return CRON_VALIDATION(REGEX_HYPHEN.test(part), 'Invalid range');
+      return CRON_VALIDATION(REGEX_HYPHEN.test(part), 'has an invalid range');
     } else {
-      return CRON_VALIDATION(false, 'Invalid range');
+      return CRON_VALIDATION(false, 'range must be low to high');
     }
   } else if (REGEX_SINGLE_DIGIT.test(part)) {
     return CRON_VALIDATION(true, '');
   } else if (REGEX_SINGLE_SPL.test(part)) {
     return CRON_VALIDATION(true, '');
   }
-  return CRON_VALIDATION(REGEX_SINGLE_ALL.test(part), 'Invalid single all');
+  return CRON_VALIDATION(REGEX_SINGLE_ALL.test(part), 'is invalid');
 };
 
 export const isValidDayOfWeekPart = (cronExp: string) => {
   const part = cronExp.split(' ')[4];
   if (doesNumberStartWithZero(part)) {
-    return CRON_VALIDATION(false, 'Number starts with zero');
+    return CRON_VALIDATION(false, 'has a leading zero');
   } else if (!hasValidNumbersInCronPart(part, (num: number) => num >= 0 && num <= 6)) {
-    return CRON_VALIDATION(false, 'Number should be between 0 and 6');
+    return CRON_VALIDATION(false, 'must be between 0 and 6');
   } else if (!hasNoDuplicates(part)) {
-    return CRON_VALIDATION(false, 'Duplicate numbers not allowed');
+    return CRON_VALIDATION(false, 'has duplicate values');
   } else if (part.indexOf(',') > 0) {
-    return CRON_VALIDATION(REGEX_COMMA.test(part), 'Invalid syntax');
+    return CRON_VALIDATION(REGEX_COMMA.test(part), 'has an invalid list');
   } else if (part.indexOf('-') > 0) {
     if (isAscending(part.split('-'))) {
-      return CRON_VALIDATION(REGEX_HYPHEN.test(part), 'Incorrect syntax hypen');
+      return CRON_VALIDATION(REGEX_HYPHEN.test(part), 'has an invalid range');
     } else {
-      return CRON_VALIDATION(false, 'Range should be low to high');
+      return CRON_VALIDATION(false, 'range must be low to high');
     }
   } else if (REGEX_SINGLE_DIGIT.test(part)) {
-    return CRON_VALIDATION(true, 'Invalid single digit');
+    return CRON_VALIDATION(true, '');
   }
-  return CRON_VALIDATION(REGEX_SINGLE_ALL.test(part), 'Invalid single all');
+  return CRON_VALIDATION(REGEX_SINGLE_ALL.test(part), 'is invalid');
 };
 
 export const isValidMonthPart = (cronExp: string) => {
   const part = cronExp.split(' ')[3];
   if (doesNumberStartWithZero(part)) {
-    return CRON_VALIDATION(false, 'Number starts with zero');
+    return CRON_VALIDATION(false, 'has a leading zero');
   } else if (!hasValidNumbersInCronPart(part, (num: number) => num >= 1 && num <= 12)) {
-    return CRON_VALIDATION(false, 'Number should be between 0 and 6');
+    return CRON_VALIDATION(false, 'must be between 1 and 12');
   } else if (!hasNoDuplicates(part)) {
-    return CRON_VALIDATION(false, 'Duplicate numbers not allowed');
+    return CRON_VALIDATION(false, 'has duplicate values');
   } else if (part.indexOf(',') > 0) {
-    return CRON_VALIDATION(REGEX_COMMA.test(part), 'Invalid syntax');
+    return CRON_VALIDATION(REGEX_COMMA.test(part), 'has an invalid list');
   } else if (part.indexOf('-') > 0) {
     if (isAscending(part.split('-'))) {
-      return CRON_VALIDATION(REGEX_HYPHEN.test(part), 'Incorrect syntax hypen');
+      return CRON_VALIDATION(REGEX_HYPHEN.test(part), 'has an invalid range');
     } else {
-      return CRON_VALIDATION(false, 'Range should be low to high');
+      return CRON_VALIDATION(false, 'range must be low to high');
     }
   } else if (REGEX_SINGLE_DIGIT.test(part)) {
-    return CRON_VALIDATION(true, 'Invalid single digit');
+    return CRON_VALIDATION(true, '');
   }
-  return CRON_VALIDATION(REGEX_SINGLE_ALL.test(part), 'Invalid single all');
+  return CRON_VALIDATION(REGEX_SINGLE_ALL.test(part), 'is invalid');
 };
 
 export const getCronStatus = (msg: string, hasError: boolean) => ({
@@ -269,27 +273,27 @@ export const getCronStatus = (msg: string, hasError: boolean) => ({
 
 export const validateCronExp = (cronExp: string) => {
   if (!hasValidCronParts(cronExp)) {
-    return getCronStatus('Cron should have 5 parts', true);
+    return getCronStatus('A cron expression must have 5 parts', true);
   }
   const minuteValidation = isValidMinutePart(cronExp);
   if (!minuteValidation.isValid) {
-    return getCronStatus(`Invalid minute cron part: ${minuteValidation.message}`, true);
+    return getCronStatus(`Minute ${minuteValidation.message}`, true);
   }
   const hourValidation = isValidHourPart(cronExp);
   if (!hourValidation.isValid) {
-    return getCronStatus(`Invalid hour cron part: ${hourValidation.message}`, true);
+    return getCronStatus(`Hour ${hourValidation.message}`, true);
   }
   const dayOfMonthValidation = isValidDayOfMonthPart(cronExp);
   if (!dayOfMonthValidation.isValid) {
-    return getCronStatus(`Invalid day of month cron part: ${dayOfMonthValidation.message}`, true);
+    return getCronStatus(`Day of month ${dayOfMonthValidation.message}`, true);
   }
   const monthValidation = isValidMonthPart(cronExp);
   if (!monthValidation.isValid) {
-    return getCronStatus(`Invalid month cron part: ${monthValidation.message}`, true);
+    return getCronStatus(`Month ${monthValidation.message}`, true);
   }
   const dayOfWeekValidation = isValidDayOfWeekPart(cronExp);
   if (!dayOfWeekValidation.isValid) {
-    return getCronStatus(`Invalid day of week cron part: ${dayOfWeekValidation.message}`, true);
+    return getCronStatus(`Day of week ${dayOfWeekValidation.message}`, true);
   }
   return getCronStatus('', false);
 };

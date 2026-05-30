@@ -83,14 +83,27 @@ export default function NextRuns({ timezone }: NextRunsProps) {
     return () => clearInterval(id);
   }, []);
 
-  // Absolute occurrences: pure, recomputed only when the cron / validity /
-  // timezone change. Gated behind the library's validator (single source of
-  // truth) and guarded inside computeNextRuns against cron-parser throwing.
-  const runs = React.useMemo(() => {
+  // Absolute occurrences: recomputed only when the cron / validity / timezone
+  // change. Gated behind the library's validator (single source of truth) and
+  // guarded inside computeNextRuns against cron-parser throwing. computeNextRuns
+  // is async (it lazy-loads cron-parser as a separate chunk), so the result is
+  // held in state; a `cancelled` flag drops a stale resolution if inputs change
+  // before it settles.
+  const [runs, setRuns] = React.useState<Date[]>([]);
+  React.useEffect(() => {
     if (validationError.length > 0) {
-      return [] as Date[];
+      setRuns([]);
+      return;
     }
-    return computeNextRuns(cronExp, RUN_COUNT, { timezone });
+    let cancelled = false;
+    computeNextRuns(cronExp, RUN_COUNT, { timezone }).then((next) => {
+      if (!cancelled) {
+        setRuns(next);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [cronExp, validationError, timezone]);
 
   return (

@@ -15,7 +15,6 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "baseUrl": ".",
     // For type-checking, resolve the library against its built public types
     // (like a real consumer). The Vite *runtime* alias still points at ../src,
     // so the dev server and build use live source — run `yarn build` in the repo

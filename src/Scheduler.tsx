@@ -1,5 +1,5 @@
 import Box from '@mui/material/Box';
-import { styled } from '@mui/material/styles';
+import { ThemeProvider, createTheme, styled, useTheme } from '@mui/material/styles';
 import React from 'react';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import SchedulerHeader from './components/SchedulerHeader';
@@ -16,13 +16,10 @@ import {
   cronExpInputState,
   cronValidationErrorMessageState,
   dayOfMonthAtEveryState,
-  dayOfMonthState,
   hourAtEveryState,
-  hourState,
   isAdminState,
   localeState,
   minuteAtEveryState,
-  minuteState,
   monthState,
   periodState,
   weekState,
@@ -31,9 +28,6 @@ import type { SchedulerProps } from './types';
 import { getPeriodIndex } from './utils';
 import {
   atEveryOptions,
-  DEFAULT_DAY_OF_MONTH_OPTS,
-  DEFAULT_HOUR_OPTS_EVERY,
-  DEFAULT_MINUTE_OPTS,
   getPeriodOptions,
   getMonthOptions,
   onEveryOptions,
@@ -62,7 +56,10 @@ const Grid = styled(Box)(({ theme }) => ({
   gridTemplateColumns: '1fr 300px',
   '& > .form-col': {
     borderRight: `1px solid ${theme.palette.divider}`,
-    padding: '8px 4px',
+    // No inner padding here: CronReader (summary) and each FieldRow own their
+    // own 16px horizontal padding, so the FieldRow top-border dividers span the
+    // full column width (flush rows, matching the mock).
+    padding: '4px 0',
   },
   '&[data-layout="auto"]': {
     '@container (max-width: 720px)': {
@@ -80,20 +77,36 @@ const FormCol = styled(Box)({
   minHeight: 'min-content',
   // A grid item defaults to `min-width: auto`, so a too-wide field row (the
   // "every … between X and Y" range UI) would force the whole card past its
-  // container and spill off-page. `min-width: 0` lets the column shrink and
-  // `overflow-x: auto` scrolls the wide row inside the column instead.
-  // (Interim guard — PR2 replaces that wide row with a compact stepper.)
+  // container and spill off-page. `min-width: 0` lets the column shrink; the
+  // FieldRow controls now `flex-wrap` so the wide range row wraps instead of
+  // overflowing. `overflow-x: auto` stays as a final safety net.
   minWidth: 0,
   overflowX: 'auto',
-  '& > *': { marginBottom: '8px' },
-  '& > *:last-child': { marginBottom: 0 },
 });
 
 export default function Scheduler(props: SchedulerProps) {
   const { cron, setCron, setCronError, isAdmin, locale, customLocale } = props;
-  const { timezone, layout = 'auto', slotProps } = props;
+  const { timezone, layout = 'auto', slotProps, title, color } = props;
   const period = useAtomValue(periodState);
   const [periodIndex, setPeriodIndex] = React.useState(0);
+
+  // Recolor everything that reads `palette.primary` (header bar, the selected
+  // segment of the toggles, the section pills) by overriding primary in a
+  // scoped theme. `augmentColor` derives light/dark/contrastText from the
+  // single color so the contrast (text) color stays legible against it — we
+  // must augment up front because createTheme's merge args are NOT re-augmented.
+  // `useTheme()` always yields a theme (the default one when there is no parent
+  // ThemeProvider), so we merge onto it directly instead of the function form,
+  // which warns under MUI when no outer theme is present.
+  const outerTheme = useTheme();
+  const accentTheme = React.useMemo(() => {
+    if (!color) {
+      return undefined;
+    }
+    return createTheme(outerTheme, {
+      palette: { primary: outerTheme.palette.augmentColor({ color: { main: color } }) },
+    });
+  }, [outerTheme, color]);
 
   const cronError = useAtomValue(cronValidationErrorMessageState);
   const setIsAdmin = useSetAtom(isAdminState);
@@ -102,10 +115,9 @@ export default function Scheduler(props: SchedulerProps) {
   const setResolvedLocale = useSetAtom(localeState);
   const currentLocale = useAtomValue(localeState);
 
-  // Jotai does not provide reset hooks; emulate by setting initial values on unmount
-  const setMinute = useSetAtom(minuteState);
-  const setHour = useSetAtom(hourState);
-  const setDayOfMonth = useSetAtom(dayOfMonthState);
+  // Setters used by the locale re-map effect below. (No unmount-reset setters
+  // are needed anymore: each instance has its own jotai store via the Provider
+  // in SchedulerRoot, so state is discarded with the store on unmount.)
   const setWeek = useSetAtom(weekState);
   const setMonth = useSetAtom(monthState);
   const setPeriod = useSetAtom(periodState);
@@ -161,35 +173,6 @@ export default function Scheduler(props: SchedulerProps) {
     }
   }, [isAdmin, setIsAdmin]);
 
-  // Only reset atoms on unmount. The atoms are module-level (shared) globals,
-  // so we restore their defaults when the component leaves the tree. Keep
-  // `currentLocale` out of the dependency array: with it in deps, React fires
-  // this effect's cleanup on every locale change (and re-mount via `key`),
-  // resetting the shared atoms to the *previously captured* locale's defaults.
-  // That is exactly the "period stays one language behind" bug — switch to
-  // Chinese and the period label resets to English; switch back and it shows
-  // Chinese. Read the latest locale through a ref so the cleanup runs only on
-  // a real unmount and uses the current locale.
-  const localeRef = React.useRef(currentLocale);
-  React.useEffect(() => {
-    localeRef.current = currentLocale;
-  }, [currentLocale]);
-  React.useEffect(() => {
-    return () => {
-      const loc = localeRef.current;
-      setCronExpInput('0 0 * * *');
-      setMinute([DEFAULT_MINUTE_OPTS[0]]);
-      setHour([DEFAULT_HOUR_OPTS_EVERY[0]]);
-      setDayOfMonth(DEFAULT_DAY_OF_MONTH_OPTS);
-      setWeek(weekOptions(loc.weekDaysOptions));
-      setMonth(getMonthOptions(loc.shortMonthOptions));
-      setPeriod(getPeriodOptions(loc.periodOptions)[1]);
-    };
-    // Setters from `useSetAtom` are stable; the locale is read via ref. Empty
-    // deps make this a true unmount-only cleanup.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   React.useEffect(() => {
     if (customLocale) {
       setResolvedLocale(customLocale);
@@ -233,9 +216,9 @@ export default function Scheduler(props: SchedulerProps) {
     setMonth,
   ]);
 
-  return (
+  const card = (
     <Root>
-      <SchedulerHeader sx={slotProps?.header?.sx} />
+      <SchedulerHeader sx={slotProps?.header?.sx} title={title} />
       <Grid data-layout={layout}>
         <FormCol className='form-col'>
           <CronReader />
@@ -250,4 +233,11 @@ export default function Scheduler(props: SchedulerProps) {
       </Grid>
     </Root>
   );
+
+  // No accent override: render the card under the surrounding theme as-is.
+  if (!accentTheme) {
+    return card;
+  }
+
+  return <ThemeProvider theme={accentTheme}>{card}</ThemeProvider>;
 }

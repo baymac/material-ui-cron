@@ -1,4 +1,3 @@
-import type { AutocompleteRenderGetTagProps } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material/styles';
 // Replaced Recoil setter type with a generic setter signature
 
@@ -13,10 +12,6 @@ export interface SchedulerSlotProps {
 }
 
 export interface CustomSelectProps {
-  renderTags?: (
-    value: SelectOptions[],
-    getTagProps: AutocompleteRenderGetTagProps,
-  ) => React.ReactNode;
   options: Array<SelectOptions>;
   value: SelectOptions | SelectOptions[];
   setValue: (value: any) => void;
@@ -63,6 +58,19 @@ export interface SchedulerProps {
   timezone?: string;
   /** Force the responsive posture. 'auto' (default) uses a container query. */
   layout?: SchedulerLayout;
+  /**
+   * Header title shown next to the calendar icon. Takes precedence over the
+   * locale's `scheduleTitle`. Defaults to the locale value ("Schedule" in en).
+   */
+  title?: string;
+  /**
+   * Accent color for the card — the header bar, the selected segment of the
+   * At/Every & On/Every toggles, and the single-value section pills. Overrides
+   * the MUI theme's `palette.primary`; the contrast (text) color is recomputed
+   * from it. Accepts any CSS color the theme accepts (hex, rgb, etc.). When
+   * omitted the surrounding theme's primary color is used.
+   */
+  color?: string;
   /** Per-slot style overrides. */
   slotProps?: SchedulerSlotProps;
 }

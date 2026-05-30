@@ -1,33 +1,42 @@
 # TODOS
 
-## PR2 — Swap field controls to pills / steppers / chips
-**What:** Replace the per-field At/Every MUI dropdowns with segmented `ToggleButtonGroup`, numeric `Stepper`, and toggle `Chip`s to match the redesign mock (uppercase labels above controls).
-**Why:** PR1 ships the new shell but keeps today's dropdown fields inside it; PR2 completes the visual redesign.
-**Pros:** Matches the approved mock; better touch ergonomics; a11y/keyboard from MUI primitives.
-**Cons:** Large diff across `src/fields/*`; the bare stepper can't express the "every N between X and Y" range — must add an "advanced range" affordance under "Every" or the stepper regresses `1-10/4` / multi-hour capability (Hour.tsx:134, DayOfMonth.tsx:143, Minute.tsx).
-**Context:** Phasing decided in eng review 2026-05-29. PR1 = shell + Next-runs. Build on MUI `ToggleButtonGroup`/`Chip`/`IconButton`. Preserve the range/multi-select capability.
-**Depends on:** PR1 merged.
+_Redesign follow-ups on `baymac/scheduler-segmented-controls` (PR #28, stacked on
+PR1 #27). Final shape: segmented 2-way toggle for the mode selector, original
+dropdowns for the value fields, per-instance store, lazy-loaded cron-parser._
 
-## Per-instance state (module-global atoms)
-**What:** Scope the Jotai atoms per `<Scheduler>` instance (Provider/store-per-instance) instead of module-level globals.
-**Why:** Two `<Scheduler>` instances on one page currently share state and stomp each other; unmount-cleanup resets shared globals (Scheduler.tsx:124, store.ts:19).
-**Pros:** Enables multiple independent schedulers on a page; removes the unmount-reset hack.
-**Cons:** Touches every atom + selector + field; behavior-sensitive refactor with locale-restore subtleties (see prior learning on stale localized atoms).
-**Context:** Pre-existing limitation, confirmed by prior learning + Codex outside voice. Out of scope for a UI redesign. NextRuns deliberately uses component-local state to avoid worsening this.
-**Depends on:** none; independent.
+## PR2 — Swap At/Every selectors to segmented pills + uppercase rows ✅
+Replaced the per-field At/Every (On/Every) dropdowns with a segmented
+`ToggleButtonGroup` (`SegmentedControl`) and restacked every row to an uppercase
+label above wrapping controls (`FieldRow`).
 
-## DRY the field internals
-**What:** Extract the near-identical grid layout + range-disable effects shared by Minute/Hour/DayOfMonth into a shared abstraction.
-**Why:** Minute.tsx / Hour.tsx / DayOfMonth.tsx duplicate `StyledGridContainer`, between/and range UI, and the start/end disable effects almost byte-for-byte.
-**Pros:** Less drift risk; smaller field files; one place to fix range bugs.
-**Cons:** Premature if done alone; best done while rewriting these controls.
-**Context:** Bundle into PR2, which rewrites these controls anyway.
-**Depends on:** PR2.
+## PR3 — Steppers + chip-pickers for field values ⟲ (built then reverted)
+Built numeric steppers, chip-pickers, and toggle-chip groups for the value
+fields, then **reverted on review**: the value selection stays as the original
+dropdowns. Only the *mode selector* is a 2-way toggle (PR2); the *value* fields
+(at/on multi-select, every-interval, between/and range, week/month) are the old
+`CustomSelect` dropdowns. `Stepper`/`ChipMultiSelect`/`ToggleChipGroup`/
+`RangePicker` and the `addLabel`/`anyDayLabel`/`everyMonthLabel` locale keys were
+removed.
 
-## Trim Next-runs bundle weight
-**What:** Reduce the size cron-parser adds, or lazy-load it.
-**Why:** cron-parser@5 depends on luxon; both are now bundled into the library (esm ~236KB gzip after this change). For a cron *editor*, a full datetime lib for a 5-row preview is heavy for consumers.
-**Pros:** Smaller install for every consumer; faster first paint.
-**Cons:** Lazy-loading adds async complexity to NextRuns; a lighter occurrence lib may not match cron-parser's dialect coverage (L, ranges).
-**Context:** Introduced in PR1 (Next-runs). Options: dynamic import() of computeNextRuns so cron-parser is a separate chunk; or evaluate a lighter parser; or mark cron-parser as an optional peer. Measure with `yarn build` before/after.
-**Depends on:** PR1 merged.
+## Per-instance state (module-global atoms) ✅
+Each `<Scheduler>` now mounts its own jotai `Provider`/store
+(`SchedulerRoot.tsx`), so two instances on a page no longer stomp each other.
+Removed the unmount-reset hack + localeRef workaround.
+
+## DRY the field internals — not done (reverted with PR3)
+The shared `RangePicker` was removed in the revert; Minute/Hour/DayOfMonth again
+carry their own between/and range state. Re-do only alongside a future value-
+control rework.
+
+## Trim Next-runs bundle weight ✅
+`computeNextRuns` dynamically imports `cron-parser` (and transitive `luxon`),
+splitting it into a separate async chunk. Initial ESM entry dropped from
+~240 KB gzip to ~61 KB gzip (cron-parser's ~180 KB gzip is deferred).
+
+---
+
+## Possible future work (not requested)
+- Evaluate a lighter occurrence engine than cron-parser/luxon if the deferred
+  ~180 KB chunk is still too heavy for some consumers.
+- Revisit steppers/chip-pickers for the value fields only if there's appetite
+  later (reverted this round); keep capability + the between/and range if so.
