@@ -21,6 +21,7 @@ import {
   minuteRangeStartSchedulerState,
   minuteState,
 } from '../store';
+import { capIntervalOptionsToSpan, getMinutesIndex } from '../utils';
 
 const StyledBetweenTypography = styled(Typography)({
   margin: '0 2px',
@@ -93,6 +94,31 @@ export default function Minute() {
 
   const resolvedLocale = useAtomValue(localeState);
 
+  // In `every` mode the cron is `start-end/N`; the interval N must not exceed the
+  // window span or the step lands outside the range and the schedule collapses to
+  // a single run. Cap the selectable interval at the span (no cap in `at` mode,
+  // where this same select picks the actual minutes).
+  const intervalSpan =
+    minuteAtEvery.value === 'every'
+      ? getMinutesIndex(endMinute) - getMinutesIndex(startMinute)
+      : Number.POSITIVE_INFINITY;
+  const intervalOptions = React.useMemo(
+    () => capIntervalOptionsToSpan(minuteOptions, intervalSpan),
+    [minuteOptions, intervalSpan],
+  );
+
+  // If the range narrows below the current interval, clamp the interval down to
+  // the span so the selection never sits on a now-disabled (collapsing) value.
+  React.useEffect(() => {
+    if (minuteAtEvery.value !== 'every' || minute.length !== 1) {
+      return;
+    }
+    const span = getMinutesIndex(endMinute) - getMinutesIndex(startMinute);
+    if (Number(minute[0].value) > span) {
+      setMinute([minuteOptions[span]]);
+    }
+  }, [startMinute, endMinute, minuteAtEvery]);
+
   // Switch the value to a valid non-zero interval in the SAME update as the
   // mode toggle. Otherwise the derived cron briefly becomes `*/0` (interval 0)
   // between the mode change and the effect that fixes the value, flashing an
@@ -121,7 +147,7 @@ export default function Minute() {
     >
       <CustomSelect
         size={minuteAtEvery.value === 'every' || !isAdmin ? 'sm' : 'lg'}
-        options={minuteOptions}
+        options={intervalOptions}
         label={resolvedLocale.minuteLabel}
         value={minute}
         setValue={setMinute}

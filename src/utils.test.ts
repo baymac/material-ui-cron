@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { SelectOptions } from './types';
 import {
+  capIntervalOptionsToSpan,
   countOccurrences,
   doesNumberStartWithZero,
   getNumbersInCronPart,
@@ -104,6 +105,37 @@ describe('getSortedOptions', () => {
       '2',
       '10',
     ]);
+  });
+});
+
+describe('capIntervalOptionsToSpan', () => {
+  const opts = [opt('1'), opt('2'), opt('3'), opt('4'), opt('5'), opt('6')];
+
+  it('disables every interval option above the span', () => {
+    // span 4 -> a `55-59` window: 1..4 selectable, 5+ would collapse to one run.
+    const capped = capIntervalOptionsToSpan(opts, 4);
+    expect(capped.filter((o) => !o.disabled).map((o) => o.value)).toEqual(['1', '2', '3', '4']);
+    expect(capped.filter((o) => o.disabled).map((o) => o.value)).toEqual(['5', '6']);
+  });
+
+  it('keeps the option equal to the span enabled (start + end both fire)', () => {
+    expect(capIntervalOptionsToSpan(opts, 4).find((o) => o.value === '4')?.disabled).toBeFalsy();
+  });
+
+  it('disables nothing when the span covers every option', () => {
+    expect(capIntervalOptionsToSpan(opts, 100).some((o) => o.disabled)).toBe(false);
+  });
+
+  it('preserves an already-disabled option below the span (e.g. the 0 interval)', () => {
+    const withZero = [{ ...opt('0'), disabled: true }, opt('1'), opt('2')];
+    const capped = capIntervalOptionsToSpan(withZero, 5);
+    expect(capped.find((o) => o.value === '0')?.disabled).toBe(true);
+  });
+
+  it('does not mutate the input array', () => {
+    const input = [opt('1'), opt('9')];
+    capIntervalOptionsToSpan(input, 4);
+    expect(input.every((o) => o.disabled === undefined)).toBe(true);
   });
 });
 

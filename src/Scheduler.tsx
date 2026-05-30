@@ -73,6 +73,10 @@ const Grid = styled(Box)(({ theme }) => ({
   },
 }));
 
+// Right zone: the Next-runs calendar panel, in the fixed-width column.
+// `min-width: 0` lets it shrink when the layout stacks.
+const SideCol = styled(Box)({ minWidth: 0 });
+
 const FormCol = styled(Box)({
   minHeight: 'min-content',
   // A grid item defaults to `min-width: auto`, so a too-wide field row (the
@@ -229,7 +233,9 @@ export default function Scheduler(props: SchedulerProps) {
           {periodIndex > 0 && <Hour />}
           <Minute />
         </FormCol>
-        <NextRuns timezone={timezone} />
+        <SideCol>
+          <NextRuns timezone={timezone} />
+        </SideCol>
       </Grid>
     </Root>
   );

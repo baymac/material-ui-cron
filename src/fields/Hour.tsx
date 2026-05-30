@@ -21,7 +21,7 @@ import {
   isAdminState,
   localeState,
 } from '../store';
-import { getTimesOfTheDay } from '../utils';
+import { capIntervalOptionsToSpan, getTimeIndex, getTimesOfTheDay } from '../utils';
 
 const POSSIBLE_TIME_RANGES = getTimesOfTheDay();
 
@@ -89,6 +89,31 @@ export default function Hour() {
 
   const resolvedLocale = useAtomValue(localeState);
 
+  // In `every` mode the cron is `start-end/N`; the interval N must not exceed the
+  // window span or the step lands outside the range and the schedule collapses to
+  // a single run. Cap the selectable interval at the span (no cap in `at` mode,
+  // where this same select picks the actual hours).
+  const intervalSpan =
+    hourAtEvery.value === 'every'
+      ? getTimeIndex(endHour) - getTimeIndex(startHour)
+      : Number.POSITIVE_INFINITY;
+  const intervalOptions = React.useMemo(
+    () => capIntervalOptionsToSpan(hourOptions, intervalSpan),
+    [hourOptions, intervalSpan],
+  );
+
+  // If the range narrows below the current interval, clamp the interval down to
+  // the span so the selection never sits on a now-disabled (collapsing) value.
+  React.useEffect(() => {
+    if (hourAtEvery.value !== 'every' || hour.length !== 1) {
+      return;
+    }
+    const span = getTimeIndex(endHour) - getTimeIndex(startHour);
+    if (Number(hour[0].value) > span) {
+      setHour([hourOptions[span]]);
+    }
+  }, [startHour, endHour, hourAtEvery]);
+
   // Set a valid non-zero interval in the SAME update as the mode toggle so the
   // derived cron never briefly becomes `*/0` (which flashes an invalid-cron
   // error before the effect corrects the value).
@@ -116,7 +141,7 @@ export default function Hour() {
     >
       <CustomSelect
         size={hourAtEvery.value === 'every' || !isAdmin ? 'sm' : 'lg'}
-        options={hourOptions}
+        options={intervalOptions}
         label={resolvedLocale.hourLabel}
         value={hour}
         setValue={setHour}

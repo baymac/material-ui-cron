@@ -15,6 +15,7 @@ each variation. For installation and a quick start, see the
 - [Layout](#layout)
 - [Title and header](#title-and-header)
 - [Timezone](#timezone)
+- [Calendar](#calendar)
 - [Localization](#localization)
   - [Predefined locale](#predefined-locale)
   - [Custom locale](#custom-locale)
@@ -216,6 +217,20 @@ viewer's local zone; pass an IANA timezone to preview against a specific one:
   timezone="America/New_York"
 />
 ```
+
+## Calendar
+
+The "Next runs" panel **is** a month calendar. Days that have at least one run
+are highlighted; selecting a day lists its run times underneath. Selecting a day
+with no runs shows a "No runs on this day" message (localizable via the
+`noRunsOnDayText` locale key). On load it opens to the month of the soonest run
+and pre-selects that day, so the panel shows the next fire times immediately.
+
+The calendar marks **every** day that fires across a rolling twelve-month window
+(the current month and the next eleven), so even sparse or hard-to-read schedules
+— e.g. an interval over a narrow window — are visible at a glance. Arrows page
+across those twelve months (never before the current month). It respects the same
+`timezone` as the rest of the preview.
 
 ## Localization
 

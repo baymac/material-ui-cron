@@ -19,15 +19,26 @@ export default defineConfig({
       fileName: (format) => `index.${format === 'es' ? 'esm' : 'cjs'}.js`,
     },
     rollupOptions: {
+      // Externalize every runtime dependency + peer dependency so nothing
+      // ships inlined in the bundle. `@mui/*`, `jotai`, `cronstrue`,
+      // `cron-parser` are regular dependencies (auto-installed for the
+      // consumer); react / react-dom / @emotion/* are peer dependencies.
+      // Subpath imports (e.g. `@mui/icons-material/CalendarMonth`) are matched
+      // via the regex entries below.
       external: [
-        'react',
-        'react-dom',
-        '@mui/material',
-        '@mui/system',
-        '@emotion/react',
-        '@emotion/styled',
-          'jotai',
+        // Match subpaths too (`react/jsx-runtime`, `react-dom/client`, …) so the
+        // JSX runtime is NOT inlined — otherwise the bundle hard-wires the React
+        // version present at build time and crashes on older majors.
+        /^react(\/.*)?$/,
+        /^react-dom(\/.*)?$/,
+        /^@mui\/material(\/.*)?$/,
+        /^@mui\/system(\/.*)?$/,
+        /^@mui\/icons-material(\/.*)?$/,
+        /^@emotion\/react(\/.*)?$/,
+        /^@emotion\/styled(\/.*)?$/,
+        'jotai',
         'cronstrue',
+        /^cron-parser(\/.*)?$/,
       ],
       output: {
         exports: 'named',
@@ -36,10 +47,12 @@ export default defineConfig({
           'react-dom': 'ReactDOM',
           '@mui/material': 'MaterialUI',
           '@mui/system': 'MUISystem',
+          '@mui/icons-material': 'MaterialUIIcons',
           '@emotion/react': 'EmotionReact',
           '@emotion/styled': 'EmotionStyled',
-          recoil: 'Recoil',
+          jotai: 'jotai',
           cronstrue: 'cronstrue',
+          'cron-parser': 'cronParser',
         },
       },
       onwarn(warning, warn) {

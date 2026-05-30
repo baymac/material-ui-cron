@@ -7,6 +7,8 @@ export const FALLBACK_STRINGS = {
   scheduleTitle: 'Schedule',
   nextRunsLabel: 'Next runs',
   noUpcomingRunsText: 'No upcoming runs',
+  noRunsOnDayText: 'No runs on this day',
+  moreRunsText: '{count} more runs',
   invalidScheduleText: 'Enter a valid schedule to preview runs',
   copyLabel: 'Copy',
   copiedText: 'Copied!',

@@ -1,5 +1,5 @@
+import type { AutocompleteClasses } from '@mui/material/Autocomplete';
 import type { SxProps, Theme } from '@mui/material/styles';
-// Replaced Recoil setter type with a generic setter signature
 
 export type PeriodType = 'year' | 'month' | 'week' | 'day' | 'hour' | 'minute';
 
@@ -11,10 +11,16 @@ export interface SchedulerSlotProps {
   header?: { sx?: SxProps<Theme> };
 }
 
-export interface CustomSelectProps {
+/**
+ * Props for the internal `CustomSelect`. Generic over the selected value type
+ * `V` so the single-value selects (`SelectOptions`) and the multi-selects
+ * (`SelectOptions[]`) both stay precisely typed — `value` and `setValue` share
+ * the same `V`, inferred from whatever the caller passes to `value`.
+ */
+export interface CustomSelectProps<V extends SelectOptions | SelectOptions[] = SelectOptions[]> {
   options: Array<SelectOptions>;
-  value: SelectOptions | SelectOptions[];
-  setValue: (value: any) => void;
+  value: V;
+  setValue: (value: V) => void;
   noOptionsText?: string;
   label: string;
   size?: 'sm' | 'md' | 'lg';
@@ -24,7 +30,7 @@ export interface CustomSelectProps {
   multiple?: boolean;
   filterSelectedOptions?: boolean;
   className?: string;
-  classes?: any;
+  classes?: Partial<AutocompleteClasses>;
   single?: boolean;
   sort?: boolean;
   disableEmpty?: boolean;
@@ -106,6 +112,14 @@ export interface Locale {
   nextRunsLabel?: string;
   /** Shown when the cron is valid but produces no future runs. Default: "No upcoming runs". */
   noUpcomingRunsText?: string;
+  /** Shown when a day with no runs is selected on the calendar. Default: "No runs on this day". */
+  noRunsOnDayText?: string;
+  /**
+   * Gap label when a day has more runs than fit the first-10/last-10 cap.
+   * `{count}` is replaced with the number of omitted middle runs.
+   * Default: "{count} more runs".
+   */
+  moreRunsText?: string;
   /** Shown when the cron is invalid. Default: "Enter a valid schedule to preview runs". */
   invalidScheduleText?: string;
   /** Copy-button tooltip. Default: "Copy". */

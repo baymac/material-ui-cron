@@ -1,8 +1,9 @@
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import Scheduler from './index';
+import { addMonths } from './nextRuns';
 
 const noop = () => {};
 
@@ -172,7 +173,9 @@ describe('Scheduler (browser)', () => {
 
   // #17 kitchen-sink coverage: a provided locale localizes the field labels.
   it('renders localized labels for a provided locale (zh_CN)', async () => {
-    render(<Scheduler cron='0 0 * * *' setCron={noop} setCronError={noop} isAdmin locale='zh_CN' />);
+    render(
+      <Scheduler cron='0 0 * * *' setCron={noop} setCronError={noop} isAdmin locale='zh_CN' />,
+    );
     // Period label in zh_CN.
     await waitFor(() => expect(screen.getByLabelText('时间间隔')).toBeInTheDocument(), {
       timeout: 3000,
@@ -185,8 +188,7 @@ describe('Scheduler (browser)', () => {
   // re-localizes selections onto the new locale's matching option by value.
   // Found by /qa on 2026-05-29.
   it('re-localizes the selected period when the locale changes (no stale lag)', async () => {
-    const periodValueZh = () =>
-      (screen.getByLabelText('时间间隔') as HTMLInputElement).value;
+    const periodValueZh = () => (screen.getByLabelText('时间间隔') as HTMLInputElement).value;
 
     const { rerender } = render(
       <Scheduler cron='0 0 1 * *' setCron={noop} setCronError={noop} isAdmin locale='en' />,
@@ -195,7 +197,9 @@ describe('Scheduler (browser)', () => {
     await waitFor(() => expect(periodValue()).toBe('month'), { timeout: 3000 });
 
     // Switch to Chinese: the selection is preserved and its label translates.
-    rerender(<Scheduler cron='0 0 1 * *' setCron={noop} setCronError={noop} isAdmin locale='zh_CN' />);
+    rerender(
+      <Scheduler cron='0 0 1 * *' setCron={noop} setCronError={noop} isAdmin locale='zh_CN' />,
+    );
     await waitFor(() => expect(periodValueZh()).toBe('月'), { timeout: 3000 });
 
     // Switch back to English: no Chinese lag — it reads "month" again.
@@ -212,12 +216,13 @@ describe('Scheduler redesign (browser)', () => {
     expect(await screen.findByDisplayValue('0 0 * * *')).toBeInTheDocument();
   });
 
-  it('renders 5 occurrence rows in the Next-runs panel for a valid cron', async () => {
+  it("renders the selected day's run times in the Next-runs panel for a valid cron", async () => {
     render(<Scheduler cron='*/2 * * * *' setCron={noop} setCronError={noop} isAdmin />);
-    const list = await screen.findByRole('list', { name: 'Next runs' }, { timeout: 3000 });
-    // Always renders 5 in the DOM; the container query CSS-hides rows 4-5 at
-    // narrow widths (querySelectorAll counts hidden nodes, unlike role queries).
-    await waitFor(() => expect(list.querySelectorAll('li')).toHaveLength(5));
+    // The panel is a calendar that pre-selects the soonest run day; that day's
+    // times render as a list (here "today", which fires every 2 min).
+    await waitFor(() => expect(screen.getAllByRole('listitem').length).toBeGreaterThan(0), {
+      timeout: 3000,
+    });
   });
 
   it('shows the invalid-schedule message when the cron becomes invalid', async () => {
@@ -230,7 +235,8 @@ describe('Scheduler redesign (browser)', () => {
       () => expect(screen.getByText(/Enter a valid schedule to preview runs/i)).toBeInTheDocument(),
       { timeout: 3000 },
     );
-    expect(screen.queryByRole('list', { name: 'Next runs' })).not.toBeInTheDocument();
+    // The invalid message replaces the calendar grid + run list entirely.
+    expect(screen.queryAllByRole('listitem')).toHaveLength(0);
   });
 
   it('shows "No upcoming runs" for a valid cron that never fires (Feb 30)', async () => {
@@ -241,7 +247,9 @@ describe('Scheduler redesign (browser)', () => {
   });
 
   it('localizes the Next-runs label (zh_CN)', async () => {
-    render(<Scheduler cron='*/2 * * * *' setCron={noop} setCronError={noop} isAdmin locale='zh_CN' />);
+    render(
+      <Scheduler cron='*/2 * * * *' setCron={noop} setCronError={noop} isAdmin locale='zh_CN' />,
+    );
     expect(await screen.findByText('接下来的运行')).toBeInTheDocument();
   });
 
@@ -309,8 +317,9 @@ describe('Scheduler redesign (browser)', () => {
     );
     expect(await screen.findByDisplayValue('*/2 * * * *')).toBeInTheDocument();
     expect(await screen.findByText('Schedule')).toBeInTheDocument();
-    const list = await screen.findByRole('list', { name: 'Next runs' }, { timeout: 3000 });
-    expect(within(list).getAllByRole('listitem').length).toBeGreaterThan(0);
+    await waitFor(() => expect(screen.getAllByRole('listitem').length).toBeGreaterThan(0), {
+      timeout: 3000,
+    });
   });
 });
 
@@ -385,6 +394,190 @@ describe('Scheduler segmented controls (browser)', () => {
     // Wait past the 500ms validation debounce: no invalid error ever surfaced.
     await new Promise((resolve) => setTimeout(resolve, 800));
     expect(setCronError).not.toHaveBeenCalledWith(expect.stringMatching(/invalid/i));
+  });
+});
+
+// ---- Range/interval bug: `every N between X and Y` with N > span collapsed to
+// a single run per cycle ("could only run it once" — the step lands outside the
+// window). The interval is now capped at the span. ----
+describe('Scheduler every-interval is capped to the range span (browser)', () => {
+  it('auto-corrects an incoming collapsing minute cron (55-59/5 -> 55-59/4)', async () => {
+    const setCron = vi.fn();
+    render(<Scheduler cron='55-59/5 * * * *' setCron={setCron} setCronError={noop} isAdmin />);
+    // span = 59-55 = 4, so interval 5 would only ever fire at :55 (once/hour).
+    // It clamps down to the largest non-collapsing interval, 4 (fires :55 and :59).
+    await waitFor(() => expect(setCron).toHaveBeenLastCalledWith('55-59/4 * * * *'), {
+      timeout: 3000,
+    });
+    expect(await screen.findByDisplayValue('55-59/4 * * * *')).toBeInTheDocument();
+  });
+
+  it('disables out-of-span interval options in the minute every-select', async () => {
+    const user = userEvent.setup();
+    // span = 58-55 = 3; interval 2 is within span so the cron is left untouched.
+    render(<Scheduler cron='55-58/2 * * * *' setCron={noop} setCronError={noop} isAdmin />);
+    // Wait for the debounced parse to put the field in every-mode with the range
+    // applied (the range start/end selects read 55 / 58) before opening the
+    // interval list — otherwise the cap hasn't been computed yet.
+    await screen.findByDisplayValue('55', undefined, { timeout: 3000 });
+    await screen.findByDisplayValue('58', undefined, { timeout: 3000 });
+
+    await user.click(await screen.findByLabelText('Minute(s)'));
+    const listbox = await screen.findByRole('listbox');
+    // Within the span -> selectable.
+    expect(within(listbox).getByText('3').closest('[role="option"]')).not.toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+    // Beyond the span -> disabled, so the schedule can't be made to collapse.
+    expect(within(listbox).getByText('5').closest('[role="option"]')).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+  });
+});
+
+// ---- Calendar visualization (always-on Next-runs panel) ----
+describe('Scheduler run calendar (browser)', () => {
+  it('always renders a month calendar marking the days that have runs', async () => {
+    render(<Scheduler cron='*/15 * * * *' setCron={noop} setCronError={noop} isAdmin />);
+    // The Next-runs panel is a calendar now; `*/15` fires constantly, so at least
+    // one day cell is marked.
+    await waitFor(
+      () => expect(document.querySelectorAll('[data-has-runs="true"]').length).toBeGreaterThan(0),
+      { timeout: 3000 },
+    );
+  });
+
+  it("shows a day's run times when a highlighted day is selected", async () => {
+    const user = userEvent.setup();
+    render(<Scheduler cron='0 12 * * *' setCron={noop} setCronError={noop} isAdmin />);
+    // Daily-at-noon marks every day; click the first marked cell and its time
+    // appears in the list below.
+    const marked = await waitFor(
+      () => {
+        const els = document.querySelectorAll<HTMLElement>('[data-has-runs="true"]');
+        expect(els.length).toBeGreaterThan(0);
+        return els[0];
+      },
+      { timeout: 3000 },
+    );
+    await user.click(marked);
+    await waitFor(() => expect(screen.getAllByRole('listitem').length).toBeGreaterThan(0));
+  });
+
+  it('shows "No runs on this day" when an empty day is selected', async () => {
+    const user = userEvent.setup();
+    render(<Scheduler cron='0 12 1 * *' setCron={noop} setCronError={noop} isAdmin />);
+    await screen.findByDisplayValue('0 12 1 * *');
+    // Two phases race here: the transient default `0 0 * * *` (every day fires →
+    // all cells "has runs", none "no runs") and the parsed monthly cron. Wait for
+    // BOTH "no runs" cells to exist (monthly parsed) AND a "has runs" cell to be
+    // selected (the auto-select effect has run on the monthly set) — only then is
+    // the firing-day set final, so clicking an empty day won't be stomped.
+    await waitFor(
+      () => {
+        expect(
+          document.querySelector('[aria-label$="has runs"][aria-pressed="true"]'),
+        ).toBeTruthy();
+        expect(document.querySelectorAll('[aria-label$="no runs"]').length).toBeGreaterThan(0);
+      },
+      { timeout: 4000 },
+    );
+    const emptyDay = document.querySelector<HTMLElement>('[aria-label$="no runs"]');
+    await user.click(emptyDay as HTMLElement);
+    expect(
+      await screen.findByText(/No runs on this day/i, undefined, { timeout: 3000 }),
+    ).toBeInTheDocument();
+  });
+
+  it('pages across the current + next eleven months, bounded at both ends', async () => {
+    // pointerEventsCheck disabled: the panel re-anchors its cursor asynchronously
+    // (the cron is re-parsed and the soonest-run day re-selected just after mount),
+    // which can flip an arrow to `disabled` mid-click. We tolerate that — a hop
+    // that lands on a disabled arrow is simply a no-op the walk detects and stops
+    // on — instead of letting the stray pointer event throw.
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
+    render(<Scheduler cron='0 12 * * *' setCron={noop} setCronError={noop} isAdmin />);
+    // Re-query each hop: MUI re-renders the arrow buttons as their disabled state
+    // flips, so a reference captured once can go stale mid-walk.
+    const prevBtn = () =>
+      screen.getByRole('button', { name: 'Previous month' }) as HTMLButtonElement;
+    const nextBtn = () => screen.getByRole('button', { name: 'Next month' }) as HTMLButtonElement;
+    // The calendar grid's aria-label is the shown month ("May 2026"): the single
+    // source of truth for where the cursor sits, regardless of click timing.
+    const shownMonth = () => screen.getByRole('grid').getAttribute('aria-label');
+
+    // The twelve month labels the strip should expose: the current local month
+    // (how the component anchors its window) plus the next eleven, formatted the
+    // same way the panel does (UTC parts, long month + year).
+    const now = new Date();
+    const startYm = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const label = (ym: string) => {
+      const [y, m] = ym.split('-').map(Number);
+      return new Intl.DateTimeFormat('en', {
+        month: 'long',
+        year: 'numeric',
+        timeZone: 'UTC',
+      }).format(new Date(Date.UTC(y, m - 1, 1)));
+    };
+    const expectedMonths = Array.from({ length: 12 }, (_, i) => label(addMonths(startYm, i)));
+
+    await screen.findByRole('button', { name: 'Next month' });
+    // Wait for the async run enumeration to resolve first: it pre-selects the
+    // soonest run's month (which need not be the current one — today's run may
+    // already have elapsed). The pre-selection can land mid-strip, so the walk
+    // below collects months toward BOTH ends rather than counting hops.
+    await waitFor(() => expect(screen.getAllByRole('listitem').length).toBeGreaterThan(0), {
+      timeout: 3000,
+    });
+    // One hop in `btn`'s direction. Returns false when the month doesn't move —
+    // i.e. the arrow is at (or asynchronously flipped to) its bound — so the walk
+    // knows to stop. The short timeout makes a no-op cheap rather than a 1s hang.
+    const hop = async (btn: () => HTMLButtonElement) => {
+      const before = shownMonth();
+      await user.click(btn());
+      try {
+        await waitFor(() => expect(shownMonth()).not.toBe(before), { timeout: 800 });
+        return true;
+      } catch {
+        return false;
+      }
+    };
+    // Collect every reachable month by walking to the far end, then back to the
+    // near end. Robust to a stray re-anchor bounce: whichever month the cursor
+    // jumps to is still on the strip and still gets collected.
+    const reachable = new Set<string>([shownMonth()!]);
+    for (let guard = 0; guard < 40 && (await hop(nextBtn)); guard++) {
+      reachable.add(shownMonth()!);
+    }
+    for (let guard = 0; guard < 40 && (await hop(prevBtn)); guard++) {
+      reachable.add(shownMonth()!);
+    }
+    // Twelve-month window: exactly the current month through the next eleven — set
+    // equality also pins the near end to the current month (no earlier paging) and
+    // the far end to +11 (no overrun).
+    expect([...reachable].sort()).toEqual([...expectedMonths].sort());
+  });
+
+  it('shows the invalid-schedule message for an invalid cron', async () => {
+    render(<Scheduler cron='0 0 * * *' setCron={noop} setCronError={noop} isAdmin />);
+    const input = await screen.findByDisplayValue('0 0 * * *');
+    fireEvent.change(input, { target: { value: '60 * * * *' } });
+    await waitFor(
+      () =>
+        expect(
+          screen.getAllByText(/Enter a valid schedule to preview runs/i).length,
+        ).toBeGreaterThan(0),
+      { timeout: 3000 },
+    );
+  });
+
+  it('localizes the panel label (zh_CN)', async () => {
+    render(
+      <Scheduler cron='*/15 * * * *' setCron={noop} setCronError={noop} isAdmin locale='zh_CN' />,
+    );
+    expect(await screen.findByText('接下来的运行')).toBeInTheDocument();
   });
 });
 

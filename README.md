@@ -1,7 +1,7 @@
 ## Material UI Cron
 
 [![npm package](https://img.shields.io/npm/v/material-ui-cron/latest.svg)](https://www.npmjs.com/package/material-ui-cron)
-[![MIT License Badge](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/baymac/material-ui-cron/blob/master/LICENSE.md)
+[![MIT License Badge](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/baymac/material-ui-cron/blob/main/LICENSE.md)
 [![Live Demo](https://img.shields.io/badge/live-demo-000?logo=vercel)](https://material-ui-cron.vercel.app/)
 
 A React cron editor built with [material ui](https://material-ui.com/)
@@ -16,13 +16,16 @@ A React cron editor built with [material ui](https://material-ui.com/)
 
 Be sure that you have these peer dependencies on your project:
 
-- react (>=19.2.0)
-- react-dom (>=19.2.0)
+- react (>=18.0.0, including 19)
+- react-dom (>=18.0.0, including 19)
 - @emotion/react (>=11.11.0)
 - @emotion/styled (>=11.11.0)
 
-`@mui/material` is bundled as a dependency, so you don't need to install it
-separately.
+MUI (`@mui/material`, `@mui/system`, `@mui/icons-material`) and the cron
+runtime (`cron-parser`, `cronstrue`, `jotai`) ship as regular dependencies —
+your package manager installs them automatically, and they're kept external to
+the bundle so they dedupe against any copies already in your tree. You don't
+need to add them yourself.
 
 ```bash
 # Yarn
@@ -55,7 +58,8 @@ export default function SchedulerDemo() {
 📖 **See [USAGE.md](./USAGE.md) for the full guide** — every prop with examples:
 [theming & dark mode](./USAGE.md#theming-the-color), [admin mode](./USAGE.md#admin-mode-sub-daily-frequencies),
 [layout](./USAGE.md#layout), [title & header](./USAGE.md#title-and-header),
-[timezone](./USAGE.md#timezone), and [localization](./USAGE.md#localization).
+[timezone](./USAGE.md#timezone), [calendar](./USAGE.md#calendar), and
+[localization](./USAGE.md#localization).
 
 `material-ui-cron` is written in TypeScript and ships complete type definitions.
 
