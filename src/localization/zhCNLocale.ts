@@ -39,6 +39,7 @@ const enLocale: Locale = {
   nextRunsLabel: '接下来的运行',
   noUpcomingRunsText: '没有即将到来的运行',
   noRunsOnDayText: '当天没有运行',
+  moreRunsText: '还有 {count} 次运行',
   invalidScheduleText: '请输入有效的计划以预览运行',
   copyLabel: '复制',
   copiedText: '已复制！',

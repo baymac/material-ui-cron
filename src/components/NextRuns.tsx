@@ -7,6 +7,7 @@ import React from 'react';
 import { localeString } from '../localization/strings';
 import {
   addMonths,
+  clampDayRuns,
   computeRunDays,
   computeRunsOnDay,
   formatDayKey,
@@ -18,10 +19,11 @@ import {
 import { cronExpState } from '../selector';
 import { cronValidationErrorMessageState, localeState } from '../store';
 
-// The calendar window: the current month plus the next two. Users can page
-// across these three months (never before the current one). `MONTH_SPAN` is the
-// count of months SHOWN; `WINDOW_MONTHS` is how far ahead we enumerate runs.
-const MONTH_SPAN = 3;
+// The calendar window: the current month plus the next eleven (a full year
+// ahead). Users can page across these twelve months (never before the current
+// one). `MONTH_SPAN` is the count of months SHOWN; `WINDOW_MONTHS` is how far
+// ahead we enumerate runs.
+const MONTH_SPAN = 12;
 // Enumerate every run from now to the end of the last shown month so each firing
 // day is marked — not a fixed-size prefix. computeRunsUntil caps the list, so a
 // once-a-minute cron can't blow up; days past the cap simply go unmarked.
@@ -148,6 +150,19 @@ const RunRow = styled('li')(({ theme }) => ({
   fontSize: 13.5,
   borderTop: `1px solid ${theme.palette.divider}`,
   '&:first-of-type': { borderTop: 0 },
+}));
+
+// Divider standing in for the collapsed middle of a dense day (first 10 + last
+// 10 shown). Non-interactive, centred, muted — visually distinct from a RunRow.
+const GapRow = styled('li')(({ theme }) => ({
+  boxSizing: 'border-box',
+  height: RUN_ROW_HEIGHT,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  fontSize: 12,
+  color: theme.palette.text.secondary,
+  borderTop: `1px solid ${theme.palette.divider}`,
 }));
 
 const When = styled('span')({ fontWeight: 500 });
@@ -279,7 +294,10 @@ export default function NextRuns({ timezone }: NextRunsProps) {
       return;
     }
     let cancelled = false;
-    computeRunsOnDay(cronExp, selectedDay, { timezone }).then((next) => {
+    // Anchor to the same "now" the day-marking used so today's already-elapsed
+    // runs are dropped from the list (and the list stays consistent with which
+    // days are marked as firing). Future days are unaffected.
+    computeRunsOnDay(cronExp, selectedDay, { timezone, anchor }).then((next) => {
       if (!cancelled) {
         setSelectedRuns({ day: selectedDay, runs: next });
       }
@@ -287,7 +305,7 @@ export default function NextRuns({ timezone }: NextRunsProps) {
     return () => {
       cancelled = true;
     };
-  }, [cronExp, validationError, timezone, selectedDay, daySet]);
+  }, [cronExp, validationError, timezone, selectedDay, daySet, anchor]);
 
   const safeCursor = Math.min(cursor, months.length - 1);
   // Only trust the resolved runs once they match the currently selected day; a
@@ -345,14 +363,31 @@ export default function NextRuns({ timezone }: NextRunsProps) {
                     {localeString(locale, 'noRunsOnDayText')}
                   </Message>
                 ) : (
-                  <RunList aria-label={formatDayKey(selectedDay, localeTag)}>
-                    {selectedDayRuns.map((date) => (
+                  (() => {
+                    // Cap a dense day to its first 10 + last 10 runs, collapsing
+                    // the middle into a "{count} more runs" divider.
+                    const { head, tail, hidden } = clampDayRuns(selectedDayRuns);
+                    const renderRow = (date: Date) => (
                       <RunRow key={date.toISOString()}>
                         <When>{formatTime(date, localeTag, timezone)}</When>
                         <Relative>{formatRelative(date, now, localeTag)}</Relative>
                       </RunRow>
-                    ))}
-                  </RunList>
+                    );
+                    return (
+                      <RunList aria-label={formatDayKey(selectedDay, localeTag)}>
+                        {head.map(renderRow)}
+                        {hidden > 0 && (
+                          <GapRow aria-hidden='true'>
+                            {localeString(locale, 'moreRunsText').replace(
+                              '{count}',
+                              String(hidden),
+                            )}
+                          </GapRow>
+                        )}
+                        {tail.map(renderRow)}
+                      </RunList>
+                    );
+                  })()
                 )}
               </>
             )

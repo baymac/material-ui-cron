@@ -1,6 +1,6 @@
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import Scheduler from './index';
 
@@ -172,7 +172,9 @@ describe('Scheduler (browser)', () => {
 
   // #17 kitchen-sink coverage: a provided locale localizes the field labels.
   it('renders localized labels for a provided locale (zh_CN)', async () => {
-    render(<Scheduler cron='0 0 * * *' setCron={noop} setCronError={noop} isAdmin locale='zh_CN' />);
+    render(
+      <Scheduler cron='0 0 * * *' setCron={noop} setCronError={noop} isAdmin locale='zh_CN' />,
+    );
     // Period label in zh_CN.
     await waitFor(() => expect(screen.getByLabelText('时间间隔')).toBeInTheDocument(), {
       timeout: 3000,
@@ -185,8 +187,7 @@ describe('Scheduler (browser)', () => {
   // re-localizes selections onto the new locale's matching option by value.
   // Found by /qa on 2026-05-29.
   it('re-localizes the selected period when the locale changes (no stale lag)', async () => {
-    const periodValueZh = () =>
-      (screen.getByLabelText('时间间隔') as HTMLInputElement).value;
+    const periodValueZh = () => (screen.getByLabelText('时间间隔') as HTMLInputElement).value;
 
     const { rerender } = render(
       <Scheduler cron='0 0 1 * *' setCron={noop} setCronError={noop} isAdmin locale='en' />,
@@ -195,7 +196,9 @@ describe('Scheduler (browser)', () => {
     await waitFor(() => expect(periodValue()).toBe('month'), { timeout: 3000 });
 
     // Switch to Chinese: the selection is preserved and its label translates.
-    rerender(<Scheduler cron='0 0 1 * *' setCron={noop} setCronError={noop} isAdmin locale='zh_CN' />);
+    rerender(
+      <Scheduler cron='0 0 1 * *' setCron={noop} setCronError={noop} isAdmin locale='zh_CN' />,
+    );
     await waitFor(() => expect(periodValueZh()).toBe('月'), { timeout: 3000 });
 
     // Switch back to English: no Chinese lag — it reads "month" again.
@@ -243,7 +246,9 @@ describe('Scheduler redesign (browser)', () => {
   });
 
   it('localizes the Next-runs label (zh_CN)', async () => {
-    render(<Scheduler cron='*/2 * * * *' setCron={noop} setCronError={noop} isAdmin locale='zh_CN' />);
+    render(
+      <Scheduler cron='*/2 * * * *' setCron={noop} setCronError={noop} isAdmin locale='zh_CN' />,
+    );
     expect(await screen.findByText('接下来的运行')).toBeInTheDocument();
   });
 
@@ -485,28 +490,52 @@ describe('Scheduler run calendar (browser)', () => {
     ).toBeInTheDocument();
   });
 
-  it('pages across the current + next two months, bounded at both ends', async () => {
+  it('pages across the current + next eleven months, bounded at both ends', async () => {
     const user = userEvent.setup();
     render(<Scheduler cron='0 12 * * *' setCron={noop} setCronError={noop} isAdmin />);
-    const prev = (await screen.findByRole('button', {
-      name: 'Previous month',
-    })) as HTMLButtonElement;
-    const next = (await screen.findByRole('button', { name: 'Next month' })) as HTMLButtonElement;
-    // Walk forward to the cap (never clicking a disabled button).
+    // Re-query each hop: MUI re-renders the arrow buttons as their disabled state
+    // flips, so a reference captured once can go stale mid-walk.
+    const prevBtn = () =>
+      screen.getByRole('button', { name: 'Previous month' }) as HTMLButtonElement;
+    const nextBtn = () => screen.getByRole('button', { name: 'Next month' }) as HTMLButtonElement;
+    // The calendar grid's aria-label is the shown month ("May 2026"): the single
+    // source of truth for where the cursor sits, regardless of click timing.
+    const shownMonth = () => screen.getByRole('grid').getAttribute('aria-label');
+    await screen.findByRole('button', { name: 'Next month' });
+    // Wait for the async run enumeration to resolve first: it pre-selects the
+    // soonest run's month (which need not be the current one — today's run may
+    // already have elapsed), and that one-time cursor reset would otherwise race
+    // the walk below.
+    await waitFor(() => expect(screen.getAllByRole('listitem').length).toBeGreaterThan(0), {
+      timeout: 3000,
+    });
+    // Each hop waits for the shown month to actually change (a click can outrun
+    // React's cursor flush).
+    const hop = async (btn: () => HTMLButtonElement) => {
+      const before = shownMonth();
+      await user.click(btn());
+      await waitFor(() => expect(shownMonth()).not.toBe(before));
+    };
+    // Rewind to the current month so the span is measured from a known end
+    // regardless of where the pre-selection landed.
+    let guard = 0;
+    while (!prevBtn().disabled && guard++ < 30) {
+      await hop(prevBtn);
+    }
+    // Now parked on the current month; walk forward to the far end, collecting
+    // every distinct month reachable.
+    const reachable = new Set<string>([shownMonth()!]);
     let forwardSteps = 0;
-    while (!next.disabled && forwardSteps < 5) {
-      await user.click(next);
+    guard = 0;
+    while (!nextBtn().disabled && guard++ < 30) {
+      await hop(nextBtn);
+      reachable.add(shownMonth()!);
       forwardSteps++;
     }
-    // Then walk all the way back from the last month to the current one.
-    let backSteps = 0;
-    while (!prev.disabled && backSteps < 5) {
-      await user.click(prev);
-      backSteps++;
-    }
-    // Three-month window => exactly two hops from the far end to the current month.
-    expect(forwardSteps).toBeLessThanOrEqual(2);
-    expect(backSteps).toBe(2);
+    // Twelve-month window => twelve distinct months, eleven hops from the current
+    // month to the far end, and no paging before the current month.
+    expect(reachable.size).toBe(12);
+    expect(forwardSteps).toBe(11);
   });
 
   it('shows the invalid-schedule message for an invalid cron', async () => {
@@ -523,7 +552,9 @@ describe('Scheduler run calendar (browser)', () => {
   });
 
   it('localizes the panel label (zh_CN)', async () => {
-    render(<Scheduler cron='*/15 * * * *' setCron={noop} setCronError={noop} isAdmin locale='zh_CN' />);
+    render(
+      <Scheduler cron='*/15 * * * *' setCron={noop} setCronError={noop} isAdmin locale='zh_CN' />,
+    );
     expect(await screen.findByText('接下来的运行')).toBeInTheDocument();
   });
 });

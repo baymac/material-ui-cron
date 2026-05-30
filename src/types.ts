@@ -114,6 +114,12 @@ export interface Locale {
   noUpcomingRunsText?: string;
   /** Shown when a day with no runs is selected on the calendar. Default: "No runs on this day". */
   noRunsOnDayText?: string;
+  /**
+   * Gap label when a day has more runs than fit the first-10/last-10 cap.
+   * `{count}` is replaced with the number of omitted middle runs.
+   * Default: "{count} more runs".
+   */
+  moreRunsText?: string;
   /** Shown when the cron is invalid. Default: "Enter a valid schedule to preview runs". */
   invalidScheduleText?: string;
   /** Copy-button tooltip. Default: "Copy". */

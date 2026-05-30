@@ -115,7 +115,11 @@ export async function computeRunDays(
     // Hard iteration backstop: each step normally advances a full day, but a
     // pathological tiny advance must never spin.
     let guard = 0;
-    while (days.length < maxDays && cursor.getTime() <= endDate.getTime() && guard++ < maxDays * 2) {
+    while (
+      days.length < maxDays &&
+      cursor.getTime() <= endDate.getTime() &&
+      guard++ < maxDays * 2
+    ) {
       const interval = CronExpressionParser.parse(cron, {
         currentDate: cursor,
         endDate,
@@ -145,10 +149,17 @@ export async function computeRunDays(
  * Every run on a single calendar `dayKey` (ISO `YYYY-MM-DD`, in `timezone`).
  * The selected-day list in the calendar needs the actual times for ONE day, so
  * this bounds the parser to that day's [midnight, next-midnight) window — at
- * most ~1440 runs for an every-minute cron, cheap to enumerate. The anchor is
- * nudged a tick before midnight because the parser's `currentDate` is exclusive
+ * most ~1440 runs for an every-minute cron, cheap to enumerate. The window
+ * starts a tick before midnight because the parser's `currentDate` is exclusive
  * (a run at exactly 00:00 would otherwise be skipped); a stray next-day-midnight
  * run let in by the inclusive `endDate` is filtered back out by its day key.
+ *
+ * When `opts.anchor` ("now") falls past midnight on this day — i.e. the selected
+ * day IS today — the window starts at the anchor instead, so runs that have
+ * already elapsed today are not listed in a forward-looking "next runs" panel.
+ * This keeps the per-day list consistent with computeRunDays, which already
+ * anchors day-marking at now. For future days the anchor is earlier than
+ * midnight and has no effect (the whole day is enumerated).
  */
 export async function computeRunsOnDay(
   cron: string,
@@ -157,10 +168,38 @@ export async function computeRunsOnDay(
 ): Promise<Date[]> {
   const start = startOfDayInTz(dayKey, opts.timezone);
   const end = startOfDayInTz(addDays(dayKey, 1), opts.timezone);
-  const anchor = new Date(start.getTime() - 1);
+  const dayStart = start.getTime() - 1;
+  // Later of [tick-before-midnight, now]: drops today's elapsed runs while
+  // leaving full future days untouched.
+  const anchorMs = opts.anchor ? Math.max(dayStart, opts.anchor.getTime()) : dayStart;
+  const anchor = new Date(anchorMs);
   // 1500 > the 1440 minutes in a day, so an every-minute day is never clipped.
   const runs = await computeRunsUntil(cron, end, { timezone: opts.timezone, anchor }, 1500);
   return runs.filter((run) => dayKeyInTz(run, opts.timezone) === dayKey);
+}
+
+/**
+ * Clamp a single day's run list to its first `head` and last `tail` runs so a
+ * dense day (e.g. an every-minute cron's 1440 runs) renders a bounded preview
+ * instead of an endless scroll. When the day has at most `head + tail` runs they
+ * all fit and `tail`/`hidden` come back empty; otherwise the middle is collapsed
+ * and `hidden` reports how many runs were dropped (for a "{count} more" divider).
+ * Pure list math — the caller already scoped `runs` to one day and dropped any
+ * elapsed ones.
+ */
+export function clampDayRuns(
+  runs: Date[],
+  head = 10,
+  tail = 10,
+): { head: Date[]; tail: Date[]; hidden: number } {
+  if (runs.length <= head + tail) {
+    return { head: runs, tail: [], hidden: 0 };
+  }
+  return {
+    head: runs.slice(0, head),
+    tail: runs.slice(runs.length - tail),
+    hidden: runs.length - head - tail,
+  };
 }
 
 /**
@@ -242,7 +281,14 @@ function tzOffsetMs(date: Date, timezone?: string): number {
   const get = (type: string) => Number(parts.find((p) => p.type === type)!.value);
   // Some engines render midnight as hour "24"; normalise it to 0.
   const hour = get('hour') % 24;
-  const asUtc = Date.UTC(get('year'), get('month') - 1, get('day'), hour, get('minute'), get('second'));
+  const asUtc = Date.UTC(
+    get('year'),
+    get('month') - 1,
+    get('day'),
+    hour,
+    get('minute'),
+    get('second'),
+  );
   return asUtc - date.getTime();
 }
 

@@ -3,6 +3,7 @@ import {
   addDays,
   addMonths,
   bucketRunsByDay,
+  clampDayRuns,
   computeNextRuns,
   computeRunDays,
   computeRunsOnDay,
@@ -162,9 +163,9 @@ describe('computeRunDays', () => {
 
   it('returns [] when nothing fires in the window', async () => {
     // Feb 30 never happens.
-    expect(await computeRunDays('0 0 30 2 *', HORIZON, { timezone: 'UTC', anchor: ANCHOR })).toEqual(
-      [],
-    );
+    expect(
+      await computeRunDays('0 0 30 2 *', HORIZON, { timezone: 'UTC', anchor: ANCHOR }),
+    ).toEqual([]);
   });
 });
 
@@ -189,10 +190,72 @@ describe('computeRunsOnDay', () => {
   });
 
   it('scopes runs to the day in the given timezone', async () => {
-    const runs = await computeRunsOnDay('0 12 * * *', '2026-06-15', { timezone: 'America/New_York' });
+    const runs = await computeRunsOnDay('0 12 * * *', '2026-06-15', {
+      timezone: 'America/New_York',
+    });
     expect(runs).toHaveLength(1);
     // Noon in New York (EDT) is 16:00 UTC.
     expect(runs[0].toISOString()).toBe('2026-06-15T16:00:00.000Z');
+  });
+
+  it('drops today’s already-elapsed runs when anchored mid-day', async () => {
+    // Regression: at 01:53 the 00:00 run has elapsed; only the 09:00 and 18:00
+    // runs are still upcoming. Without the anchor the list showed the 00:00 run
+    // as "in 0 min". Cron fires at 00:00/09:00/18:00 (0 */9 * * *).
+    const now = new Date('2026-05-31T01:53:00Z');
+    const runs = await computeRunsOnDay('0 */9 * * *', '2026-05-31', {
+      timezone: 'UTC',
+      anchor: now,
+    });
+    expect(runs.map((d) => d.toISOString())).toEqual([
+      '2026-05-31T09:00:00.000Z',
+      '2026-05-31T18:00:00.000Z',
+    ]);
+  });
+
+  it('keeps the full day when the anchor is before it (a future day)', async () => {
+    // Anchor on May 29 must not clip a future day's early runs.
+    const runs = await computeRunsOnDay('0 */9 * * *', '2026-06-15', {
+      timezone: 'UTC',
+      anchor: new Date('2026-05-29T17:00:00Z'),
+    });
+    expect(runs.map((d) => d.toISOString())).toEqual([
+      '2026-06-15T00:00:00.000Z',
+      '2026-06-15T09:00:00.000Z',
+      '2026-06-15T18:00:00.000Z',
+    ]);
+  });
+});
+
+describe('clampDayRuns', () => {
+  const mkRuns = (n: number) => Array.from({ length: n }, (_, i) => new Date(2026, 0, 1, 0, i));
+
+  it('returns every run unchanged when at or under the cap', () => {
+    const runs = mkRuns(20);
+    const { head, tail, hidden } = clampDayRuns(runs);
+    expect(head).toEqual(runs);
+    expect(tail).toEqual([]);
+    expect(hidden).toBe(0);
+  });
+
+  it('keeps the first 10 and last 10, collapsing the middle', () => {
+    const runs = mkRuns(1440); // an every-minute day
+    const { head, tail, hidden } = clampDayRuns(runs);
+    expect(head).toHaveLength(10);
+    expect(tail).toHaveLength(10);
+    expect(hidden).toBe(1420);
+    expect(head[0]).toBe(runs[0]);
+    expect(head[9]).toBe(runs[9]);
+    expect(tail[0]).toBe(runs[1430]);
+    expect(tail[9]).toBe(runs[1439]);
+  });
+
+  it('honours custom head/tail sizes', () => {
+    const runs = mkRuns(50);
+    const { head, tail, hidden } = clampDayRuns(runs, 3, 2);
+    expect(head).toHaveLength(3);
+    expect(tail).toHaveLength(2);
+    expect(hidden).toBe(45);
   });
 });
 
