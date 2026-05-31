@@ -4,7 +4,24 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.0.0] - 2026-05-31
+## [2.0.1] - 2026-05-31
+
+### Changed
+
+- **Snappier, lighter rendering — same behavior.** Internal cleanup that removes
+  redundant work without changing the component's output:
+  - The hour, minute, and day-of-month range pickers now compute their
+    cross-disabled options directly while rendering instead of mirroring them
+    into state through effects, so a start/end change reflects in the same render
+    instead of a render later.
+  - `Intl.DateTimeFormat` / `Intl.RelativeTimeFormat` formatters used by the
+    Next-runs calendar are cached per locale + options, so the same formatter is
+    reused across renders and per-run loops rather than rebuilt each time.
+
+### Removed
+
+- Dropped the unused `vitest-browser-react` dev dependency. No effect on
+  published output.
 
 ### Added
 

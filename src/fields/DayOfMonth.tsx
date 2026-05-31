@@ -42,33 +42,36 @@ export default function DayOfMonth() {
   const [startMonth, setStartMonth] = useAtom(dayOfMonthRangeStartSchedulerState);
   const [endMonth, setEndMonth] = useAtom(dayOfMonthRangeEndSchedulerState);
   const [dayOfMonth, setDayOfMonth] = useAtom(dayOfMonthState);
-  const [dayOfMonthOptions, setDayOfMonthOptions] = React.useState(
+  const [dayOfMonthOptions, setDayOfMonthOptions] = React.useState(() =>
     getDayOfMonthsOptionsWithL(resolvedLocale.lastDayOfMonthLabel),
   );
 
-  const [possibleStartDays, setPossibleStartDays] = React.useState(
-    DEFAULT_DAY_OF_MONTH_OPTS_WITH_ORD,
+  // The two range selects cross-disable each other so the window stays low→high:
+  // an end option is disabled if it's at or before the chosen start, and a start
+  // option is disabled if it's at or after the chosen end. This is pure derived
+  // state — compute it during render from the base options + the two current
+  // selections (no useState/useEffect mirror, which would lag a render behind
+  // and force omitting deps to avoid a loop).
+  const startIndex = DEFAULT_DAY_OF_MONTH_OPTS_WITH_ORD.findIndex(
+    (x) => x.value === startMonth.value,
   );
-
-  const [possibleEndDays, setPossibleEndDays] = React.useState(DEFAULT_DAY_OF_MONTH_OPTS_WITH_ORD);
-
-  React.useEffect(() => {
-    const startIndex = possibleStartDays.findIndex((x) => x.value === startMonth.value);
-    const limitedPossibleTimeRange = possibleEndDays.map((possibleEndTime, index) => ({
-      ...possibleEndTime,
-      disabled: index <= startIndex,
-    }));
-    setPossibleEndDays(limitedPossibleTimeRange);
-  }, [startMonth]);
-
-  React.useEffect(() => {
-    const endIndex = possibleEndDays.findIndex((x) => x.value === endMonth.value);
-    const limitedPossibleTimeRange = possibleStartDays.map((possibleStartTime, index) => ({
-      ...possibleStartTime,
-      disabled: index >= endIndex,
-    }));
-    setPossibleStartDays(limitedPossibleTimeRange);
-  }, [endMonth]);
+  const endIndex = DEFAULT_DAY_OF_MONTH_OPTS_WITH_ORD.findIndex((x) => x.value === endMonth.value);
+  const possibleStartDays = React.useMemo(
+    () =>
+      DEFAULT_DAY_OF_MONTH_OPTS_WITH_ORD.map((option, index) => ({
+        ...option,
+        disabled: index >= endIndex,
+      })),
+    [endIndex],
+  );
+  const possibleEndDays = React.useMemo(
+    () =>
+      DEFAULT_DAY_OF_MONTH_OPTS_WITH_ORD.map((option, index) => ({
+        ...option,
+        disabled: index <= startIndex,
+      })),
+    [startIndex],
+  );
 
   React.useEffect(() => {
     if (dayOfMonthAtEvery.value === 'every') {

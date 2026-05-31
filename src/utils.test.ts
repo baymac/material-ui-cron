@@ -18,9 +18,9 @@ import {
   isValidMinutePart,
   isValidMonthPart,
   isValidStepPart,
-  range,
   validateCronExp,
 } from './utils';
+import { range } from './range';
 
 const opt = (value: string): SelectOptions => ({ value, label: value });
 

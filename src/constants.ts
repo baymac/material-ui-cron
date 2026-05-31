@@ -1,7 +1,7 @@
 import type { SelectOptions } from './types';
-import { getTimesOfTheDayList, range } from './utils';
+import { range } from './range';
 
-export const generateOrdinalOptions = (start: number, end: number): SelectOptions[] => {
+const generateOrdinalOptions = (start: number, end: number): SelectOptions[] => {
   return range(start, end).map((day) => {
     let customLabel = `${day}th`;
     if (!(day.length > 1 && day.startsWith('1'))) {
@@ -67,7 +67,7 @@ export const weekOptions = (weekDayLabels: string[]): SelectOptions[] =>
 
 /* DAY OF MONTH */
 
-export const defaultDayOfMonthOptions = () => {
+const defaultDayOfMonthOptions = () => {
   return range(1, 31).map((day) => {
     return {
       value: `${day}`,
@@ -76,7 +76,7 @@ export const defaultDayOfMonthOptions = () => {
   });
 };
 
-export const defaultDayOfMonthOptionsWithOrdinal = () => {
+const defaultDayOfMonthOptionsWithOrdinal = () => {
   return generateOrdinalOptions(1, 31);
 };
 
@@ -101,15 +101,6 @@ export const getMonthOptions = (monthOptionLabels: string[]) =>
   }));
 
 /* HOUR */
-
-export const defaultHourOptionsHr = () => {
-  return getTimesOfTheDayList().map((time, idx) => {
-    return {
-      value: `${idx}`,
-      label: time,
-    };
-  });
-};
 
 export const defaultHourOptions = (type?: string) => {
   return range(0, 23).map((time) => {
@@ -144,18 +135,6 @@ export const atEveryOptions = (atLabel: string, everyLabel: string): SelectOptio
   {
     value: 'at',
     label: atLabel,
-  },
-  {
-    value: 'every',
-    label: everyLabel,
-  },
-];
-
-export const atEveryOptionsNonAdmin = (atLabel: string, everyLabel: string): SelectOptions[] => [
-  {
-    value: 'at',
-    label: atLabel,
-    disabled: true,
   },
   {
     value: 'every',

@@ -1,4 +1,4 @@
-import { DEFAULT_DAY_OF_MONTH_OPTS, DEFAULT_MINUTE_OPTS } from './constants';
+import { DEFAULT_MINUTE_OPTS } from './constants';
 import type { CronValidation, SelectOptions } from './types';
 
 export const getIndex = (obj: SelectOptions, arr: Array<SelectOptions>) => {
@@ -23,10 +23,6 @@ export const getPeriodIndex = (obj: SelectOptions) => {
     return 3;
   }
   return 4;
-};
-
-export const getDayOfMonthIndex = (obj: SelectOptions) => {
-  return getIndex(obj, DEFAULT_DAY_OF_MONTH_OPTS);
 };
 
 export const getSortedOptions = (options: SelectOptions[]) => {
@@ -58,7 +54,7 @@ export function isAscending(arr: string[]) {
   return arr.every((x, i) => i === 0 || Number(x) >= Number(arr[i - 1]));
 }
 
-export function getTimesOfTheDayList(): Array<string> {
+function getTimesOfTheDayList(): Array<string> {
   const hours = [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
   const periods = ['AM', 'PM'];
   // On-the-hour only and no leading zero — "6 AM", not "06:00 AM" — so the
@@ -126,16 +122,17 @@ export function hasNoDuplicates(part: string) {
   });
 }
 
-export const REGEX_ALL = /^([*])\/([1-9]{1})([0-9]{0,1})$/;
+const REGEX_ALL = /^([*])\/([1-9]{1})([0-9]{0,1})$/;
+// Exported for direct unit testing of the step-part grammar.
 export const REGEX_EVERY = /^([0-9]{1,4})\/([1-9]{1,2})$/;
-export const REGEX_EVERY_HYPEN = /^([0-9]{1,2}-[0-9]{1,2})\/([1-9]{1})?([0-9]{1})$/;
-export const REGEX_COMMA = /^[0-9]{1,2}(,[0-9]{1,2})+$/;
-export const REGEX_HYPHEN = /^([0-9]{1,2}-[0-9]{1,2})$/;
-export const REGEX_SINGLE_DIGIT = /^([0-9]{1,2})$/;
-export const REGEX_SINGLE_ALL = /^([*]{1})$/;
-export const REGEX_SINGLE_SPL = /^([L]{1})$/;
+const REGEX_EVERY_HYPEN = /^([0-9]{1,2}-[0-9]{1,2})\/([1-9]{1})?([0-9]{1})$/;
+const REGEX_COMMA = /^[0-9]{1,2}(,[0-9]{1,2})+$/;
+const REGEX_HYPHEN = /^([0-9]{1,2}-[0-9]{1,2})$/;
+const REGEX_SINGLE_DIGIT = /^([0-9]{1,2})$/;
+const REGEX_SINGLE_ALL = /^([*]{1})$/;
+const REGEX_SINGLE_SPL = /^([L]{1})$/;
 
-export const CRON_VALIDATION = (isValid: boolean, message: string): CronValidation => {
+const CRON_VALIDATION = (isValid: boolean, message: string): CronValidation => {
   return {
     isValid,
     message,
@@ -282,7 +279,7 @@ export const isValidMonthPart = (cronExp: string) => {
   return CRON_VALIDATION(REGEX_SINGLE_ALL.test(part), 'is invalid');
 };
 
-export const getCronStatus = (msg: string, hasError: boolean) => ({
+const getCronStatus = (msg: string, hasError: boolean) => ({
   hasError: hasError,
   message: msg,
 });
@@ -317,9 +314,3 @@ export const validateCronExp = (cronExp: string) => {
 export const countOccurrences = (arr: string[], val: string) =>
   arr.reduce((a, v) => (v === val ? a + 1 : a), 0);
 
-export function range(start: number, end: number, step = 1): Array<string> {
-  const len = Math.floor((end - start) / step) + 1;
-  return Array(len)
-    .fill('00')
-    .map((_, idx) => `${start + idx * step}`);
-}

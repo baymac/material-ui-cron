@@ -118,6 +118,11 @@ export default function SchedulerHeader({ sx, title }: SchedulerHeaderProps) {
   // the debounced text side). Do NOT collapse these into one effect.
   const debouncedCronExpInput = useDebounce(cronExpInput, 500);
 
+  // Two-way text<->atom binding, not derived state: the text field is edited by
+  // the user (writing the atom) AND updated when the cron changes elsewhere
+  // (reading it). Each direction is debounced/guarded; collapsing them re-opens
+  // the ping-pong fixed in #20. Keep as two effects.
+  // react-doctor-disable-next-line react-doctor/no-derived-state-effect
   React.useEffect(() => {
     setCronExpInput(cronExp);
   }, [cronExp, setCronExpInput]);
