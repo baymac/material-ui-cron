@@ -1,4 +1,3 @@
-import React from 'react';
 import { useAtom, useAtomValue } from 'jotai';
 import CustomSelect from '../components/CustomSelect';
 import FieldRow from '../components/FieldRow';
@@ -9,9 +8,7 @@ import { localeState, weekState } from '../store';
 export default function Week() {
   const [week, setWeek] = useAtom(weekState);
   const resolvedLocale = useAtomValue(localeState);
-  const [weekOptions, setWeekOptions] = React.useState(
-    defaultWeekOptions(resolvedLocale.weekDaysOptions),
-  );
+  const weekOptions = defaultWeekOptions(resolvedLocale.weekDaysOptions);
 
   return (
     <FieldRow headerSlot={<SectionTag>{resolvedLocale.onText}</SectionTag>}>

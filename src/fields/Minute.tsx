@@ -42,29 +42,23 @@ export default function Minute() {
   const [minute, setMinute] = useAtom(minuteState);
   const [minuteOptions, setMinuteOptions] = React.useState(DEFAULT_MINUTE_OPTS);
 
-  const [possibleStartTimes, setPossibleStartTimes] = React.useState(
-    defaultMinuteOptionsWithOrdinal(),
+  // The two range selects cross-disable each other so the window stays low→high:
+  // an end option is disabled if it's at or before the chosen start, and a start
+  // option is disabled if it's at or after the chosen end. This is pure derived
+  // state — compute it during render from the base ranges + the two current
+  // selections (no useState/useEffect mirror, which would lag a render behind
+  // and force omitting deps to avoid a loop).
+  const baseTimes = defaultMinuteOptionsWithOrdinal();
+  const startIndex = baseTimes.findIndex((x) => x.value === startMinute.value);
+  const endIndex = baseTimes.findIndex((x) => x.value === endMinute.value);
+  const possibleStartTimes = React.useMemo(
+    () => baseTimes.map((option, index) => ({ ...option, disabled: index >= endIndex })),
+    [baseTimes, endIndex],
   );
-
-  const [possibleEndTimes, setPossibleEndTimes] = React.useState(defaultMinuteOptionsWithOrdinal());
-
-  React.useEffect(() => {
-    const startIndex = possibleStartTimes.findIndex((x) => x.value === startMinute.value);
-    const limitedPossibleTimeRange = possibleEndTimes.map((possibleEndTime, index) => ({
-      ...possibleEndTime,
-      disabled: index <= startIndex,
-    }));
-    setPossibleEndTimes(limitedPossibleTimeRange);
-  }, [startMinute]);
-
-  React.useEffect(() => {
-    const endIndex = possibleEndTimes.findIndex((x) => x.value === endMinute.value);
-    const limitedPossibleTimeRange = possibleStartTimes.map((possibleStartTime, index) => ({
-      ...possibleStartTime,
-      disabled: index >= endIndex,
-    }));
-    setPossibleStartTimes(limitedPossibleTimeRange);
-  }, [endMinute]);
+  const possibleEndTimes = React.useMemo(
+    () => baseTimes.map((option, index) => ({ ...option, disabled: index <= startIndex })),
+    [baseTimes, startIndex],
+  );
 
   const isAdmin = useAtomValue(isAdminState);
 

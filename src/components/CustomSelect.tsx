@@ -5,6 +5,22 @@ import type React from 'react';
 import type { CustomSelectProps, SelectOptions } from '../types';
 import { getSortedOptions } from '../utils';
 
+// Map custom sizes to MUI sizes and widths. Widths are kept tight so a select
+// showing a short value (e.g. "week", "9") doesn't stretch across the row;
+// multi-select sizes (lg) leave room for a few chips before wrapping.
+const getSizeConfig = (customSize: 'sm' | 'md' | 'lg') => {
+  switch (customSize) {
+    case 'sm':
+      return { muiSize: 'small' as const, width: '110px' };
+    case 'md':
+      return { muiSize: 'small' as const, width: '140px' };
+    case 'lg':
+      return { muiSize: 'small' as const, width: '190px' };
+    default:
+      return { muiSize: 'small' as const, width: '110px' };
+  }
+};
+
 export default function CustomSelect<V extends SelectOptions | SelectOptions[]>(
   props: CustomSelectProps<V>,
 ) {
@@ -21,25 +37,9 @@ export default function CustomSelect<V extends SelectOptions | SelectOptions[]>(
     ...otherprops
   } = props;
 
-  // Map custom sizes to MUI sizes and widths. Widths are kept tight so a select
-  // showing a short value (e.g. "week", "9") doesn't stretch across the row;
-  // multi-select sizes (lg) leave room for a few chips before wrapping.
-  const getSizeConfig = (customSize: 'sm' | 'md' | 'lg') => {
-    switch (customSize) {
-      case 'sm':
-        return { muiSize: 'small' as const, width: '110px' };
-      case 'md':
-        return { muiSize: 'small' as const, width: '140px' };
-      case 'lg':
-        return { muiSize: 'small' as const, width: '190px' };
-      default:
-        return { muiSize: 'small' as const, width: '110px' };
-    }
-  };
-
   const sizeConfig = getSizeConfig(size);
 
-  const handleChange = (
+  const applySelection = (
     event: React.SyntheticEvent<Element, Event>,
     newValue: SelectOptions | SelectOptions[] | null,
     reason: AutocompleteChangeReason,
@@ -81,7 +81,7 @@ export default function CustomSelect<V extends SelectOptions | SelectOptions[]>(
         multiple
         options={options}
         value={value}
-        onChange={handleChange}
+        onChange={applySelection}
         isOptionEqualToValue={(option, val) =>
           (option as SelectOptions).value === (val as SelectOptions).value
         }
@@ -158,13 +158,21 @@ export default function CustomSelect<V extends SelectOptions | SelectOptions[]>(
                 const chips = shown.map((option, index) => {
                   const disableSingleItemRemove =
                     items.length === 1 && disableEmpty ? { onDelete: undefined } : {};
+                  // React forbids a `key` arriving via spread (it must be a
+                  // direct JSX attribute). MUI's getItemProps returns one (typed
+                  // off the public return shape), so strip it and pass our own
+                  // stable key explicitly, spreading the rest.
+                  const { key: _itemKey, ...itemProps } = getItemProps({ index }) as Record<
+                    string,
+                    unknown
+                  >;
                   return (
                     <Chip
+                      key={(option as SelectOptions).label}
                       label={(option as SelectOptions).label}
                       size='small'
-                      {...getItemProps({ index })}
+                      {...itemProps}
                       {...disableSingleItemRemove}
-                      key={(option as SelectOptions).label}
                     />
                   );
                 });

@@ -44,27 +44,23 @@ export default function Hour() {
   const [hour, setHour] = useAtom(hourState);
   const [hourOptions, setHourOptions] = React.useState(defaultHourOptions);
 
-  const [possibleStartTimes, setPossibleStartTimes] = React.useState(POSSIBLE_TIME_RANGES);
-
-  const [possibleEndTimes, setPossibleEndTimes] = React.useState(POSSIBLE_TIME_RANGES);
-
-  React.useEffect(() => {
-    const startIndex = possibleStartTimes.findIndex((x) => x.value === startHour.value);
-    const limitedPossibleTimeRange = possibleEndTimes.map((possibleEndTime, index) => ({
-      ...possibleEndTime,
-      disabled: index <= startIndex,
-    }));
-    setPossibleEndTimes(limitedPossibleTimeRange);
-  }, [startHour]);
-
-  React.useEffect(() => {
-    const endIndex = possibleEndTimes.findIndex((x) => x.value === endHour.value);
-    const limitedPossibleTimeRange = possibleStartTimes.map((possibleStartTime, index) => ({
-      ...possibleStartTime,
-      disabled: index >= endIndex,
-    }));
-    setPossibleStartTimes(limitedPossibleTimeRange);
-  }, [endHour]);
+  // The two range selects cross-disable each other so the window stays low→high:
+  // an end option is disabled if it's at or before the chosen start, and a start
+  // option is disabled if it's at or after the chosen end. This is pure derived
+  // state — compute it during render from the base ranges + the two current
+  // selections (no useState/useEffect mirror, which would lag a render behind
+  // and force omitting deps to avoid a loop).
+  const startIndex = POSSIBLE_TIME_RANGES.findIndex((x) => x.value === startHour.value);
+  const endIndex = POSSIBLE_TIME_RANGES.findIndex((x) => x.value === endHour.value);
+  const possibleStartTimes = React.useMemo(
+    () => POSSIBLE_TIME_RANGES.map((option, index) => ({ ...option, disabled: index >= endIndex })),
+    [endIndex],
+  );
+  const possibleEndTimes = React.useMemo(
+    () =>
+      POSSIBLE_TIME_RANGES.map((option, index) => ({ ...option, disabled: index <= startIndex })),
+    [startIndex],
+  );
 
   const isAdmin = useAtomValue(isAdminState);
 

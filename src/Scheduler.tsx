@@ -92,7 +92,9 @@ export default function Scheduler(props: SchedulerProps) {
   const { cron, setCron, setCronError, isAdmin, locale, customLocale } = props;
   const { timezone, layout = 'auto', slotProps, title, color } = props;
   const period = useAtomValue(periodState);
-  const [periodIndex, setPeriodIndex] = React.useState(0);
+  // Which fields to show is a pure function of the selected period — derive it
+  // during render rather than mirroring it into state via an effect.
+  const periodIndex = getPeriodIndex(period);
 
   // Recolor everything that reads `palette.primary` (header bar, the selected
   // segment of the toggles, the section pills) by overriding primary in a
@@ -129,13 +131,16 @@ export default function Scheduler(props: SchedulerProps) {
   const setHourAtEvery = useSetAtom(hourAtEveryState);
   const setDayOfMonthAtEvery = useSetAtom(dayOfMonthAtEveryState);
 
+  // Notify the parent of the current validation error. This is the controlled
+  // component's output contract, not derived state we own: `cronError` is read
+  // from an internal atom and pushed up through the `setCronError` prop so the
+  // host can react to validity. The error originates here (the validator), so
+  // it can't be "fetched in the parent" as the lint suggests.
+  // react-doctor-disable-next-line react-doctor/no-derived-state-effect
   React.useEffect(() => {
+    // react-doctor-disable-next-line react-doctor/no-pass-data-to-parent
     setCronError(cronError);
   }, [cronError, setCronError]);
-
-  React.useEffect(() => {
-    setPeriodIndex(getPeriodIndex(period));
-  }, [period]);
 
   // Two-way binding between the controlled `cron` prop and the internal
   // `cronExpInput` atom. Splitting this into two opposing effects causes them
@@ -143,6 +148,11 @@ export default function Scheduler(props: SchedulerProps) {
   // initial prop differs from the atom default (-> "Maximum update depth
   // exceeded"). A single effect that propagates only the side that actually
   // changed converges in one render.
+  // This effect is the load-bearing fix for issues #16/#19/#20: it is the
+  // controlled component's two-way bridge between the `cron` prop and the
+  // internal atom, propagating only the side that actually changed so it
+  // converges in one render instead of ping-ponging. The `setCron` call is the
+  // documented output half of that contract, not stray "data to parent".
   const prevSync = React.useRef<{ cron: string; input: string } | null>(null);
   React.useEffect(() => {
     if (prevSync.current === null) {
@@ -152,6 +162,7 @@ export default function Scheduler(props: SchedulerProps) {
       if (cron !== cronExpInput) {
         setCronExpInput(cron);
       } else {
+        // react-doctor-disable-next-line react-doctor/no-pass-data-to-parent
         setCron(cronExpInput);
       }
       prevSync.current = { cron, input: cronExpInput };
@@ -164,6 +175,7 @@ export default function Scheduler(props: SchedulerProps) {
       setCronExpInput(cron);
     } else if (inputChanged && cronExpInput !== cron) {
       // Internal value changed (user edit / field change) -> notify parent.
+      // react-doctor-disable-next-line react-doctor/no-pass-data-to-parent
       setCron(cronExpInput);
     }
     prevSync.current = { cron, input: cronExpInput };
@@ -193,6 +205,12 @@ export default function Scheduler(props: SchedulerProps) {
   // switch (e.g. period reads "day" under Chinese). Re-map each selection onto
   // the matching option in the new locale, preserving the choice and
   // refreshing its label. Falls back to the existing value if no match.
+  //
+  // The multiple setters write six INDEPENDENT jotai atoms (period, the three
+  // at/every toggles, week, month) — separate pieces of global store state, not
+  // co-located component state a useReducer could unify. Synchronizing an
+  // external store when an input changes is a legitimate effect.
+  // react-doctor-disable-next-line react-doctor/no-cascading-set-state
   React.useEffect(() => {
     const remap = (opts: SelectOptions[]) => (prev: SelectOptions) =>
       opts.find((o) => o.value === prev.value) ?? prev;

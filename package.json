@@ -1,6 +1,6 @@
 {
   "name": "material-ui-cron",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "A React cron editor using material ui",
   "author": "Parichay Barpanda <parichay.barpanda@gmail.com> (https://github.com/baymac/)",
   "license": "MIT",
@@ -61,8 +61,7 @@
     "typescript": "^6.0.3",
     "vite": "^8.0.14",
     "vite-plugin-dts": "^5.0.1",
-    "vitest": "^4",
-    "vitest-browser-react": "^2"
+    "vitest": "^4"
   },
   "peerDependencies": {
     "@emotion/react": "^11.11.0",

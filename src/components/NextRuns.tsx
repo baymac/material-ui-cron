@@ -182,15 +182,32 @@ interface NextRunsProps {
   timezone?: string;
 }
 
+// Cache Intl.DateTimeFormat instances by locale + options. monthLabel runs on
+// every render (per visible month) and weekdayInitials per locale, so reusing
+// the formatter avoids reallocating it each time.
+const dateTimeFormatCache = new Map<string, Intl.DateTimeFormat>();
+function dateTimeFormat(locale: string, options: Intl.DateTimeFormatOptions): Intl.DateTimeFormat {
+  const key = `${locale}|${JSON.stringify(options)}`;
+  let fmt = dateTimeFormatCache.get(key);
+  if (!fmt) {
+    // This IS the hoist the rule wants: built once per locale+options key and
+    // cached (mirrors the cache in nextRuns.ts).
+    // react-doctor-disable-next-line react-doctor/js-hoist-intl
+    fmt = new Intl.DateTimeFormat(locale, options);
+    dateTimeFormatCache.set(key, fmt);
+  }
+  return fmt;
+}
+
 // Sunday-first narrow weekday initials for `localeTag` (Jan 1 2023 is a Sunday).
 function weekdayInitials(localeTag: string): string[] {
-  const fmt = new Intl.DateTimeFormat(localeTag, { weekday: 'narrow', timeZone: 'UTC' });
+  const fmt = dateTimeFormat(localeTag, { weekday: 'narrow', timeZone: 'UTC' });
   return Array.from({ length: 7 }, (_, i) => fmt.format(new Date(Date.UTC(2023, 0, 1 + i))));
 }
 
 function monthLabel(ym: string, localeTag: string): string {
   const [year, month] = ym.split('-').map(Number);
-  return new Intl.DateTimeFormat(localeTag, {
+  return dateTimeFormat(localeTag, {
     month: 'long',
     year: 'numeric',
     timeZone: 'UTC',
@@ -227,6 +244,11 @@ export default function NextRuns({ timezone }: NextRunsProps) {
   React.useEffect(() => {
     const at = new Date();
     if (validationError.length > 0) {
+      // Not derivable during render: the firing-day set comes from an async
+      // cron-parser computation (dynamically imported, off the main entry) with
+      // a cancellation guard. The effect is the correct tool here; the empty
+      // branch just short-circuits the same state the async path writes.
+      // react-doctor-disable-next-line react-doctor/no-adjust-state-on-prop-change
       setData({ days: [], anchor: at });
       return;
     }
@@ -257,23 +279,29 @@ export default function NextRuns({ timezone }: NextRunsProps) {
 
   // On a fresh schedule, jump to the month of the soonest run and pre-select that
   // day so the list isn't empty; if nothing runs in the window, fall back to the
-  // current month with no selection.
+  // current month with no selection. This is a state-reset-on-prop-change: do it
+  // during render (the React-recommended pattern) keyed off the firing-day set,
+  // so the reset only fires when `days` itself changes (new cron / tz) — not on
+  // every render that recreates `months`, and without the extra commit a useEffect
+  // would force.
   const [cursor, setCursor] = React.useState(0);
   const [selectedDay, setSelectedDay] = React.useState<string | null>(null);
-  React.useEffect(() => {
+  // Track the last firing-day set we reacted to. A ref (not state) because it's
+  // only compared during render, never rendered — the setCursor/setSelectedDay
+  // calls below already drive the re-render.
+  const prevDays = React.useRef(days);
+  if (prevDays.current !== days) {
+    prevDays.current = days;
     if (days.length === 0) {
       setCursor(0);
       setSelectedDay(null);
-      return;
+    } else {
+      const firstDay = days[0];
+      setSelectedDay(firstDay);
+      const idx = months.indexOf(firstDay.slice(0, 7));
+      setCursor(idx >= 0 ? idx : 0);
     }
-    const firstDay = days[0];
-    setSelectedDay(firstDay);
-    const idx = months.indexOf(firstDay.slice(0, 7));
-    setCursor(idx >= 0 ? idx : 0);
-    // Reset only when the firing-day set itself changes (new cron / tz), not on
-    // every render that recreates `months`.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [days]);
+  }
 
   // The actual run times for the SELECTED day only — computed on demand (a cheap
   // single-day window) rather than up front for every day in the window. Tagged
@@ -286,10 +314,17 @@ export default function NextRuns({ timezone }: NextRunsProps) {
   );
   React.useEffect(() => {
     if (!selectedDay || validationError.length > 0) {
+      // Not derivable during render: a firing day's run times come from an async
+      // cron-parser computation (see below) with a cancellation guard. These two
+      // early branches just short-circuit the same state the async path writes
+      // (no selection / a non-firing day → no runs), so the effect stays the
+      // single owner of `selectedRuns`.
+      // react-doctor-disable-next-line react-doctor/no-adjust-state-on-prop-change
       setSelectedRuns(null);
       return;
     }
     if (!daySet.has(selectedDay)) {
+      // react-doctor-disable-next-line react-doctor/no-adjust-state-on-prop-change
       setSelectedRuns({ day: selectedDay, runs: [] });
       return;
     }

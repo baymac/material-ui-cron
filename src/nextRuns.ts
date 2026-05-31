@@ -20,6 +20,41 @@ export interface NextRunsOptions {
   anchor?: Date;
 }
 
+// Intl constructors allocate a non-trivial amount of work per call; some of
+// these formatters are built inside per-run loops (e.g. dayKeyInTz in
+// bucketRunsByDay). Cache by locale + options so an identical formatter is
+// reused across calls instead of reconstructed each time. The key set is small
+// and bounded (a handful of option shapes × the active locale/timezone).
+const dateTimeFormatCache = new Map<string, Intl.DateTimeFormat>();
+function dateTimeFormat(locale: string, options: Intl.DateTimeFormatOptions): Intl.DateTimeFormat {
+  const key = `${locale}|${JSON.stringify(options)}`;
+  let fmt = dateTimeFormatCache.get(key);
+  if (!fmt) {
+    // This IS the hoist the rule wants: the formatter is constructed once per
+    // unique locale+options key and cached, not rebuilt per call.
+    // react-doctor-disable-next-line react-doctor/js-hoist-intl
+    fmt = new Intl.DateTimeFormat(locale, options);
+    dateTimeFormatCache.set(key, fmt);
+  }
+  return fmt;
+}
+
+const relativeTimeFormatCache = new Map<string, Intl.RelativeTimeFormat>();
+function relativeTimeFormat(
+  locale: string,
+  options: Intl.RelativeTimeFormatOptions,
+): Intl.RelativeTimeFormat {
+  const key = `${locale}|${JSON.stringify(options)}`;
+  let fmt = relativeTimeFormatCache.get(key);
+  if (!fmt) {
+    // Cached the same way as dateTimeFormat above — built once per key.
+    // react-doctor-disable-next-line react-doctor/js-hoist-intl
+    fmt = new Intl.RelativeTimeFormat(locale, options);
+    relativeTimeFormatCache.set(key, fmt);
+  }
+  return fmt;
+}
+
 /**
  * Compute the next `count` occurrences of a cron expression.
  *
@@ -208,7 +243,7 @@ export function clampDayRuns(
  * which keys days in the same zone.
  */
 export function monthKeyInTz(date: Date, timezone?: string): string {
-  const fmt = new Intl.DateTimeFormat('en-CA', {
+  const fmt = dateTimeFormat('en-CA', {
     year: 'numeric',
     month: '2-digit',
     timeZone: timezone,
@@ -238,7 +273,7 @@ export function addMonths(ym: string, count: number): string {
  * bucketRunsByDay and the calendar's day-cell lookups so both key identically.
  */
 export function dayKeyInTz(date: Date, timezone?: string): string {
-  return new Intl.DateTimeFormat('en-CA', {
+  return dateTimeFormat('en-CA', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -254,7 +289,7 @@ export function dayKeyInTz(date: Date, timezone?: string): string {
 export function addDays(dayKey: string, count: number): string {
   const [year, month, day] = dayKey.split('-').map(Number);
   const dt = new Date(Date.UTC(year, month - 1, day + count));
-  return new Intl.DateTimeFormat('en-CA', {
+  return dateTimeFormat('en-CA', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -268,7 +303,7 @@ export function addDays(dayKey: string, count: number): string {
  * instant. Used to invert dayKeyInTz (turn a calendar day back into an instant).
  */
 function tzOffsetMs(date: Date, timezone?: string): number {
-  const parts = new Intl.DateTimeFormat('en-US', {
+  const parts = dateTimeFormat('en-US', {
     timeZone: timezone,
     year: 'numeric',
     month: '2-digit',
@@ -317,7 +352,7 @@ export function startOfDayInTz(dayKey: string, timezone?: string): Date {
  */
 export function formatDayKey(dayKey: string, localeTag: string): string {
   const [year, month, day] = dayKey.split('-').map(Number);
-  return new Intl.DateTimeFormat(localeTag, {
+  return dateTimeFormat(localeTag, {
     weekday: 'short',
     month: 'short',
     day: 'numeric',
@@ -356,7 +391,7 @@ export function bucketRunsByDay(runs: Date[], timezone?: string): Map<string, Da
 
 /** "6:00 PM" — time-only, locale + timezone aware (calendar day tooltips). */
 export function formatTime(date: Date, localeTag: string, timezone?: string): string {
-  return new Intl.DateTimeFormat(localeTag, {
+  return dateTimeFormat(localeTag, {
     hour: 'numeric',
     minute: '2-digit',
     timeZone: timezone,
@@ -365,7 +400,7 @@ export function formatTime(date: Date, localeTag: string, timezone?: string): st
 
 /** "Fri, May 29, 6:00 PM" — locale + timezone aware, no date library. */
 export function formatAbsolute(date: Date, localeTag: string, timezone?: string): string {
-  return new Intl.DateTimeFormat(localeTag, {
+  return dateTimeFormat(localeTag, {
     weekday: 'short',
     month: 'short',
     day: 'numeric',
@@ -381,7 +416,7 @@ export function formatAbsolute(date: Date, localeTag: string, timezone?: string)
  * unit so a slightly-stale list never shows a negative ("in -1 min").
  */
 export function formatRelative(date: Date, now: Date, localeTag: string): string {
-  const rtf = new Intl.RelativeTimeFormat(localeTag, { numeric: 'always', style: 'short' });
+  const rtf = relativeTimeFormat(localeTag, { numeric: 'always', style: 'short' });
   const diffMs = date.getTime() - now.getTime();
   const diffMin = Math.round(diffMs / 60000);
   if (diffMin <= 0) {
